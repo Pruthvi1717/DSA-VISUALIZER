@@ -1,0 +1,2488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting Algorithms Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0c1120;
+    --surface2: #111827;
+    --border: #1e2d47;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --bar-default: #1e40af;
+    --bar-compare: #f59e0b;
+    --bar-swap: #ef4444;
+    --bar-sorted: #10b981;
+    --bar-pivot: #7c3aed;
+    --bar-min: #00d4ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(12,17,32,0.8);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .header-badge {
+    font-size: 10px;
+    padding: 4px 10px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 20px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Main layout */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    display: grid;
+    gap: 24px;
+  }
+
+  /* Control Panel */
+  .control-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 24px;
+    align-items: end;
+  }
+
+  .control-group label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .algo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .algo-btn {
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .algo-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+
+  .algo-btn.active {
+    background: rgba(0,212,255,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,212,255,0.2);
+  }
+
+  .slider-group { display: flex; flex-direction: column; gap: 16px; }
+
+  .slider-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .slider-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+  }
+
+  .slider-val {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  input[type=range] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0,212,255,0.5);
+  }
+
+  .action-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #0096cc);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(0,212,255,0.5);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--muted);
+  }
+
+  .btn-danger {
+    background: rgba(239,68,68,0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+
+  .btn-danger:hover {
+    background: rgba(239,68,68,0.2);
+  }
+
+  /* Visualization area */
+  .viz-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .viz-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .algo-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .algo-name span { color: var(--accent); }
+
+  .stats-row {
+    display: flex;
+    gap: 24px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .stat-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  #canvas-wrap {
+    padding: 24px 24px 8px;
+    height: 320px;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    overflow: hidden;
+  }
+
+  .bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    transition: background-color 0.05s;
+    min-width: 2px;
+    background: var(--bar-default);
+    position: relative;
+  }
+
+  /* Complexity & Legend */
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .info-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .complexity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .complexity-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .complexity-item .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .complexity-item .value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .complexity-item .value.good { color: var(--accent3); }
+  .complexity-item .value.ok { color: var(--warn); }
+  .complexity-item .value.bad { color: var(--danger); }
+  .complexity-item .value.info { color: var(--accent); }
+
+  .legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* Description */
+  .desc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .desc-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  #algo-desc {
+    font-size: 12px;
+    line-height: 1.8;
+    color: #94a3b8;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .tag {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    border: 1px solid;
+  }
+
+  .tag-stable { background: rgba(16,185,129,0.1); color: var(--accent3); border-color: rgba(16,185,129,0.3); }
+  .tag-unstable { background: rgba(239,68,68,0.1); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+  .tag-inplace { background: rgba(0,212,255,0.1); color: var(--accent); border-color: rgba(0,212,255,0.2); }
+  .tag-notinplace { background: rgba(124,58,237,0.1); color: #a78bfa; border-color: rgba(124,58,237,0.3); }
+  .tag-comparison { background: rgba(245,158,11,0.1); color: var(--warn); border-color: rgba(245,158,11,0.3); }
+  .tag-noncomparison { background: rgba(16,185,129,0.1); color: var(--accent3); border-color: rgba(16,185,129,0.3); }
+
+  /* Pattern selector */
+  .pattern-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .pattern-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+  }
+
+  .pattern-btn {
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .pattern-btn:hover {
+    border-color: var(--accent2);
+    color: #a78bfa;
+    background: rgba(124,58,237,0.05);
+  }
+
+  .pattern-btn.active {
+    background: rgba(124,58,237,0.1);
+    border-color: var(--accent2);
+    color: #a78bfa;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    margin: 0 24px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.1s;
+    border-radius: 2px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    padding: 12px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    min-height: 44px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .status-dot.running {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1s infinite;
+  }
+
+  .status-dot.done {
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Step control */
+  .step-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .step-btn {
+    padding: 6px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .step-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .step-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* Footer */
+  footer {
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── CODE VIEWER ── */
+.code-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.code-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.code-header h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.lang-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.lang-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.lang-tab:hover { border-color: var(--accent); color: var(--accent); }
+.lang-tab.active {
+  background: rgba(0,212,255,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(0,212,255,0.15);
+}
+.code-body {
+  position: relative;
+}
+.copy-btn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  padding: 5px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  z-index: 10;
+}
+.copy-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+.copy-btn.copied { border-color: var(--accent3); color: var(--accent3); }
+pre#code-display {
+  margin: 0;
+  padding: 48px 24px 24px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  background: var(--surface3);
+  color: #cdd6f4;
+  min-height: 220px;
+  max-height: 420px;
+  overflow-y: auto;
+  tab-size: 2;
+  white-space: pre;
+}
+/* Syntax highlight classes */
+.kw  { color: #cba6f7; }   /* keyword */
+.fn  { color: #89b4fa; }   /* function name */
+.cm  { color: #585b70; font-style: italic; } /* comment */
+.nm  { color: #fab387; }   /* number */
+.tp  { color: #a6e3a1; }   /* type */
+.st  { color: #a6e3a1; }   /* string */
+.op  { color: #89dceb; }   /* operator */
+
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .container { padding: 16px; }
+    header { padding: 16px; }
+    .control-panel { grid-template-columns: 1fr; }
+    .info-row { grid-template-columns: 1fr; }
+    .complexity-grid { grid-template-columns: 1fr 1fr; }
+    #canvas-wrap { height: 220px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⬡</div>
+      <div class="logo-text">Sort<span>Lab</span></div>
+    </div>
+    <div class="header-badge">Algorithm Visualizer</div>
+  </header>
+
+  <div class="container">
+
+    <!-- Algorithm Selector -->
+    <div class="control-panel">
+      <div class="control-group">
+        <label>// Select Algorithm</label>
+        <div class="algo-grid" id="algo-grid"></div>
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-wrap">
+          <div class="slider-header">
+            <span class="slider-label">Array Size</span>
+            <span class="slider-val" id="size-val">60</span>
+          </div>
+          <input type="range" id="size-slider" min="10" max="200" value="60">
+        </div>
+        <div class="slider-wrap">
+          <div class="slider-header">
+            <span class="slider-label">Speed</span>
+            <span class="slider-val" id="speed-val">Medium</span>
+          </div>
+          <input type="range" id="speed-slider" min="1" max="5" value="3">
+        </div>
+      </div>
+
+      <div class="action-btns">
+        <button class="btn btn-primary" id="start-btn" onclick="startSort()">▶ Run Sort</button>
+        <button class="btn btn-secondary" onclick="generateArray()">⟳ New Array</button>
+        <button class="btn btn-danger" id="stop-btn" onclick="stopSort()" disabled>■ Stop</button>
+      </div>
+    </div>
+
+    <!-- Visualization -->
+    <div class="viz-area">
+      <div class="viz-header">
+        <div class="algo-name" id="viz-title">Select an <span>Algorithm</span></div>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-val" id="stat-comparisons">0</div>
+            <div class="stat-label">Comparisons</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" id="stat-swaps">0</div>
+            <div class="stat-label">Swaps</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" id="stat-time">0ms</div>
+            <div class="stat-label">Time</div>
+          </div>
+        </div>
+      </div>
+      <div id="canvas-wrap"></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Ready — select an algorithm and click Run Sort</span>
+      </div>
+    </div>
+
+    <!-- Pattern Selector -->
+    <div class="pattern-section">
+      <h3>// Input Patterns</h3>
+      <div class="pattern-grid" id="pattern-grid"></div>
+    </div>
+
+    <!-- Info Row -->
+    <div class="info-row">
+      <div class="info-card">
+        <h3>// Complexity Analysis</h3>
+        <div class="complexity-grid">
+          <div class="complexity-item">
+            <div class="label">Best Case</div>
+            <div class="value good" id="cx-best">—</div>
+          </div>
+          <div class="complexity-item">
+            <div class="label">Average</div>
+            <div class="value ok" id="cx-avg">—</div>
+          </div>
+          <div class="complexity-item">
+            <div class="label">Worst Case</div>
+            <div class="value bad" id="cx-worst">—</div>
+          </div>
+          <div class="complexity-item">
+            <div class="label">Space</div>
+            <div class="value info" id="cx-space">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>// Color Legend</h3>
+        <div class="legend-grid">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#1e40af"></div>
+            Default Element
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f59e0b"></div>
+            Comparing
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#ef4444"></div>
+            Swapping
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#10b981"></div>
+            Sorted
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#7c3aed"></div>
+            Pivot / Key
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#00d4ff"></div>
+            Minimum / Found
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="desc-card">
+      <h3>// Algorithm Details</h3>
+      <div id="algo-desc">Select an algorithm to see its description, properties, and complexity details.</div>
+      <div class="tag-row" id="algo-tags"></div>
+    </div>
+    <!-- CODE VIEWER -->
+<div class="code-section">
+  <div class="code-header">
+    <h3>// Implementation</h3>
+    <div class="lang-tabs">
+      <button class="lang-tab active" onclick="switchLang('python')">Python</button>
+      <button class="lang-tab" onclick="switchLang('javascript')">JavaScript</button>
+      <button class="lang-tab" onclick="switchLang('java')">Java</button>
+      <button class="lang-tab" onclick="switchLang('cpp')">C++</button>
+      <button class="lang-tab" onclick="switchLang('c')">C</button>
+    </div>
+  </div>
+  <div class="code-body">
+    <button class="copy-btn" id="copy-btn" onclick="copyCode()">⎘ Copy</button>
+    <pre id="code-display">Select an algorithm to view its implementation.</pre>
+  </div>
+</div>
+  </div>
+
+  <footer>
+    <span>SortLab — Sorting Algorithm Visualizer</span>
+    <span>Built with vanilla JS · <a href="#">Portfolio Project</a></span>
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// DATA: Algorithms & Patterns
+// ============================================================
+
+
+// ============================================================
+// MULTI-LANGUAGE CODE SNIPPETS
+// ============================================================
+const CODE = {
+  bubble: {
+    python: `<span class="cm"># Bubble Sort — O(n²)</span>
+<span class="kw">def</span> <span class="fn">bubble_sort</span>(arr):
+    n = <span class="fn">len</span>(arr)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n <span class="op">-</span> <span class="nm">1</span>):
+        swapped = <span class="kw">False</span>
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n <span class="op">-</span> i <span class="op">-</span> <span class="nm">1</span>):
+            <span class="kw">if</span> arr[j] <span class="op">></span> arr[j <span class="op">+</span> <span class="nm">1</span>]:
+                arr[j], arr[j <span class="op">+</span> <span class="nm">1</span>] = arr[j <span class="op">+</span> <span class="nm">1</span>], arr[j]
+                swapped = <span class="kw">True</span>
+        <span class="kw">if not</span> swapped:
+            <span class="kw">break</span>
+    <span class="kw">return</span> arr`,
+
+    javascript: `<span class="cm">// Bubble Sort — O(n²)</span>
+<span class="kw">function</span> <span class="fn">bubbleSort</span>(arr) {
+  <span class="kw">const</span> n = arr.length;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n <span class="op">-</span> <span class="nm">1</span>; i++) {
+    <span class="kw">let</span> swapped = <span class="kw">false</span>;
+    <span class="kw">for</span> (<span class="kw">let</span> j = <span class="nm">0</span>; j <span class="op">&lt;</span> n <span class="op">-</span> i <span class="op">-</span> <span class="nm">1</span>; j++) {
+      <span class="kw">if</span> (arr[j] <span class="op">></span> arr[j <span class="op">+</span> <span class="nm">1</span>]) {
+        [arr[j], arr[j <span class="op">+</span> <span class="nm">1</span>]] = [arr[j <span class="op">+</span> <span class="nm">1</span>], arr[j]];
+        swapped = <span class="kw">true</span>;
+      }
+    }
+    <span class="kw">if</span> (!swapped) <span class="kw">break</span>;
+  }
+  <span class="kw">return</span> arr;
+}`,
+
+    java: `<span class="cm">// Bubble Sort — O(n²)</span>
+<span class="kw">public static void</span> <span class="fn">bubbleSort</span>(<span class="tp">int</span>[] arr) {
+    <span class="tp">int</span> n = arr.length;
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n <span class="op">-</span> <span class="nm">1</span>; i++) {
+        <span class="tp">boolean</span> swapped = <span class="kw">false</span>;
+        <span class="kw">for</span> (<span class="tp">int</span> j = <span class="nm">0</span>; j <span class="op">&lt;</span> n <span class="op">-</span> i <span class="op">-</span> <span class="nm">1</span>; j++) {
+            <span class="kw">if</span> (arr[j] <span class="op">></span> arr[j <span class="op">+</span> <span class="nm">1</span>]) {
+                <span class="tp">int</span> tmp = arr[j];
+                arr[j] = arr[j <span class="op">+</span> <span class="nm">1</span>];
+                arr[j <span class="op">+</span> <span class="nm">1</span>] = tmp;
+                swapped = <span class="kw">true</span>;
+            }
+        }
+        <span class="kw">if</span> (!swapped) <span class="kw">break</span>;
+    }
+}`,
+
+    cpp: `<span class="cm">// Bubble Sort — O(n²)</span>
+<span class="kw">void</span> <span class="fn">bubbleSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> arr) {
+    <span class="tp">int</span> n = arr.size();
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n <span class="op">-</span> <span class="nm">1</span>; i++) {
+        <span class="tp">bool</span> swapped = <span class="kw">false</span>;
+        <span class="kw">for</span> (<span class="tp">int</span> j = <span class="nm">0</span>; j <span class="op">&lt;</span> n <span class="op">-</span> i <span class="op">-</span> <span class="nm">1</span>; j++) {
+            <span class="kw">if</span> (arr[j] <span class="op">></span> arr[j <span class="op">+</span> <span class="nm">1</span>]) {
+                swap(arr[j], arr[j <span class="op">+</span> <span class="nm">1</span>]);
+                swapped = <span class="kw">true</span>;
+            }
+        }
+        <span class="kw">if</span> (!swapped) <span class="kw">break</span>;
+    }
+}`,
+
+    c: `<span class="cm">/* Bubble Sort — O(n²) */</span>
+<span class="kw">void</span> <span class="fn">bubbleSort</span>(<span class="tp">int</span> arr[], <span class="tp">int</span> n) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n <span class="op">-</span> <span class="nm">1</span>; i++) {
+        <span class="tp">int</span> swapped = <span class="nm">0</span>;
+        <span class="kw">for</span> (<span class="tp">int</span> j = <span class="nm">0</span>; j <span class="op">&lt;</span> n <span class="op">-</span> i <span class="op">-</span> <span class="nm">1</span>; j++) {
+            <span class="kw">if</span> (arr[j] <span class="op">></span> arr[j <span class="op">+</span> <span class="nm">1</span>]) {
+                <span class="tp">int</span> tmp = arr[j];
+                arr[j] = arr[j <span class="op">+</span> <span class="nm">1</span>];
+                arr[j <span class="op">+</span> <span class="nm">1</span>] = tmp;
+                swapped = <span class="nm">1</span>;
+            }
+        }
+        <span class="kw">if</span> (!swapped) <span class="kw">break</span>;
+    }
+}`
+  },
+
+  selection: {
+    python: `<span class="cm"># Selection Sort — O(n²)</span>
+<span class="kw">def</span> <span class="fn">selection_sort</span>(arr):
+    n = <span class="fn">len</span>(arr)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):
+        min_idx = i
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i <span class="op">+</span> <span class="nm">1</span>, n):
+            <span class="kw">if</span> arr[j] <span class="op">&lt;</span> arr[min_idx]:
+                min_idx = j
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]
+    <span class="kw">return</span> arr`,
+
+    javascript: `<span class="cm">// Selection Sort — O(n²)</span>
+<span class="kw">function</span> <span class="fn">selectionSort</span>(arr) {
+  <span class="kw">const</span> n = arr.length;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n; i++) {
+    <span class="kw">let</span> minIdx = i;
+    <span class="kw">for</span> (<span class="kw">let</span> j = i <span class="op">+</span> <span class="nm">1</span>; j <span class="op">&lt;</span> n; j++)
+      <span class="kw">if</span> (arr[j] <span class="op">&lt;</span> arr[minIdx]) minIdx = j;
+    [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+  }
+  <span class="kw">return</span> arr;
+}`,
+
+    java: `<span class="cm">// Selection Sort — O(n²)</span>
+<span class="kw">public static void</span> <span class="fn">selectionSort</span>(<span class="tp">int</span>[] arr) {
+    <span class="tp">int</span> n = arr.length;
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n <span class="op">-</span> <span class="nm">1</span>; i++) {
+        <span class="tp">int</span> minIdx = i;
+        <span class="kw">for</span> (<span class="tp">int</span> j = i <span class="op">+</span> <span class="nm">1</span>; j <span class="op">&lt;</span> n; j++)
+            <span class="kw">if</span> (arr[j] <span class="op">&lt;</span> arr[minIdx]) minIdx = j;
+        <span class="tp">int</span> tmp = arr[minIdx];
+        arr[minIdx] = arr[i];
+        arr[i] = tmp;
+    }
+}`,
+
+    cpp: `<span class="cm">// Selection Sort — O(n²)</span>
+<span class="kw">void</span> <span class="fn">selectionSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> arr) {
+    <span class="tp">int</span> n = arr.size();
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n <span class="op">-</span> <span class="nm">1</span>; i++) {
+        <span class="tp">int</span> minIdx = i;
+        <span class="kw">for</span> (<span class="tp">int</span> j = i <span class="op">+</span> <span class="nm">1</span>; j <span class="op">&lt;</span> n; j++)
+            <span class="kw">if</span> (arr[j] <span class="op">&lt;</span> arr[minIdx]) minIdx = j;
+        swap(arr[i], arr[minIdx]);
+    }
+}`,
+
+    c: `<span class="cm">/* Selection Sort — O(n²) */</span>
+<span class="kw">void</span> <span class="fn">selectionSort</span>(<span class="tp">int</span> arr[], <span class="tp">int</span> n) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i <span class="op">&lt;</span> n <span class="op">-</span> <span class="nm">1</span>; i++) {
+        <span class="tp">int</span> minIdx = i;
+        <span class="kw">for</span> (<span class="tp">int</span> j = i <span class="op">+</span> <span class="nm">1</span>; j <span class="op">&lt;</span> n; j++)
+            <span class="kw">if</span> (arr[j] <span class="op">&lt;</span> arr[minIdx]) minIdx = j;
+        <span class="tp">int</span> tmp = arr[i];
+        arr[i] = arr[minIdx];
+        arr[minIdx] = tmp;
+    }
+}`
+  },
+
+  insertion: {
+    python: `<span class="cm"># Insertion Sort — O(n²)</span>
+<span class="kw">def</span> <span class="fn">insertion_sort</span>(arr):
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>, <span class="fn">len</span>(arr)):
+        key = arr[i]
+        j = i <span class="op">-</span> <span class="nm">1</span>
+        <span class="kw">while</span> j <span class="op">>=</span> <span class="nm">0</span> <span class="kw">and</span> arr[j] <span class="op">></span> key:
+            arr[j <span class="op">+</span> <span class="nm">1</span>] = arr[j]
+            j <span class="op">-=</span> <span class="nm">1</span>
+        arr[j <span class="op">+</span> <span class="nm">1</span>] = key
+    <span class="kw">return</span> arr`,
+
+    javascript: `<span class="cm">// Insertion Sort — O(n²)</span>
+<span class="kw">function</span> <span class="fn">insertionSort</span>(arr) {
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="nm">1</span>; i <span class="op">&lt;</span> arr.length; i++) {
+    <span class="kw">let</span> key = arr[i], j = i <span class="op">-</span> <span class="nm">1</span>;
+    <span class="kw">while</span> (j <span class="op">>=</span> <span class="nm">0</span> <span class="op">&amp;&amp;</span> arr[j] <span class="op">></span> key) {
+      arr[j <span class="op">+</span> <span class="nm">1</span>] = arr[j--];
+    }
+    arr[j <span class="op">+</span> <span class="nm">1</span>] = key;
+  }
+  <span class="kw">return</span> arr;
+}`,
+
+    java: `<span class="cm">// Insertion Sort — O(n²)</span>
+<span class="kw">public static void</span> <span class="fn">insertionSort</span>(<span class="tp">int</span>[] arr) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i <span class="op">&lt;</span> arr.length; i++) {
+        <span class="tp">int</span> key = arr[i], j = i <span class="op">-</span> <span class="nm">1</span>;
+        <span class="kw">while</span> (j <span class="op">>=</span> <span class="nm">0</span> <span class="op">&amp;&amp;</span> arr[j] <span class="op">></span> key)
+            arr[j <span class="op">+</span> <span class="nm">1</span>] = arr[j--];
+        arr[j <span class="op">+</span> <span class="nm">1</span>] = key;
+    }
+}`,
+
+    cpp: `<span class="cm">// Insertion Sort — O(n²)</span>
+<span class="kw">void</span> <span class="fn">insertionSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> arr) {
+    <span class="tp">int</span> n = arr.size();
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i <span class="op">&lt;</span> n; i++) {
+        <span class="tp">int</span> key = arr[i], j = i <span class="op">-</span> <span class="nm">1</span>;
+        <span class="kw">while</span> (j <span class="op">>=</span> <span class="nm">0</span> <span class="op">&amp;&amp;</span> arr[j] <span class="op">></span> key)
+            arr[j <span class="op">+</span> <span class="nm">1</span>] = arr[j--];
+        arr[j <span class="op">+</span> <span class="nm">1</span>] = key;
+    }
+}`,
+
+    c: `<span class="cm">/* Insertion Sort — O(n²) */</span>
+<span class="kw">void</span> <span class="fn">insertionSort</span>(<span class="tp">int</span> arr[], <span class="tp">int</span> n) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i <span class="op">&lt;</span> n; i++) {
+        <span class="tp">int</span> key = arr[i], j = i <span class="op">-</span> <span class="nm">1</span>;
+        <span class="kw">while</span> (j <span class="op">>=</span> <span class="nm">0</span> <span class="op">&amp;&amp;</span> arr[j] <span class="op">></span> key)
+            arr[j <span class="op">+</span> <span class="nm">1</span>] = arr[j--];
+        arr[j <span class="op">+</span> <span class="nm">1</span>] = key;
+    }
+}`
+  },
+
+  merge: {
+    python: `<span class="cm"># Merge Sort — O(n log n)</span>
+<span class="kw">def</span> <span class="fn">merge_sort</span>(arr):
+    <span class="kw">if</span> <span class="fn">len</span>(arr) <span class="op">&lt;=</span> <span class="nm">1</span>:
+        <span class="kw">return</span> arr
+    mid = <span class="fn">len</span>(arr) <span class="op">//</span> <span class="nm">2</span>
+    left  = <span class="fn">merge_sort</span>(arr[:mid])
+    right = <span class="fn">merge_sort</span>(arr[mid:])
+    <span class="kw">return</span> <span class="fn">merge</span>(left, right)
+
+<span class="kw">def</span> <span class="fn">merge</span>(left, right):
+    result, i, j = [], <span class="nm">0</span>, <span class="nm">0</span>
+    <span class="kw">while</span> i <span class="op">&lt;</span> <span class="fn">len</span>(left) <span class="kw">and</span> j <span class="op">&lt;</span> <span class="fn">len</span>(right):
+        <span class="kw">if</span> left[i] <span class="op">&lt;=</span> right[j]:
+            result.<span class="fn">append</span>(left[i]); i <span class="op">+=</span> <span class="nm">1</span>
+        <span class="kw">else</span>:
+            result.<span class="fn">append</span>(right[j]); j <span class="op">+=</span> <span class="nm">1</span>
+    <span class="kw">return</span> result <span class="op">+</span> left[i:] <span class="op">+</span> right[j:]`,
+
+    javascript: `<span class="cm">// Merge Sort — O(n log n)</span>
+<span class="kw">function</span> <span class="fn">mergeSort</span>(arr) {
+  <span class="kw">if</span> (arr.length <span class="op">&lt;=</span> <span class="nm">1</span>) <span class="kw">return</span> arr;
+  <span class="kw">const</span> mid = arr.length <span class="op">&gt;&gt;</span> <span class="nm">1</span>;
+  <span class="kw">const</span> left  = <span class="fn">mergeSort</span>(arr.slice(<span class="nm">0</span>, mid));
+  <span class="kw">const</span> right = <span class="fn">mergeSort</span>(arr.slice(mid));
+  <span class="kw">return</span> <span class="fn">merge</span>(left, right);
+}
+<span class="kw">function</span> <span class="fn">merge</span>(l, r) {
+  <span class="kw">const</span> res = []; <span class="kw">let</span> i = <span class="nm">0</span>, j = <span class="nm">0</span>;
+  <span class="kw">while</span> (i <span class="op">&lt;</span> l.length <span class="op">&amp;&amp;</span> j <span class="op">&lt;</span> r.length)
+    res.push(l[i] <span class="op">&lt;=</span> r[j] ? l[i++] : r[j++]);
+  <span class="kw">return</span> [...res, ...l.slice(i), ...r.slice(j)];
+}`,
+
+    java: `<span class="cm">// Merge Sort — O(n log n)</span>
+<span class="kw">public static void</span> <span class="fn">mergeSort</span>(<span class="tp">int</span>[] arr, <span class="tp">int</span> l, <span class="tp">int</span> r) {
+    <span class="kw">if</span> (l <span class="op">>=</span> r) <span class="kw">return</span>;
+    <span class="tp">int</span> m = (l <span class="op">+</span> r) <span class="op">/</span> <span class="nm">2</span>;
+    <span class="fn">mergeSort</span>(arr, l, m);
+    <span class="fn">mergeSort</span>(arr, m <span class="op">+</span> <span class="nm">1</span>, r);
+    <span class="fn">merge</span>(arr, l, m, r);
+}
+<span class="kw">static void</span> <span class="fn">merge</span>(<span class="tp">int</span>[] a, <span class="tp">int</span> l, <span class="tp">int</span> m, <span class="tp">int</span> r) {
+    <span class="tp">int</span>[] tmp = Arrays.<span class="fn">copyOfRange</span>(a, l, r <span class="op">+</span> <span class="nm">1</span>);
+    <span class="tp">int</span> i = <span class="nm">0</span>, j = m <span class="op">-</span> l <span class="op">+</span> <span class="nm">1</span>, k = l;
+    <span class="kw">while</span> (i <span class="op">&lt;=</span> m <span class="op">-</span> l <span class="op">&amp;&amp;</span> j <span class="op">&lt;</span> tmp.length)
+        a[k++] = tmp[i] <span class="op">&lt;=</span> tmp[j] ? tmp[i++] : tmp[j++];
+    <span class="kw">while</span> (i <span class="op">&lt;=</span> m <span class="op">-</span> l) a[k++] = tmp[i++];
+    <span class="kw">while</span> (j <span class="op">&lt;</span> tmp.length) a[k++] = tmp[j++];
+}`,
+
+    cpp: `<span class="cm">// Merge Sort — O(n log n)</span>
+<span class="kw">void</span> <span class="fn">merge</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a, <span class="tp">int</span> l, <span class="tp">int</span> m, <span class="tp">int</span> r) {
+    <span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;</span> L(a.begin()<span class="op">+</span>l, a.begin()<span class="op">+</span>m<span class="op">+</span><span class="nm">1</span>);
+    <span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;</span> R(a.begin()<span class="op">+</span>m<span class="op">+</span><span class="nm">1</span>, a.begin()<span class="op">+</span>r<span class="op">+</span><span class="nm">1</span>);
+    <span class="tp">int</span> i=<span class="nm">0</span>, j=<span class="nm">0</span>, k=l;
+    <span class="kw">while</span>(i<span class="op">&lt;</span>L.size() <span class="op">&amp;&amp;</span> j<span class="op">&lt;</span>R.size())
+        a[k++] = L[i]<span class="op">&lt;=</span>R[j] ? L[i++] : R[j++];
+    <span class="kw">while</span>(i<span class="op">&lt;</span>L.size()) a[k++]=L[i++];
+    <span class="kw">while</span>(j<span class="op">&lt;</span>R.size()) a[k++]=R[j++];
+}
+<span class="kw">void</span> <span class="fn">mergeSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a, <span class="tp">int</span> l, <span class="tp">int</span> r) {
+    <span class="kw">if</span>(l<span class="op">&lt;</span>r){ <span class="tp">int</span> m=(l<span class="op">+</span>r)<span class="op">/</span><span class="nm">2</span>; <span class="fn">mergeSort</span>(a,l,m); <span class="fn">mergeSort</span>(a,m<span class="op">+</span><span class="nm">1</span>,r); <span class="fn">merge</span>(a,l,m,r); }
+}`,
+
+    c: `<span class="cm">/* Merge Sort — O(n log n) */</span>
+<span class="kw">void</span> <span class="fn">merge</span>(<span class="tp">int</span> a[], <span class="tp">int</span> l, <span class="tp">int</span> m, <span class="tp">int</span> r) {
+    <span class="tp">int</span> i,j,k, n1=m-l+<span class="nm">1</span>, n2=r-m;
+    <span class="tp">int</span> L[n1], R[n2];
+    <span class="kw">for</span>(i=<span class="nm">0</span>;i<span class="op">&lt;</span>n1;i++) L[i]=a[l+i];
+    <span class="kw">for</span>(j=<span class="nm">0</span>;j<span class="op">&lt;</span>n2;j++) R[j]=a[m+<span class="nm">1</span>+j];
+    i=<span class="nm">0</span>; j=<span class="nm">0</span>; k=l;
+    <span class="kw">while</span>(i<span class="op">&lt;</span>n1<span class="op">&amp;&amp;</span>j<span class="op">&lt;</span>n2) a[k++]=L[i]<span class="op">&lt;=</span>R[j]?L[i++]:R[j++];
+    <span class="kw">while</span>(i<span class="op">&lt;</span>n1) a[k++]=L[i++];
+    <span class="kw">while</span>(j<span class="op">&lt;</span>n2) a[k++]=R[j++];
+}
+<span class="kw">void</span> <span class="fn">mergeSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> l, <span class="tp">int</span> r) {
+    <span class="kw">if</span>(l<span class="op">&lt;</span>r){ <span class="tp">int</span> m=(l<span class="op">+</span>r)/<span class="nm">2</span>; <span class="fn">mergeSort</span>(a,l,m); <span class="fn">mergeSort</span>(a,m<span class="op">+</span><span class="nm">1</span>,r); <span class="fn">merge</span>(a,l,m,r); }
+}`
+  },
+
+  quick: {
+    python: `<span class="cm"># Quick Sort — O(n log n) avg</span>
+<span class="kw">def</span> <span class="fn">quick_sort</span>(arr, low=<span class="nm">0</span>, high=<span class="kw">None</span>):
+    <span class="kw">if</span> high <span class="kw">is None</span>: high = <span class="fn">len</span>(arr) <span class="op">-</span> <span class="nm">1</span>
+    <span class="kw">if</span> low <span class="op">&lt;</span> high:
+        pi = <span class="fn">partition</span>(arr, low, high)
+        <span class="fn">quick_sort</span>(arr, low, pi <span class="op">-</span> <span class="nm">1</span>)
+        <span class="fn">quick_sort</span>(arr, pi <span class="op">+</span> <span class="nm">1</span>, high)
+
+<span class="kw">def</span> <span class="fn">partition</span>(arr, low, high):
+    pivot, i = arr[high], low <span class="op">-</span> <span class="nm">1</span>
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(low, high):
+        <span class="kw">if</span> arr[j] <span class="op">&lt;=</span> pivot:
+            i <span class="op">+=</span> <span class="nm">1</span>
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i <span class="op">+</span> <span class="nm">1</span>], arr[high] = arr[high], arr[i <span class="op">+</span> <span class="nm">1</span>]
+    <span class="kw">return</span> i <span class="op">+</span> <span class="nm">1</span>`,
+
+    javascript: `<span class="cm">// Quick Sort — O(n log n) avg</span>
+<span class="kw">function</span> <span class="fn">quickSort</span>(arr, lo = <span class="nm">0</span>, hi = arr.length <span class="op">-</span> <span class="nm">1</span>) {
+  <span class="kw">if</span> (lo <span class="op">&lt;</span> hi) {
+    <span class="kw">const</span> pi = <span class="fn">partition</span>(arr, lo, hi);
+    <span class="fn">quickSort</span>(arr, lo, pi <span class="op">-</span> <span class="nm">1</span>);
+    <span class="fn">quickSort</span>(arr, pi <span class="op">+</span> <span class="nm">1</span>, hi);
+  }
+}
+<span class="kw">function</span> <span class="fn">partition</span>(arr, lo, hi) {
+  <span class="kw">const</span> p = arr[hi]; <span class="kw">let</span> i = lo <span class="op">-</span> <span class="nm">1</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> j = lo; j <span class="op">&lt;</span> hi; j++)
+    <span class="kw">if</span> (arr[j] <span class="op">&lt;=</span> p) [arr[++i], arr[j]] = [arr[j], arr[i]];
+  [arr[i<span class="op">+</span><span class="nm">1</span>], arr[hi]] = [arr[hi], arr[i<span class="op">+</span><span class="nm">1</span>]];
+  <span class="kw">return</span> i <span class="op">+</span> <span class="nm">1</span>;
+}`,
+
+    java: `<span class="cm">// Quick Sort — O(n log n) avg</span>
+<span class="kw">static void</span> <span class="fn">quickSort</span>(<span class="tp">int</span>[] a, <span class="tp">int</span> lo, <span class="tp">int</span> hi) {
+    <span class="kw">if</span> (lo <span class="op">&lt;</span> hi) {
+        <span class="tp">int</span> pi = <span class="fn">partition</span>(a, lo, hi);
+        <span class="fn">quickSort</span>(a, lo, pi <span class="op">-</span> <span class="nm">1</span>);
+        <span class="fn">quickSort</span>(a, pi <span class="op">+</span> <span class="nm">1</span>, hi);
+    }
+}
+<span class="kw">static int</span> <span class="fn">partition</span>(<span class="tp">int</span>[] a, <span class="tp">int</span> lo, <span class="tp">int</span> hi) {
+    <span class="tp">int</span> p = a[hi], i = lo <span class="op">-</span> <span class="nm">1</span>;
+    <span class="kw">for</span> (<span class="tp">int</span> j = lo; j <span class="op">&lt;</span> hi; j++)
+        <span class="kw">if</span> (a[j] <span class="op">&lt;=</span> p) { <span class="tp">int</span> t=a[++i]; a[i]=a[j]; a[j]=t; }
+    <span class="tp">int</span> t=a[i<span class="op">+</span><span class="nm">1</span>]; a[i<span class="op">+</span><span class="nm">1</span>]=a[hi]; a[hi]=t;
+    <span class="kw">return</span> i <span class="op">+</span> <span class="nm">1</span>;
+}`,
+
+    cpp: `<span class="cm">// Quick Sort — O(n log n) avg</span>
+<span class="tp">int</span> <span class="fn">partition</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a, <span class="tp">int</span> lo, <span class="tp">int</span> hi) {
+    <span class="tp">int</span> p=a[hi], i=lo<span class="op">-</span><span class="nm">1</span>;
+    <span class="kw">for</span>(<span class="tp">int</span> j=lo;j<span class="op">&lt;</span>hi;j++)
+        <span class="kw">if</span>(a[j]<span class="op">&lt;=</span>p) swap(a[++i],a[j]);
+    swap(a[i<span class="op">+</span><span class="nm">1</span>],a[hi]);
+    <span class="kw">return</span> i<span class="op">+</span><span class="nm">1</span>;
+}
+<span class="kw">void</span> <span class="fn">quickSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a, <span class="tp">int</span> lo, <span class="tp">int</span> hi) {
+    <span class="kw">if</span>(lo<span class="op">&lt;</span>hi){ <span class="tp">int</span> p=<span class="fn">partition</span>(a,lo,hi); <span class="fn">quickSort</span>(a,lo,p<span class="op">-</span><span class="nm">1</span>); <span class="fn">quickSort</span>(a,p<span class="op">+</span><span class="nm">1</span>,hi); }
+}`,
+
+    c: `<span class="cm">/* Quick Sort — O(n log n) avg */</span>
+<span class="tp">int</span> <span class="fn">partition</span>(<span class="tp">int</span> a[], <span class="tp">int</span> lo, <span class="tp">int</span> hi){
+    <span class="tp">int</span> p=a[hi],i=lo<span class="op">-</span><span class="nm">1</span>,t;
+    <span class="kw">for</span>(<span class="tp">int</span> j=lo;j<span class="op">&lt;</span>hi;j++)
+        <span class="kw">if</span>(a[j]<span class="op">&lt;=</span>p){t=a[++i];a[i]=a[j];a[j]=t;}
+    t=a[i<span class="op">+</span><span class="nm">1</span>];a[i<span class="op">+</span><span class="nm">1</span>]=a[hi];a[hi]=t;
+    <span class="kw">return</span> i<span class="op">+</span><span class="nm">1</span>;
+}
+<span class="kw">void</span> <span class="fn">quickSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> lo, <span class="tp">int</span> hi){
+    <span class="kw">if</span>(lo<span class="op">&lt;</span>hi){<span class="tp">int</span> p=<span class="fn">partition</span>(a,lo,hi);<span class="fn">quickSort</span>(a,lo,p<span class="op">-</span><span class="nm">1</span>);<span class="fn">quickSort</span>(a,p<span class="op">+</span><span class="nm">1</span>,hi);}
+}`
+  },
+
+  heap: {
+    python: `<span class="cm"># Heap Sort — O(n log n)</span>
+<span class="kw">def</span> <span class="fn">heapify</span>(arr, n, i):
+    largest = i
+    l, r = <span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">1</span>, <span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">2</span>
+    <span class="kw">if</span> l <span class="op">&lt;</span> n <span class="kw">and</span> arr[l] <span class="op">></span> arr[largest]: largest = l
+    <span class="kw">if</span> r <span class="op">&lt;</span> n <span class="kw">and</span> arr[r] <span class="op">></span> arr[largest]: largest = r
+    <span class="kw">if</span> largest <span class="op">!=</span> i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        <span class="fn">heapify</span>(arr, n, largest)
+
+<span class="kw">def</span> <span class="fn">heap_sort</span>(arr):
+    n = <span class="fn">len</span>(arr)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n<span class="op">//</span><span class="nm">2</span><span class="op">-</span><span class="nm">1</span>, <span class="op">-</span><span class="nm">1</span>, <span class="op">-</span><span class="nm">1</span>): <span class="fn">heapify</span>(arr, n, i)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n<span class="op">-</span><span class="nm">1</span>, <span class="nm">0</span>, <span class="op">-</span><span class="nm">1</span>):
+        arr[<span class="nm">0</span>], arr[i] = arr[i], arr[<span class="nm">0</span>]
+        <span class="fn">heapify</span>(arr, i, <span class="nm">0</span>)`,
+
+    javascript: `<span class="cm">// Heap Sort — O(n log n)</span>
+<span class="kw">function</span> <span class="fn">heapSort</span>(arr) {
+  <span class="kw">const</span> n = arr.length;
+  <span class="kw">for</span> (<span class="kw">let</span> i = (n<span class="op">&gt;&gt;</span><span class="nm">1</span>)<span class="op">-</span><span class="nm">1</span>; i <span class="op">>=</span> <span class="nm">0</span>; i--) <span class="fn">heapify</span>(arr,n,i);
+  <span class="kw">for</span> (<span class="kw">let</span> i = n<span class="op">-</span><span class="nm">1</span>; i <span class="op">></span> <span class="nm">0</span>; i--) {
+    [arr[<span class="nm">0</span>],arr[i]]=[arr[i],arr[<span class="nm">0</span>]]; <span class="fn">heapify</span>(arr,i,<span class="nm">0</span>);
+  }
+}
+<span class="kw">function</span> <span class="fn">heapify</span>(arr, n, i) {
+  <span class="kw">let</span> lg=i, l=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">1</span>, r=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">2</span>;
+  <span class="kw">if</span>(l<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>arr[l]<span class="op">></span>arr[lg]) lg=l;
+  <span class="kw">if</span>(r<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>arr[r]<span class="op">></span>arr[lg]) lg=r;
+  <span class="kw">if</span>(lg<span class="op">!==</span>i){[arr[i],arr[lg]]=[arr[lg],arr[i]];<span class="fn">heapify</span>(arr,n,lg);}
+}`,
+
+    java: `<span class="cm">// Heap Sort — O(n log n)</span>
+<span class="kw">static void</span> <span class="fn">heapSort</span>(<span class="tp">int</span>[] a) {
+    <span class="tp">int</span> n = a.length;
+    <span class="kw">for</span>(<span class="tp">int</span> i=n/<span class="nm">2</span><span class="op">-</span><span class="nm">1</span>;i<span class="op">>=</span><span class="nm">0</span>;i--) <span class="fn">heapify</span>(a,n,i);
+    <span class="kw">for</span>(<span class="tp">int</span> i=n<span class="op">-</span><span class="nm">1</span>;i<span class="op">></span><span class="nm">0</span>;i--){
+        <span class="tp">int</span> t=a[<span class="nm">0</span>];a[<span class="nm">0</span>]=a[i];a[i]=t; <span class="fn">heapify</span>(a,i,<span class="nm">0</span>);
+    }
+}
+<span class="kw">static void</span> <span class="fn">heapify</span>(<span class="tp">int</span>[] a, <span class="tp">int</span> n, <span class="tp">int</span> i){
+    <span class="tp">int</span> lg=i,l=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">1</span>,r=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">2</span>,t;
+    <span class="kw">if</span>(l<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>a[l]<span class="op">></span>a[lg])lg=l;
+    <span class="kw">if</span>(r<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>a[r]<span class="op">></span>a[lg])lg=r;
+    <span class="kw">if</span>(lg<span class="op">!=</span>i){t=a[i];a[i]=a[lg];a[lg]=t;<span class="fn">heapify</span>(a,n,lg);}
+}`,
+
+    cpp: `<span class="cm">// Heap Sort — O(n log n)</span>
+<span class="kw">void</span> <span class="fn">heapify</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a, <span class="tp">int</span> n, <span class="tp">int</span> i){
+    <span class="tp">int</span> lg=i,l=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">1</span>,r=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">2</span>;
+    <span class="kw">if</span>(l<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>a[l]<span class="op">></span>a[lg])lg=l;
+    <span class="kw">if</span>(r<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>a[r]<span class="op">></span>a[lg])lg=r;
+    <span class="kw">if</span>(lg<span class="op">!=</span>i){swap(a[i],a[lg]);<span class="fn">heapify</span>(a,n,lg);}
+}
+<span class="kw">void</span> <span class="fn">heapSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+    <span class="tp">int</span> n=a.size();
+    <span class="kw">for</span>(<span class="tp">int</span> i=n/<span class="nm">2</span><span class="op">-</span><span class="nm">1</span>;i<span class="op">>=</span><span class="nm">0</span>;i--)<span class="fn">heapify</span>(a,n,i);
+    <span class="kw">for</span>(<span class="tp">int</span> i=n<span class="op">-</span><span class="nm">1</span>;i<span class="op">></span><span class="nm">0</span>;i--){swap(a[<span class="nm">0</span>],a[i]);<span class="fn">heapify</span>(a,i,<span class="nm">0</span>);}
+}`,
+
+    c: `<span class="cm">/* Heap Sort — O(n log n) */</span>
+<span class="kw">void</span> <span class="fn">heapify</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n, <span class="tp">int</span> i){
+    <span class="tp">int</span> lg=i,l=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">1</span>,r=<span class="nm">2</span><span class="op">*</span>i<span class="op">+</span><span class="nm">2</span>,t;
+    <span class="kw">if</span>(l<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>a[l]<span class="op">></span>a[lg])lg=l;
+    <span class="kw">if</span>(r<span class="op">&lt;</span>n<span class="op">&amp;&amp;</span>a[r]<span class="op">></span>a[lg])lg=r;
+    <span class="kw">if</span>(lg<span class="op">!=</span>i){t=a[i];a[i]=a[lg];a[lg]=t;<span class="fn">heapify</span>(a,n,lg);}
+}
+<span class="kw">void</span> <span class="fn">heapSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n){
+    <span class="tp">int</span> t;
+    <span class="kw">for</span>(<span class="tp">int</span> i=n/<span class="nm">2</span><span class="op">-</span><span class="nm">1</span>;i<span class="op">>=</span><span class="nm">0</span>;i--)<span class="fn">heapify</span>(a,n,i);
+    <span class="kw">for</span>(<span class="tp">int</span> i=n<span class="op">-</span><span class="nm">1</span>;i<span class="op">></span><span class="nm">0</span>;i--){t=a[<span class="nm">0</span>];a[<span class="nm">0</span>]=a[i];a[i]=t;<span class="fn">heapify</span>(a,i,<span class="nm">0</span>);}
+}`
+  },
+
+  shell: {
+    python: `<span class="cm"># Shell Sort — O(n log² n)</span>
+<span class="kw">def</span> <span class="fn">shell_sort</span>(arr):
+    n, gap = <span class="fn">len</span>(arr), <span class="fn">len</span>(arr) <span class="op">//</span> <span class="nm">2</span>
+    <span class="kw">while</span> gap <span class="op">></span> <span class="nm">0</span>:
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(gap, n):
+            temp, j = arr[i], i
+            <span class="kw">while</span> j <span class="op">>=</span> gap <span class="kw">and</span> arr[j <span class="op">-</span> gap] <span class="op">></span> temp:
+                arr[j] = arr[j <span class="op">-</span> gap]; j <span class="op">-=</span> gap
+            arr[j] = temp
+        gap <span class="op">//=</span> <span class="nm">2</span>
+    <span class="kw">return</span> arr`,
+
+    javascript: `<span class="cm">// Shell Sort — O(n log² n)</span>
+<span class="kw">function</span> <span class="fn">shellSort</span>(arr) {
+  <span class="kw">let</span> gap = arr.length <span class="op">&gt;&gt;</span> <span class="nm">1</span>;
+  <span class="kw">while</span> (gap <span class="op">></span> <span class="nm">0</span>) {
+    <span class="kw">for</span> (<span class="kw">let</span> i=gap; i<span class="op">&lt;</span>arr.length; i++) {
+      <span class="kw">let</span> tmp=arr[i], j=i;
+      <span class="kw">while</span>(j<span class="op">>=</span>gap<span class="op">&amp;&amp;</span>arr[j<span class="op">-</span>gap]<span class="op">></span>tmp){arr[j]=arr[j<span class="op">-</span>gap];j<span class="op">-=</span>gap;}
+      arr[j]=tmp;
+    }
+    gap<span class="op">>>=</span><span class="nm">1</span>;
+  }
+  <span class="kw">return</span> arr;
+}`,
+
+    java: `<span class="cm">// Shell Sort — O(n log² n)</span>
+<span class="kw">static void</span> <span class="fn">shellSort</span>(<span class="tp">int</span>[] a){
+    <span class="kw">for</span>(<span class="tp">int</span> gap=a.length/<span class="nm">2</span>;gap<span class="op">></span><span class="nm">0</span>;gap/<span class="op">=</span><span class="nm">2</span>)
+        <span class="kw">for</span>(<span class="tp">int</span> i=gap;i<span class="op">&lt;</span>a.length;i++){
+            <span class="tp">int</span> tmp=a[i],j=i;
+            <span class="kw">while</span>(j<span class="op">>=</span>gap<span class="op">&amp;&amp;</span>a[j<span class="op">-</span>gap]<span class="op">></span>tmp){a[j]=a[j<span class="op">-</span>gap];j<span class="op">-=</span>gap;}
+            a[j]=tmp;
+        }
+}`,
+
+    cpp: `<span class="cm">// Shell Sort — O(n log² n)</span>
+<span class="kw">void</span> <span class="fn">shellSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+    <span class="kw">for</span>(<span class="tp">int</span> gap=a.size()/<span class="nm">2</span>;gap<span class="op">></span><span class="nm">0</span>;gap/<span class="op">=</span><span class="nm">2</span>)
+        <span class="kw">for</span>(<span class="tp">int</span> i=gap;i<span class="op">&lt;</span>(<span class="tp">int</span>)a.size();i++){
+            <span class="tp">int</span> tmp=a[i],j=i;
+            <span class="kw">while</span>(j<span class="op">>=</span>gap<span class="op">&amp;&amp;</span>a[j<span class="op">-</span>gap]<span class="op">></span>tmp){a[j]=a[j<span class="op">-</span>gap];j<span class="op">-=</span>gap;}
+            a[j]=tmp;
+        }
+}`,
+
+    c: `<span class="cm">/* Shell Sort — O(n log² n) */</span>
+<span class="kw">void</span> <span class="fn">shellSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n){
+    <span class="kw">for</span>(<span class="tp">int</span> gap=n/<span class="nm">2</span>;gap<span class="op">></span><span class="nm">0</span>;gap/<span class="op">=</span><span class="nm">2</span>)
+        <span class="kw">for</span>(<span class="tp">int</span> i=gap;i<span class="op">&lt;</span>n;i++){
+            <span class="tp">int</span> tmp=a[i],j=i;
+            <span class="kw">while</span>(j<span class="op">>=</span>gap<span class="op">&amp;&amp;</span>a[j<span class="op">-</span>gap]<span class="op">></span>tmp){a[j]=a[j<span class="op">-</span>gap];j<span class="op">-=</span>gap;}
+            a[j]=tmp;
+        }
+}`
+  },
+
+  counting: {
+    python: `<span class="cm"># Counting Sort — O(n + k)</span>
+<span class="kw">def</span> <span class="fn">counting_sort</span>(arr):
+    mn, mx = <span class="fn">min</span>(arr), <span class="fn">max</span>(arr)
+    count = [<span class="nm">0</span>] <span class="op">*</span> (mx <span class="op">-</span> mn <span class="op">+</span> <span class="nm">1</span>)
+    <span class="kw">for</span> v <span class="kw">in</span> arr: count[v <span class="op">-</span> mn] <span class="op">+=</span> <span class="nm">1</span>
+    idx = <span class="nm">0</span>
+    <span class="kw">for</span> i, c <span class="kw">in</span> <span class="fn">enumerate</span>(count):
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(c):
+            arr[idx] = i <span class="op">+</span> mn; idx <span class="op">+=</span> <span class="nm">1</span>
+    <span class="kw">return</span> arr`,
+
+    javascript: `<span class="cm">// Counting Sort — O(n + k)</span>
+<span class="kw">function</span> <span class="fn">countingSort</span>(arr) {
+  <span class="kw">const</span> min=Math.<span class="fn">min</span>(...arr), max=Math.<span class="fn">max</span>(...arr);
+  <span class="kw">const</span> count=<span class="kw">new</span> <span class="fn">Array</span>(max<span class="op">-</span>min<span class="op">+</span><span class="nm">1</span>).<span class="fn">fill</span>(<span class="nm">0</span>);
+  arr.<span class="fn">forEach</span>(v <span class="op">=></span> count[v<span class="op">-</span>min]++);
+  <span class="kw">let</span> i=<span class="nm">0</span>;
+  count.<span class="fn">forEach</span>((c,j)<span class="op">=></span>{<span class="kw">while</span>(c--)arr[i++]=j<span class="op">+</span>min;});
+  <span class="kw">return</span> arr;
+}`,
+
+    java: `<span class="cm">// Counting Sort — O(n + k)</span>
+<span class="kw">static void</span> <span class="fn">countingSort</span>(<span class="tp">int</span>[] a){
+    <span class="tp">int</span> mn=a[<span class="nm">0</span>],mx=a[<span class="nm">0</span>];
+    <span class="kw">for</span>(<span class="tp">int</span> v:a){mn=Math.<span class="fn">min</span>(mn,v);mx=Math.<span class="fn">max</span>(mx,v);}
+    <span class="tp">int</span>[] cnt=<span class="kw">new</span> <span class="tp">int</span>[mx<span class="op">-</span>mn<span class="op">+</span><span class="nm">1</span>];
+    <span class="kw">for</span>(<span class="tp">int</span> v:a) cnt[v<span class="op">-</span>mn]++;
+    <span class="tp">int</span> i=<span class="nm">0</span>;
+    <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j<span class="op">&lt;</span>cnt.length;j++)
+        <span class="kw">while</span>(cnt[j]--<span class="op">></span><span class="nm">0</span>) a[i++]=j<span class="op">+</span>mn;
+}`,
+
+    cpp: `<span class="cm">// Counting Sort — O(n + k)</span>
+<span class="kw">void</span> <span class="fn">countingSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+    <span class="tp">int</span> mn=*min_element(a.begin(),a.end());
+    <span class="tp">int</span> mx=*max_element(a.begin(),a.end());
+    <span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;</span> cnt(mx<span class="op">-</span>mn<span class="op">+</span><span class="nm">1</span>,<span class="nm">0</span>);
+    <span class="kw">for</span>(<span class="tp">int</span> v:a) cnt[v<span class="op">-</span>mn]++;
+    <span class="tp">int</span> i=<span class="nm">0</span>;
+    <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j<span class="op">&lt;</span>(<span class="tp">int</span>)cnt.size();j++)
+        <span class="kw">while</span>(cnt[j]--) a[i++]=j<span class="op">+</span>mn;
+}`,
+
+    c: `<span class="cm">/* Counting Sort — O(n + k) */</span>
+<span class="kw">void</span> <span class="fn">countingSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n){
+    <span class="tp">int</span> mn=a[<span class="nm">0</span>],mx=a[<span class="nm">0</span>];
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span>n;i++){<span class="kw">if</span>(a[i]<span class="op">&lt;</span>mn)mn=a[i];<span class="kw">if</span>(a[i]<span class="op">></span>mx)mx=a[i];}
+    <span class="tp">int</span> range=mx<span class="op">-</span>mn<span class="op">+</span><span class="nm">1</span>, cnt[range];
+    <span class="fn">memset</span>(cnt,<span class="nm">0</span>,<span class="kw">sizeof</span>(cnt));
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n;i++) cnt[a[i]<span class="op">-</span>mn]++;
+    <span class="tp">int</span> i=<span class="nm">0</span>;
+    <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j<span class="op">&lt;</span>range;j++)
+        <span class="kw">while</span>(cnt[j]--) a[i++]=j<span class="op">+</span>mn;
+}`
+  },
+
+  radix: {
+    python: `<span class="cm"># Radix Sort — O(nk)</span>
+<span class="kw">def</span> <span class="fn">counting_by_digit</span>(arr, exp):
+    output, count = [<span class="nm">0</span>]<span class="op">*</span><span class="fn">len</span>(arr), [<span class="nm">0</span>]<span class="op">*</span><span class="nm">10</span>
+    <span class="kw">for</span> v <span class="kw">in</span> arr: count[(v<span class="op">//</span>exp)<span class="op">%</span><span class="nm">10</span>] <span class="op">+=</span> <span class="nm">1</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>,<span class="nm">10</span>): count[i] <span class="op">+=</span> count[i<span class="op">-</span><span class="nm">1</span>]
+    <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">reversed</span>(arr):
+        d = (v<span class="op">//</span>exp)<span class="op">%</span><span class="nm">10</span>; count[d]<span class="op">-=</span><span class="nm">1</span>; output[count[d]]=v
+    arr[:] = output
+
+<span class="kw">def</span> <span class="fn">radix_sort</span>(arr):
+    exp = <span class="nm">1</span>
+    <span class="kw">while</span> <span class="fn">max</span>(arr) <span class="op">//</span> exp <span class="op">></span> <span class="nm">0</span>:
+        <span class="fn">counting_by_digit</span>(arr, exp); exp <span class="op">*=</span> <span class="nm">10</span>`,
+
+    javascript: `<span class="cm">// Radix Sort — O(nk)</span>
+<span class="kw">function</span> <span class="fn">radixSort</span>(arr) {
+  <span class="kw">const</span> max = Math.<span class="fn">max</span>(...arr);
+  <span class="kw">for</span>(<span class="kw">let</span> exp=<span class="nm">1</span>; Math.<span class="fn">floor</span>(max/exp)><span class="nm">0</span>; exp*=<span class="nm">10</span>) {
+    <span class="kw">const</span> out=<span class="kw">new</span> <span class="fn">Array</span>(arr.length), cnt=<span class="kw">new</span> <span class="fn">Array</span>(<span class="nm">10</span>).<span class="fn">fill</span>(<span class="nm">0</span>);
+    arr.<span class="fn">forEach</span>(v<span class="op">=></span>cnt[Math.<span class="fn">floor</span>(v/exp)<span class="op">%</span><span class="nm">10</span>]++);
+    <span class="kw">for</span>(<span class="kw">let</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span><span class="nm">10</span>;i++) cnt[i]<span class="op">+=</span>cnt[i<span class="op">-</span><span class="nm">1</span>];
+    [...arr].<span class="fn">reverse</span>().<span class="fn">forEach</span>(v<span class="op">=></span>out[--cnt[Math.<span class="fn">floor</span>(v/exp)<span class="op">%</span><span class="nm">10</span>]]=v);
+    arr.<span class="fn">splice</span>(<span class="nm">0</span>,arr.length,...out);
+  }
+}`,
+
+    java: `<span class="cm">// Radix Sort — O(nk)</span>
+<span class="kw">static void</span> <span class="fn">radixSort</span>(<span class="tp">int</span>[] a){
+    <span class="tp">int</span> mx=Arrays.<span class="fn">stream</span>(a).max().<span class="fn">getAsInt</span>();
+    <span class="kw">for</span>(<span class="tp">int</span> exp=<span class="nm">1</span>;mx/exp><span class="nm">0</span>;exp*=<span class="nm">10</span>){
+        <span class="tp">int</span>[] out=<span class="kw">new</span> <span class="tp">int</span>[a.length], cnt=<span class="kw">new</span> <span class="tp">int</span>[<span class="nm">10</span>];
+        <span class="kw">for</span>(<span class="tp">int</span> v:a) cnt[(v/exp)<span class="op">%</span><span class="nm">10</span>]++;
+        <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span><span class="nm">10</span>;i++) cnt[i]<span class="op">+=</span>cnt[i<span class="op">-</span><span class="nm">1</span>];
+        <span class="kw">for</span>(<span class="tp">int</span> i=a.length<span class="op">-</span><span class="nm">1</span>;i<span class="op">>=</span><span class="nm">0</span>;i--) out[--cnt[(a[i]/exp)<span class="op">%</span><span class="nm">10</span>]]=a[i];
+        System.<span class="fn">arraycopy</span>(out,<span class="nm">0</span>,a,<span class="nm">0</span>,a.length);
+    }
+}`,
+
+    cpp: `<span class="cm">// Radix Sort — O(nk)</span>
+<span class="kw">void</span> <span class="fn">countExp</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a,<span class="tp">int</span> exp){
+    <span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;</span> out(a.size()); <span class="tp">int</span> cnt[<span class="nm">10</span>]={};
+    <span class="kw">for</span>(<span class="tp">int</span> v:a) cnt[(v/exp)<span class="op">%</span><span class="nm">10</span>]++;
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span><span class="nm">10</span>;i++) cnt[i]<span class="op">+=</span>cnt[i<span class="op">-</span><span class="nm">1</span>];
+    <span class="kw">for</span>(<span class="tp">int</span> i=a.size()<span class="op">-</span><span class="nm">1</span>;i<span class="op">>=</span><span class="nm">0</span>;i--) out[--cnt[(a[i]/exp)<span class="op">%</span><span class="nm">10</span>]]=a[i];
+    a=out;
+}
+<span class="kw">void</span> <span class="fn">radixSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+    <span class="tp">int</span> mx=*max_element(a.begin(),a.end());
+    <span class="kw">for</span>(<span class="tp">int</span> exp=<span class="nm">1</span>;mx/exp><span class="nm">0</span>;exp*=<span class="nm">10</span>) <span class="fn">countExp</span>(a,exp);
+}`,
+
+    c: `<span class="cm">/* Radix Sort — O(nk) */</span>
+<span class="kw">void</span> <span class="fn">countExp</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n,<span class="tp">int</span> exp){
+    <span class="tp">int</span> out[n],cnt[<span class="nm">10</span>]={};
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n;i++) cnt[(a[i]/exp)<span class="op">%</span><span class="nm">10</span>]++;
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span><span class="nm">10</span>;i++) cnt[i]<span class="op">+=</span>cnt[i<span class="op">-</span><span class="nm">1</span>];
+    <span class="kw">for</span>(<span class="tp">int</span> i=n<span class="op">-</span><span class="nm">1</span>;i<span class="op">>=</span><span class="nm">0</span>;i--) out[--cnt[(a[i]/exp)<span class="op">%</span><span class="nm">10</span>]]=a[i];
+    <span class="fn">memcpy</span>(a,out,n<span class="op">*</span><span class="kw">sizeof</span>(<span class="tp">int</span>));
+}
+<span class="kw">void</span> <span class="fn">radixSort</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n){
+    <span class="tp">int</span> mx=a[<span class="nm">0</span>]; <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span>n;i++)<span class="kw">if</span>(a[i]<span class="op">></span>mx)mx=a[i];
+    <span class="kw">for</span>(<span class="tp">int</span> e=<span class="nm">1</span>;mx/e><span class="nm">0</span>;e*=<span class="nm">10</span>) <span class="fn">countExp</span>(a,n,e);
+}`
+  },
+
+  // Remaining algorithms use a shared generic fallback
+  bucket:    { _fallback: 'bucket' },
+  cocktail:  { _fallback: 'cocktail' },
+  gnome:     { _fallback: 'gnome' },
+  comb:      { _fallback: 'comb' },
+  cycle:     { _fallback: 'cycle' },
+  odd_even:  { _fallback: 'odd_even' },
+  tim:       { _fallback: 'tim' },
+};
+
+// Compact code for remaining algorithms
+const COMPACT_CODE = {
+  bucket: {
+    python: `<span class="cm"># Bucket Sort — O(n + k)</span>
+<span class="kw">def</span> <span class="fn">bucket_sort</span>(arr):
+    n = <span class="fn">len</span>(arr); mn, mx = <span class="fn">min</span>(arr), <span class="fn">max</span>(arr)
+    buckets = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    <span class="kw">for</span> v <span class="kw">in</span> arr:
+        i = <span class="tp">int</span>((v <span class="op">-</span> mn) <span class="op">/</span> (mx <span class="op">-</span> mn <span class="op">+</span> <span class="nm">1</span>) <span class="op">*</span> n)
+        buckets[i].<span class="fn">append</span>(v)
+    <span class="kw">return</span> [v <span class="kw">for</span> b <span class="kw">in</span> buckets <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">sorted</span>(b)]`,
+    javascript: `<span class="cm">// Bucket Sort — O(n + k)</span>
+<span class="kw">function</span> <span class="fn">bucketSort</span>(arr) {
+  <span class="kw">const</span> n=arr.length, mn=Math.<span class="fn">min</span>(...arr), mx=Math.<span class="fn">max</span>(...arr);
+  <span class="kw">const</span> b=<span class="fn">Array</span>.<span class="fn">from</span>({length:n},()<span class="op">=></span>[]);
+  arr.<span class="fn">forEach</span>(v<span class="op">=></span>b[Math.<span class="fn">floor</span>((v<span class="op">-</span>mn)/(mx<span class="op">-</span>mn<span class="op">+</span><span class="nm">1</span>)<span class="op">*</span>n)].<span class="fn">push</span>(v));
+  <span class="kw">return</span> b.<span class="fn">flatMap</span>(x<span class="op">=></span>x.<span class="fn">sort</span>((a,b)<span class="op">=></span>a<span class="op">-</span>b));
+}`,
+    java: `<span class="cm">// Bucket Sort — O(n + k) [simplified]</span>
+<span class="cm">// Split into n buckets, insertion-sort each,</span>
+<span class="cm">// then concatenate. Best for uniform distribution.</span>
+<span class="kw">static void</span> <span class="fn">bucketSort</span>(<span class="tp">float</span>[] a){
+    <span class="tp">int</span> n=a.length;
+    <span class="tp">List</span><span class="op">&lt;</span><span class="tp">Float</span><span class="op">&gt;</span>[] b=<span class="kw">new</span> List[n];
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n;i++) b[i]=<span class="kw">new</span> ArrayList<>();
+    <span class="kw">for</span>(<span class="tp">float</span> v:a) b[(<span class="tp">int</span>)(n<span class="op">*</span>v)].<span class="fn">add</span>(v);
+    <span class="tp">int</span> idx=<span class="nm">0</span>;
+    <span class="kw">for</span>(<span class="tp">List</span><span class="op">&lt;</span><span class="tp">Float</span><span class="op">&gt;</span> bucket:b){ Collections.<span class="fn">sort</span>(bucket); <span class="kw">for</span>(<span class="tp">float</span> v:bucket) a[idx++]=v; }
+}`,
+    cpp: `<span class="cm">// Bucket Sort — O(n + k)</span>
+<span class="kw">void</span> <span class="fn">bucketSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">float</span><span class="op">&gt;&</span> a){
+    <span class="tp">int</span> n=a.size();
+    <span class="tp">vector</span><span class="op">&lt;</span><span class="tp">vector</span><span class="op">&lt;</span><span class="tp">float</span><span class="op">&gt;&gt;</span> b(n);
+    <span class="kw">for</span>(<span class="tp">float</span> v:a) b[(<span class="tp">int</span>)(n<span class="op">*</span>v)].<span class="fn">push_back</span>(v);
+    <span class="tp">int</span> i=<span class="nm">0</span>;
+    <span class="kw">for</span>(<span class="kw">auto</span><span class="op">&</span> bkt:b){sort(bkt.begin(),bkt.end());<span class="kw">for</span>(<span class="tp">float</span> v:bkt)a[i++]=v;}
+}`,
+    c: `<span class="cm">/* Bucket Sort — conceptual C outline */</span>
+<span class="cm">/* Distribute into n linked-list buckets,   */</span>
+<span class="cm">/* insertion-sort each, then flatten.        */</span>
+<span class="cm">/* Full implementation requires dynamic lists */</span>
+<span class="kw">void</span> <span class="fn">bucketSort</span>(<span class="tp">float</span> a[], <span class="tp">int</span> n){
+    <span class="cm">/* allocate n buckets (linked lists) */</span>
+    <span class="cm">/* insert a[i] into bucket[floor(n*a[i])] */</span>
+    <span class="cm">/* sort each bucket with insertion sort */</span>
+    <span class="cm">/* concatenate buckets back into a[] */</span>
+}`
+  },
+  cocktail: {
+    python: `<span class="cm"># Cocktail Shaker Sort — O(n²)</span>
+<span class="kw">def</span> <span class="fn">cocktail_sort</span>(arr):
+    n = <span class="fn">len</span>(arr); start, end = <span class="nm">0</span>, n <span class="op">-</span> <span class="nm">1</span>
+    <span class="kw">while</span> start <span class="op">&lt;</span> end:
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, end):
+            <span class="kw">if</span> arr[i] <span class="op">></span> arr[i<span class="op">+</span><span class="nm">1</span>]: arr[i],arr[i<span class="op">+</span><span class="nm">1</span>]=arr[i<span class="op">+</span><span class="nm">1</span>],arr[i]
+        end <span class="op">-=</span> <span class="nm">1</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(end, start, <span class="op">-</span><span class="nm">1</span>):
+            <span class="kw">if</span> arr[i] <span class="op">&lt;</span> arr[i<span class="op">-</span><span class="nm">1</span>]: arr[i],arr[i<span class="op">-</span><span class="nm">1</span>]=arr[i<span class="op">-</span><span class="nm">1</span>],arr[i]
+        start <span class="op">+=</span> <span class="nm">1</span>`,
+    javascript: `<span class="cm">// Cocktail Shaker Sort — O(n²)</span>
+<span class="kw">function</span> <span class="fn">cocktailSort</span>(arr){
+  <span class="kw">let</span> s=<span class="nm">0</span>,e=arr.length<span class="op">-</span><span class="nm">1</span>;
+  <span class="kw">while</span>(s<span class="op">&lt;</span>e){
+    <span class="kw">for</span>(<span class="kw">let</span> i=s;i<span class="op">&lt;</span>e;i++) <span class="kw">if</span>(arr[i]<span class="op">></span>arr[i<span class="op">+</span><span class="nm">1</span>])[arr[i],arr[i<span class="op">+</span><span class="nm">1</span>]]=[arr[i<span class="op">+</span><span class="nm">1</span>],arr[i]];
+    e--;
+    <span class="kw">for</span>(<span class="kw">let</span> i=e;i<span class="op">></span>s;i--) <span class="kw">if</span>(arr[i]<span class="op">&lt;</span>arr[i<span class="op">-</span><span class="nm">1</span>])[arr[i],arr[i<span class="op">-</span><span class="nm">1</span>]]=[arr[i<span class="op">-</span><span class="nm">1</span>],arr[i]];
+    s++;
+  }
+}`,
+    java: `<span class="cm">// Cocktail Sort — O(n²)</span>
+<span class="kw">static void</span> <span class="fn">cocktailSort</span>(<span class="tp">int</span>[] a){
+  <span class="tp">int</span> s=<span class="nm">0</span>,e=a.length<span class="op">-</span><span class="nm">1</span>,t;
+  <span class="kw">while</span>(s<span class="op">&lt;</span>e){
+    <span class="kw">for</span>(<span class="tp">int</span> i=s;i<span class="op">&lt;</span>e;i++) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">+</span><span class="nm">1</span>];a[i<span class="op">+</span><span class="nm">1</span>]=t;}
+    e--;
+    <span class="kw">for</span>(<span class="tp">int</span> i=e;i<span class="op">></span>s;i--) <span class="kw">if</span>(a[i]<span class="op">&lt;</span>a[i<span class="op">-</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">-</span><span class="nm">1</span>];a[i<span class="op">-</span><span class="nm">1</span>]=t;}
+    s++;
+  }
+}`,
+    cpp: `<span class="cm">// Cocktail Sort — O(n²)</span>
+<span class="kw">void</span> <span class="fn">cocktailSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+  <span class="tp">int</span> s=<span class="nm">0</span>,e=a.size()<span class="op">-</span><span class="nm">1</span>;
+  <span class="kw">while</span>(s<span class="op">&lt;</span>e){
+    <span class="kw">for</span>(<span class="tp">int</span> i=s;i<span class="op">&lt;</span>e;i++) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>])swap(a[i],a[i<span class="op">+</span><span class="nm">1</span>]);
+    e--;
+    <span class="kw">for</span>(<span class="tp">int</span> i=e;i<span class="op">></span>s;i--) <span class="kw">if</span>(a[i]<span class="op">&lt;</span>a[i<span class="op">-</span><span class="nm">1</span>])swap(a[i],a[i<span class="op">-</span><span class="nm">1</span>]);
+    s++;
+  }
+}`,
+    c: `<span class="cm">/* Cocktail Sort — O(n²) */</span>
+<span class="kw">void</span> <span class="fn">cocktailSort</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n){
+  <span class="tp">int</span> s=<span class="nm">0</span>,e=n<span class="op">-</span><span class="nm">1</span>,t;
+  <span class="kw">while</span>(s<span class="op">&lt;</span>e){
+    <span class="kw">for</span>(<span class="tp">int</span> i=s;i<span class="op">&lt;</span>e;i++) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">+</span><span class="nm">1</span>];a[i<span class="op">+</span><span class="nm">1</span>]=t;}
+    e--;
+    <span class="kw">for</span>(<span class="tp">int</span> i=e;i<span class="op">></span>s;i--) <span class="kw">if</span>(a[i]<span class="op">&lt;</span>a[i<span class="op">-</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">-</span><span class="nm">1</span>];a[i<span class="op">-</span><span class="nm">1</span>]=t;}
+    s++;
+  }
+}`
+  },
+  gnome: {
+    python: `<span class="cm"># Gnome Sort — O(n²)</span>
+<span class="kw">def</span> <span class="fn">gnome_sort</span>(arr):
+    i = <span class="nm">0</span>
+    <span class="kw">while</span> i <span class="op">&lt;</span> <span class="fn">len</span>(arr):
+        <span class="kw">if</span> i <span class="op">==</span> <span class="nm">0</span> <span class="kw">or</span> arr[i] <span class="op">>=</span> arr[i<span class="op">-</span><span class="nm">1</span>]: i <span class="op">+=</span> <span class="nm">1</span>
+        <span class="kw">else</span>: arr[i],arr[i<span class="op">-</span><span class="nm">1</span>]=arr[i<span class="op">-</span><span class="nm">1</span>],arr[i]; i <span class="op">-=</span> <span class="nm">1</span>`,
+    javascript: `<span class="cm">// Gnome Sort — O(n²)</span>
+<span class="kw">function</span> <span class="fn">gnomeSort</span>(arr){
+  <span class="kw">let</span> i=<span class="nm">0</span>;
+  <span class="kw">while</span>(i<span class="op">&lt;</span>arr.length)
+    i===<span class="nm">0</span><span class="op">||</span>arr[i]<span class="op">>=</span>arr[i<span class="op">-</span><span class="nm">1</span>] ? i++ : ([arr[i],arr[i<span class="op">-</span><span class="nm">1</span>]]=[arr[i<span class="op">-</span><span class="nm">1</span>],arr[i]],i--);
+}`,
+    java: `<span class="cm">// Gnome Sort — O(n²)</span>
+<span class="kw">static void</span> <span class="fn">gnomeSort</span>(<span class="tp">int</span>[] a){
+  <span class="tp">int</span> i=<span class="nm">0</span>,t;
+  <span class="kw">while</span>(i<span class="op">&lt;</span>a.length)
+    <span class="kw">if</span>(i<span class="op">==</span><span class="nm">0</span><span class="op">||</span>a[i]<span class="op">>=</span>a[i<span class="op">-</span><span class="nm">1</span>])i++;
+    <span class="kw">else</span>{t=a[i];a[i]=a[i<span class="op">-</span><span class="nm">1</span>];a[i<span class="op">-</span><span class="nm">1</span>]=t;i--;}
+}`,
+    cpp: `<span class="cm">// Gnome Sort — O(n²)</span>
+<span class="kw">void</span> <span class="fn">gnomeSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+  <span class="tp">int</span> i=<span class="nm">0</span>;
+  <span class="kw">while</span>(i<span class="op">&lt;</span>(<span class="tp">int</span>)a.size())
+    i<span class="op">==</span><span class="nm">0</span><span class="op">||</span>a[i]<span class="op">>=</span>a[i<span class="op">-</span><span class="nm">1</span>] ? i++ : (swap(a[i],a[i<span class="op">-</span><span class="nm">1</span>]),i--);
+}`,
+    c: `<span class="cm">/* Gnome Sort — O(n²) */</span>
+<span class="kw">void</span> <span class="fn">gnomeSort</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n){
+  <span class="tp">int</span> i=<span class="nm">0</span>,t;
+  <span class="kw">while</span>(i<span class="op">&lt;</span>n)
+    <span class="kw">if</span>(i<span class="op">==</span><span class="nm">0</span><span class="op">||</span>a[i]<span class="op">>=</span>a[i<span class="op">-</span><span class="nm">1</span>])i++;
+    <span class="kw">else</span>{t=a[i];a[i]=a[i<span class="op">-</span><span class="nm">1</span>];a[i<span class="op">-</span><span class="nm">1</span>]=t;i--;}
+}`
+  },
+  comb: {
+    python: `<span class="cm"># Comb Sort — O(n log n) best</span>
+<span class="kw">def</span> <span class="fn">comb_sort</span>(arr):
+    gap, shrink, sorted_ = <span class="fn">len</span>(arr), <span class="nm">1.3</span>, <span class="kw">False</span>
+    <span class="kw">while not</span> sorted_:
+        gap = <span class="tp">int</span>(gap <span class="op">/</span> shrink)
+        <span class="kw">if</span> gap <span class="op">&lt;=</span> <span class="nm">1</span>: gap = <span class="nm">1</span>; sorted_ = <span class="kw">True</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(arr) <span class="op">-</span> gap):
+            <span class="kw">if</span> arr[i] <span class="op">></span> arr[i <span class="op">+</span> gap]:
+                arr[i],arr[i<span class="op">+</span>gap]=arr[i<span class="op">+</span>gap],arr[i]; sorted_ = <span class="kw">False</span>`,
+    javascript: `<span class="cm">// Comb Sort — O(n log n) best</span>
+<span class="kw">function</span> <span class="fn">combSort</span>(arr){
+  <span class="kw">let</span> gap=arr.length, done=<span class="kw">false</span>;
+  <span class="kw">while</span>(!done){
+    gap=Math.<span class="fn">floor</span>(gap/<span class="nm">1.3</span>); <span class="kw">if</span>(gap<span class="op">&lt;=</span><span class="nm">1</span>){gap=<span class="nm">1</span>;done=<span class="kw">true</span>;}
+    <span class="kw">for</span>(<span class="kw">let</span> i=<span class="nm">0</span>;i<span class="op">+</span>gap<span class="op">&lt;</span>arr.length;i++)
+      <span class="kw">if</span>(arr[i]<span class="op">></span>arr[i<span class="op">+</span>gap]){[arr[i],arr[i<span class="op">+</span>gap]]=[arr[i<span class="op">+</span>gap],arr[i]];done=<span class="kw">false</span>;}
+  }
+}`,
+    java: `<span class="cm">// Comb Sort — O(n log n) best</span>
+<span class="kw">static void</span> <span class="fn">combSort</span>(<span class="tp">int</span>[] a){
+  <span class="tp">int</span> gap=a.length,t; <span class="tp">boolean</span> done=<span class="kw">false</span>;
+  <span class="kw">while</span>(!done){
+    gap=(<span class="tp">int</span>)(gap/<span class="nm">1.3</span>); <span class="kw">if</span>(gap<span class="op">&lt;=</span><span class="nm">1</span>){gap=<span class="nm">1</span>;done=<span class="kw">true</span>;}
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">+</span>gap<span class="op">&lt;</span>a.length;i++)
+      <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span>gap]){t=a[i];a[i]=a[i<span class="op">+</span>gap];a[i<span class="op">+</span>gap]=t;done=<span class="kw">false</span>;}
+  }
+}`,
+    cpp: `<span class="cm">// Comb Sort — O(n log n) best</span>
+<span class="kw">void</span> <span class="fn">combSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+  <span class="tp">int</span> gap=a.size(); <span class="tp">bool</span> done=<span class="kw">false</span>;
+  <span class="kw">while</span>(!done){
+    gap=(<span class="tp">int</span>)(gap/<span class="nm">1.3</span>); <span class="kw">if</span>(gap<span class="op">&lt;=</span><span class="nm">1</span>){gap=<span class="nm">1</span>;done=<span class="kw">true</span>;}
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">+</span>gap<span class="op">&lt;</span>(<span class="tp">int</span>)a.size();i++)
+      <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span>gap]){swap(a[i],a[i<span class="op">+</span>gap]);done=<span class="kw">false</span>;}
+  }
+}`,
+    c: `<span class="cm">/* Comb Sort — O(n log n) best */</span>
+<span class="kw">void</span> <span class="fn">combSort</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n){
+  <span class="tp">int</span> gap=n,t,done=<span class="nm">0</span>;
+  <span class="kw">while</span>(!done){
+    gap=(<span class="tp">int</span>)(gap/<span class="nm">1.3</span>); <span class="kw">if</span>(gap<span class="op">&lt;=</span><span class="nm">1</span>){gap=<span class="nm">1</span>;done=<span class="nm">1</span>;}
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">+</span>gap<span class="op">&lt;</span>n;i++)
+      <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span>gap]){t=a[i];a[i]=a[i<span class="op">+</span>gap];a[i<span class="op">+</span>gap]=t;done=<span class="nm">0</span>;}
+  }
+}`
+  },
+  cycle: {
+    python: `<span class="cm"># Cycle Sort — minimizes writes O(n²)</span>
+<span class="kw">def</span> <span class="fn">cycle_sort</span>(arr):
+    <span class="kw">for</span> cs <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(arr) <span class="op">-</span> <span class="nm">1</span>):
+        item = arr[cs]; pos = cs
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(cs <span class="op">+</span> <span class="nm">1</span>, <span class="fn">len</span>(arr)):
+            <span class="kw">if</span> arr[i] <span class="op">&lt;</span> item: pos <span class="op">+=</span> <span class="nm">1</span>
+        <span class="kw">if</span> pos <span class="op">==</span> cs: <span class="kw">continue</span>
+        <span class="kw">while</span> item <span class="op">==</span> arr[pos]: pos <span class="op">+=</span> <span class="nm">1</span>
+        arr[pos], item = item, arr[pos]
+        <span class="kw">while</span> pos <span class="op">!=</span> cs:
+            pos = cs
+            <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(cs <span class="op">+</span> <span class="nm">1</span>, <span class="fn">len</span>(arr)):
+                <span class="kw">if</span> arr[i] <span class="op">&lt;</span> item: pos <span class="op">+=</span> <span class="nm">1</span>
+            <span class="kw">while</span> item <span class="op">==</span> arr[pos]: pos <span class="op">+=</span> <span class="nm">1</span>
+            arr[pos], item = item, arr[pos]`,
+    javascript: `<span class="cm">// Cycle Sort — minimizes writes O(n²)</span>
+<span class="kw">function</span> <span class="fn">cycleSort</span>(arr){
+  <span class="kw">for</span>(<span class="kw">let</span> cs=<span class="nm">0</span>;cs<span class="op">&lt;</span>arr.length<span class="op">-</span><span class="nm">1</span>;cs++){
+    <span class="kw">let</span> item=arr[cs],pos=cs;
+    <span class="kw">for</span>(<span class="kw">let</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>arr.length;i++) <span class="kw">if</span>(arr[i]<span class="op">&lt;</span>item)pos++;
+    <span class="kw">if</span>(pos<span class="op">===</span>cs)<span class="kw">continue</span>;
+    <span class="kw">while</span>(item<span class="op">===</span>arr[pos])pos++;
+    [arr[pos],item]=[item,arr[pos]];
+    <span class="kw">while</span>(pos<span class="op">!==</span>cs){
+      pos=cs;
+      <span class="kw">for</span>(<span class="kw">let</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>arr.length;i++)<span class="kw">if</span>(arr[i]<span class="op">&lt;</span>item)pos++;
+      <span class="kw">while</span>(item<span class="op">===</span>arr[pos])pos++;
+      [arr[pos],item]=[item,arr[pos]];
+    }
+  }
+}`,
+    java: `<span class="cm">// Cycle Sort — minimizes writes O(n²)</span>
+<span class="kw">static void</span> <span class="fn">cycleSort</span>(<span class="tp">int</span>[] a){
+  <span class="kw">for</span>(<span class="tp">int</span> cs=<span class="nm">0</span>;cs<span class="op">&lt;</span>a.length<span class="op">-</span><span class="nm">1</span>;cs++){
+    <span class="tp">int</span> item=a[cs],pos=cs;
+    <span class="kw">for</span>(<span class="tp">int</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>a.length;i++) <span class="kw">if</span>(a[i]<span class="op">&lt;</span>item)pos++;
+    <span class="kw">if</span>(pos<span class="op">==</span>cs)<span class="kw">continue</span>;
+    <span class="kw">while</span>(item<span class="op">==</span>a[pos])pos++;
+    <span class="tp">int</span> t=a[pos];a[pos]=item;item=t;
+    <span class="kw">while</span>(pos<span class="op">!=</span>cs){pos=cs;<span class="kw">for</span>(<span class="tp">int</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>a.length;i++)<span class="kw">if</span>(a[i]<span class="op">&lt;</span>item)pos++;<span class="kw">while</span>(item<span class="op">==</span>a[pos])pos++;t=a[pos];a[pos]=item;item=t;}
+  }
+}`,
+    cpp: `<span class="cm">// Cycle Sort — minimizes writes O(n²)</span>
+<span class="kw">void</span> <span class="fn">cycleSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+  <span class="kw">for</span>(<span class="tp">int</span> cs=<span class="nm">0</span>;cs<span class="op">&lt;</span>(<span class="tp">int</span>)a.size()<span class="op">-</span><span class="nm">1</span>;cs++){
+    <span class="tp">int</span> item=a[cs],pos=cs;
+    <span class="kw">for</span>(<span class="tp">int</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>(<span class="tp">int</span>)a.size();i++) <span class="kw">if</span>(a[i]<span class="op">&lt;</span>item)pos++;
+    <span class="kw">if</span>(pos<span class="op">==</span>cs)<span class="kw">continue</span>;
+    <span class="kw">while</span>(item<span class="op">==</span>a[pos])pos++;
+    swap(a[pos],item);
+    <span class="kw">while</span>(pos<span class="op">!=</span>cs){pos=cs;<span class="kw">for</span>(<span class="tp">int</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>(<span class="tp">int</span>)a.size();i++)<span class="kw">if</span>(a[i]<span class="op">&lt;</span>item)pos++;<span class="kw">while</span>(item<span class="op">==</span>a[pos])pos++;swap(a[pos],item);}
+  }
+}`,
+    c: `<span class="cm">/* Cycle Sort — minimizes writes O(n²) */</span>
+<span class="kw">void</span> <span class="fn">cycleSort</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n){
+  <span class="kw">for</span>(<span class="tp">int</span> cs=<span class="nm">0</span>;cs<span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>;cs++){
+    <span class="tp">int</span> item=a[cs],pos=cs,t;
+    <span class="kw">for</span>(<span class="tp">int</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>n;i++) <span class="kw">if</span>(a[i]<span class="op">&lt;</span>item)pos++;
+    <span class="kw">if</span>(pos<span class="op">==</span>cs)<span class="kw">continue</span>;
+    <span class="kw">while</span>(item<span class="op">==</span>a[pos])pos++;
+    t=a[pos];a[pos]=item;item=t;
+    <span class="kw">while</span>(pos<span class="op">!=</span>cs){pos=cs;<span class="kw">for</span>(<span class="tp">int</span> i=cs<span class="op">+</span><span class="nm">1</span>;i<span class="op">&lt;</span>n;i++)<span class="kw">if</span>(a[i]<span class="op">&lt;</span>item)pos++;<span class="kw">while</span>(item<span class="op">==</span>a[pos])pos++;t=a[pos];a[pos]=item;item=t;}
+  }
+}`
+  },
+  odd_even: {
+    python: `<span class="cm"># Odd-Even (Brick) Sort — O(n²)</span>
+<span class="kw">def</span> <span class="fn">odd_even_sort</span>(arr):
+    n, sorted_ = <span class="fn">len</span>(arr), <span class="kw">False</span>
+    <span class="kw">while not</span> sorted_:
+        sorted_ = <span class="kw">True</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>, n<span class="op">-</span><span class="nm">1</span>, <span class="nm">2</span>):
+            <span class="kw">if</span> arr[i] <span class="op">></span> arr[i<span class="op">+</span><span class="nm">1</span>]: arr[i],arr[i<span class="op">+</span><span class="nm">1</span>]=arr[i<span class="op">+</span><span class="nm">1</span>],arr[i]; sorted_=<span class="kw">False</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, n<span class="op">-</span><span class="nm">1</span>, <span class="nm">2</span>):
+            <span class="kw">if</span> arr[i] <span class="op">></span> arr[i<span class="op">+</span><span class="nm">1</span>]: arr[i],arr[i<span class="op">+</span><span class="nm">1</span>]=arr[i<span class="op">+</span><span class="nm">1</span>],arr[i]; sorted_=<span class="kw">False</span>`,
+    javascript: `<span class="cm">// Odd-Even Sort — O(n²)</span>
+<span class="kw">function</span> <span class="fn">oddEvenSort</span>(arr){
+  <span class="kw">let</span> done=<span class="kw">false</span>;
+  <span class="kw">while</span>(!done){
+    done=<span class="kw">true</span>;
+    <span class="kw">for</span>(<span class="kw">let</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span>arr.length<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(arr[i]<span class="op">></span>arr[i<span class="op">+</span><span class="nm">1</span>]){[arr[i],arr[i<span class="op">+</span><span class="nm">1</span>]]=[arr[i<span class="op">+</span><span class="nm">1</span>],arr[i]];done=<span class="kw">false</span>;}
+    <span class="kw">for</span>(<span class="kw">let</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>arr.length<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(arr[i]<span class="op">></span>arr[i<span class="op">+</span><span class="nm">1</span>]){[arr[i],arr[i<span class="op">+</span><span class="nm">1</span>]]=[arr[i<span class="op">+</span><span class="nm">1</span>],arr[i]];done=<span class="kw">false</span>;}
+  }
+}`,
+    java: `<span class="cm">// Odd-Even Sort — O(n²)</span>
+<span class="kw">static void</span> <span class="fn">oddEvenSort</span>(<span class="tp">int</span>[] a){
+  <span class="tp">boolean</span> done=<span class="kw">false</span>; <span class="tp">int</span> t;
+  <span class="kw">while</span>(!done){done=<span class="kw">true</span>;
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span>a.length<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">+</span><span class="nm">1</span>];a[i<span class="op">+</span><span class="nm">1</span>]=t;done=<span class="kw">false</span>;}
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>a.length<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">+</span><span class="nm">1</span>];a[i<span class="op">+</span><span class="nm">1</span>]=t;done=<span class="kw">false</span>;}
+  }
+}`,
+    cpp: `<span class="cm">// Odd-Even Sort — O(n²)</span>
+<span class="kw">void</span> <span class="fn">oddEvenSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+  <span class="tp">bool</span> done=<span class="kw">false</span>; <span class="tp">int</span> n=a.size();
+  <span class="kw">while</span>(!done){done=<span class="kw">true</span>;
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){swap(a[i],a[i<span class="op">+</span><span class="nm">1</span>]);done=<span class="kw">false</span>;}
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){swap(a[i],a[i<span class="op">+</span><span class="nm">1</span>]);done=<span class="kw">false</span>;}
+  }
+}`,
+    c: `<span class="cm">/* Odd-Even Sort — O(n²) */</span>
+<span class="kw">void</span> <span class="fn">oddEvenSort</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n){
+  <span class="tp">int</span> done=<span class="nm">0</span>,t;
+  <span class="kw">while</span>(!done){done=<span class="nm">1</span>;
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i<span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">+</span><span class="nm">1</span>];a[i<span class="op">+</span><span class="nm">1</span>]=t;done=<span class="nm">0</span>;}
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>;i+=<span class="nm">2</span>) <span class="kw">if</span>(a[i]<span class="op">></span>a[i<span class="op">+</span><span class="nm">1</span>]){t=a[i];a[i]=a[i<span class="op">+</span><span class="nm">1</span>];a[i<span class="op">+</span><span class="nm">1</span>]=t;done=<span class="nm">0</span>;}
+  }
+}`
+  },
+  tim: {
+    python: `<span class="cm"># TimSort — Python's built-in uses this!</span>
+<span class="cm"># Hybrid: Insertion Sort for small runs + Merge Sort</span>
+RUN = <span class="nm">32</span>
+
+<span class="kw">def</span> <span class="fn">insertion_run</span>(arr, l, r):
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(l<span class="op">+</span><span class="nm">1</span>, r<span class="op">+</span><span class="nm">1</span>):
+        key, j = arr[i], i<span class="op">-</span><span class="nm">1</span>
+        <span class="kw">while</span> j <span class="op">>=</span> l <span class="kw">and</span> arr[j] <span class="op">></span> key:
+            arr[j<span class="op">+</span><span class="nm">1</span>] = arr[j]; j <span class="op">-=</span> <span class="nm">1</span>
+        arr[j<span class="op">+</span><span class="nm">1</span>] = key
+
+<span class="kw">def</span> <span class="fn">tim_sort</span>(arr):
+    n = <span class="fn">len</span>(arr)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, n, RUN):
+        <span class="fn">insertion_run</span>(arr, i, <span class="fn">min</span>(i<span class="op">+</span>RUN<span class="op">-</span><span class="nm">1</span>, n<span class="op">-</span><span class="nm">1</span>))
+    size = RUN
+    <span class="kw">while</span> size <span class="op">&lt;</span> n:
+        <span class="kw">for</span> l <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, n, <span class="nm">2</span><span class="op">*</span>size):
+            m = <span class="fn">min</span>(l<span class="op">+</span>size<span class="op">-</span><span class="nm">1</span>, n<span class="op">-</span><span class="nm">1</span>)
+            r = <span class="fn">min</span>(l<span class="op">+</span><span class="nm">2</span><span class="op">*</span>size<span class="op">-</span><span class="nm">1</span>, n<span class="op">-</span><span class="nm">1</span>)
+            <span class="kw">if</span> m <span class="op">&lt;</span> r: <span class="fn">merge</span>(arr, l, m, r)  <span class="cm"># standard merge</span>
+        size <span class="op">*=</span> <span class="nm">2</span>
+<span class="cm"># Note: sorted(arr) and arr.sort() use TimSort internally</span>`,
+    javascript: `<span class="cm">// TimSort — hybrid Insertion + Merge</span>
+<span class="kw">const</span> RUN = <span class="nm">32</span>;
+<span class="kw">function</span> <span class="fn">timSort</span>(arr) {
+  <span class="kw">const</span> n = arr.length;
+  <span class="kw">for</span>(<span class="kw">let</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n;i+=RUN) <span class="fn">insertRun</span>(arr,i,Math.<span class="fn">min</span>(i+RUN<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>));
+  <span class="kw">for</span>(<span class="kw">let</span> sz=RUN;sz<span class="op">&lt;</span>n;sz*=<span class="nm">2</span>)
+    <span class="kw">for</span>(<span class="kw">let</span> l=<span class="nm">0</span>;l<span class="op">&lt;</span>n;l+=<span class="nm">2</span><span class="op">*</span>sz){
+      <span class="kw">const</span> m=Math.<span class="fn">min</span>(l+sz<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>), r=Math.<span class="fn">min</span>(l+<span class="nm">2</span><span class="op">*</span>sz<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>);
+      <span class="kw">if</span>(m<span class="op">&lt;</span>r) <span class="fn">merge</span>(arr,l,m,r);
+    }
+}
+<span class="cm">// arr.sort((a,b)=>a-b) uses TimSort in V8 engine</span>`,
+    java: `<span class="cm">// TimSort — Java's Arrays.sort() uses this</span>
+<span class="cm">// For objects; primitives use dual-pivot quicksort</span>
+<span class="kw">static final int</span> RUN = <span class="nm">32</span>;
+<span class="kw">static void</span> <span class="fn">timSort</span>(<span class="tp">int</span>[] a){
+  <span class="tp">int</span> n=a.length;
+  <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n;i+=RUN) <span class="fn">insertRun</span>(a,i,Math.<span class="fn">min</span>(i+RUN<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>));
+  <span class="kw">for</span>(<span class="tp">int</span> sz=RUN;sz<span class="op">&lt;</span>n;sz*=<span class="nm">2</span>)
+    <span class="kw">for</span>(<span class="tp">int</span> l=<span class="nm">0</span>;l<span class="op">&lt;</span>n;l+=<span class="nm">2</span><span class="op">*</span>sz){
+      <span class="tp">int</span> m=Math.<span class="fn">min</span>(l+sz<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>),r=Math.<span class="fn">min</span>(l+<span class="nm">2</span><span class="op">*</span>sz<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>);
+      <span class="kw">if</span>(m<span class="op">&lt;</span>r) <span class="fn">merge</span>(a,l,m,r);
+    }
+}`,
+    cpp: `<span class="cm">// TimSort — C++ std::stable_sort uses merge sort</span>
+<span class="cm">// std::sort uses introsort (quicksort+heapsort)</span>
+<span class="kw">const int</span> RUN=<span class="nm">32</span>;
+<span class="kw">void</span> <span class="fn">timSort</span>(<span class="tp">vector</span><span class="op">&lt;</span><span class="tp">int</span><span class="op">&gt;&</span> a){
+  <span class="tp">int</span> n=a.size();
+  <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n;i+=RUN) <span class="fn">insertRun</span>(a,i,min(i+RUN<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>));
+  <span class="kw">for</span>(<span class="tp">int</span> sz=RUN;sz<span class="op">&lt;</span>n;sz*=<span class="nm">2</span>)
+    <span class="kw">for</span>(<span class="tp">int</span> l=<span class="nm">0</span>;l<span class="op">&lt;</span>n;l+=<span class="nm">2</span><span class="op">*</span>sz){
+      <span class="tp">int</span> m=min(l+sz<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>),r=min(l+<span class="nm">2</span><span class="op">*</span>sz<span class="op">-</span><span class="nm">1</span>,n<span class="op">-</span><span class="nm">1</span>);
+      <span class="kw">if</span>(m<span class="op">&lt;</span>r) <span class="fn">merge</span>(a,l,m,r);
+    }
+}`,
+    c: `<span class="cm">/* TimSort — hybrid Insertion + Merge in C */</span>
+<span class="kw">#define</span> RUN <span class="nm">32</span>
+<span class="kw">void</span> <span class="fn">timSort</span>(<span class="tp">int</span> a[],<span class="tp">int</span> n){
+  <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i<span class="op">&lt;</span>n;i+=RUN)
+    <span class="fn">insertRun</span>(a,i,i+RUN<span class="op">-</span><span class="nm">1</span><span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>?i+RUN<span class="op">-</span><span class="nm">1</span>:n<span class="op">-</span><span class="nm">1</span>);
+  <span class="kw">for</span>(<span class="tp">int</span> sz=RUN;sz<span class="op">&lt;</span>n;sz*=<span class="nm">2</span>)
+    <span class="kw">for</span>(<span class="tp">int</span> l=<span class="nm">0</span>;l<span class="op">&lt;</span>n;l+=<span class="nm">2</span><span class="op">*</span>sz){
+      <span class="tp">int</span> m=l+sz<span class="op">-</span><span class="nm">1</span><span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>?l+sz<span class="op">-</span><span class="nm">1</span>:n<span class="op">-</span><span class="nm">1</span>;
+      <span class="tp">int</span> r=l+<span class="nm">2</span><span class="op">*</span>sz<span class="op">-</span><span class="nm">1</span><span class="op">&lt;</span>n<span class="op">-</span><span class="nm">1</span>?l+<span class="nm">2</span><span class="op">*</span>sz<span class="op">-</span><span class="nm">1</span>:n<span class="op">-</span><span class="nm">1</span>;
+      <span class="kw">if</span>(m<span class="op">&lt;</span>r) <span class="fn">mergeArr</span>(a,l,m,r);
+    }
+}`
+  }
+};
+
+let currentLang = 'python';
+
+function getCode(algoKey, lang) {
+  const entry = CODE[algoKey];
+  if (!entry) return 'No implementation available.';
+  if (entry._fallback) {
+    const fb = COMPACT_CODE[entry._fallback];
+    return fb ? (fb[lang] || 'No implementation for this language.') : 'No implementation available.';
+  }
+  return entry[lang] || 'No implementation for this language.';
+}
+
+function switchLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-tab').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase() === lang ||
+      (lang === 'javascript' && b.textContent === 'JavaScript') ||
+      (lang === 'cpp' && b.textContent === 'C++'));
+  });
+  updateCodeDisplay();
+}
+
+function updateCodeDisplay() {
+  const display = document.getElementById('code-display');
+  if (!display) return;
+  display.innerHTML = getCode(selectedAlgo, currentLang);
+  
+}
+
+function copyCode() {
+  const display = document.getElementById('code-display');
+  const plain = display.innerText || display.textContent;
+  navigator.clipboard.writeText(plain).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+const ALGORITHMS = {
+  bubble: {
+    name: 'Bubble Sort',
+    best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)',
+    stable: true, inplace: true, comparison: true,
+    desc: 'Bubble Sort repeatedly steps through the list, compares adjacent elements and swaps them if in wrong order. The pass through is repeated until no swaps needed. It gets its name from the way smaller elements "bubble" to the top.',
+    fn: bubbleSort
+  },
+  selection: {
+    name: 'Selection Sort',
+    best: 'O(n²)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)',
+    stable: false, inplace: true, comparison: true,
+    desc: 'Selection Sort divides the array into sorted and unsorted regions. It repeatedly finds the minimum element from the unsorted portion and moves it to the sorted portion. Simple but inefficient for large arrays.',
+    fn: selectionSort
+  },
+  insertion: {
+    name: 'Insertion Sort',
+    best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)',
+    stable: true, inplace: true, comparison: true,
+    desc: 'Insertion Sort builds the sorted array one element at a time. It picks each element and inserts it into its correct position in the already-sorted portion. Efficient for small or nearly sorted datasets.',
+    fn: insertionSort
+  },
+  merge: {
+    name: 'Merge Sort',
+    best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)',
+    stable: true, inplace: false, comparison: true,
+    desc: 'Merge Sort uses divide-and-conquer: recursively splits the array into halves, sorts each half, then merges them. Guarantees O(n log n) in all cases. Widely used in practice due to its stability and predictable performance.',
+    fn: mergeSort
+  },
+  quick: {
+    name: 'Quick Sort',
+    best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n²)', space: 'O(log n)',
+    stable: false, inplace: true, comparison: true,
+    desc: 'Quick Sort picks a "pivot" and partitions the array into elements less than and greater than the pivot, then recursively sorts each partition. Average-case O(n log n) makes it one of the fastest in practice.',
+    fn: quickSort
+  },
+  heap: {
+    name: 'Heap Sort',
+    best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)', space: 'O(1)',
+    stable: false, inplace: true, comparison: true,
+    desc: 'Heap Sort converts the array into a Max-Heap, then repeatedly extracts the maximum element. It achieves O(n log n) in all cases with O(1) space. Not stable but very reliable worst-case performance.',
+    fn: heapSort
+  },
+  shell: {
+    name: 'Shell Sort',
+    best: 'O(n log n)', avg: 'O(n log² n)', worst: 'O(n²)', space: 'O(1)',
+    stable: false, inplace: true, comparison: true,
+    desc: 'Shell Sort is a generalization of insertion sort that allows comparison and exchange of elements far apart. It starts with large gaps and reduces them, resulting in a nearly-sorted array before final insertion sort pass.',
+    fn: shellSort
+  },
+  counting: {
+    name: 'Counting Sort',
+    best: 'O(n+k)', avg: 'O(n+k)', worst: 'O(n+k)', space: 'O(k)',
+    stable: true, inplace: false, comparison: false,
+    desc: 'Counting Sort counts occurrences of each element and uses these counts to place elements directly. O(n+k) time where k is the range. Not a comparison sort — faster for small integer ranges.',
+    fn: countingSort
+  },
+  radix: {
+    name: 'Radix Sort',
+    best: 'O(nk)', avg: 'O(nk)', worst: 'O(nk)', space: 'O(n+k)',
+    stable: true, inplace: false, comparison: false,
+    desc: 'Radix Sort processes elements digit by digit, from least to most significant. Uses counting sort as subroutine for each digit. Linear time for fixed-length integers, excellent for large arrays of integers.',
+    fn: radixSort
+  },
+  bucket: {
+    name: 'Bucket Sort',
+    best: 'O(n+k)', avg: 'O(n+k)', worst: 'O(n²)', space: 'O(n+k)',
+    stable: true, inplace: false, comparison: false,
+    desc: 'Bucket Sort distributes elements into a number of buckets, sorts each bucket (often with insertion sort), then concatenates. Works best when input is uniformly distributed. Excellent average-case performance.',
+    fn: bucketSort
+  },
+  cocktail: {
+    name: 'Cocktail Sort',
+    best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)',
+    stable: true, inplace: true, comparison: true,
+    desc: 'Cocktail Sort (bidirectional bubble sort) traverses the array in both directions alternately. Slightly better than Bubble Sort as it moves both large elements to the end and small elements to the beginning simultaneously.',
+    fn: cocktailSort
+  },
+  gnome: {
+    name: 'Gnome Sort',
+    best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)',
+    stable: true, inplace: true, comparison: true,
+    desc: 'Gnome Sort works by comparing adjacent elements and moving backward if they are in wrong order. Named after garden gnomes who sort flower pots. Simple but inefficient — similar to insertion sort without the inner loop.',
+    fn: gnomeSort
+  },
+  comb: {
+    name: 'Comb Sort',
+    best: 'O(n log n)', avg: 'O(n²/2ᵖ)', worst: 'O(n²)', space: 'O(1)',
+    stable: false, inplace: true, comparison: true,
+    desc: 'Comb Sort improves Bubble Sort by using a shrinking gap larger than 1, similar to Shell Sort. The gap starts large and shrinks by a factor (~1.3) each pass, eliminating turtles (small values near end).',
+    fn: combSort
+  },
+  cycle: {
+    name: 'Cycle Sort',
+    best: 'O(n²)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)',
+    stable: false, inplace: true, comparison: true,
+    desc: 'Cycle Sort is theoretically optimal in terms of total number of writes to memory. It decomposes the permutation into cycles and rotates each cycle to place elements in sorted position. Unique for minimizing writes.',
+    fn: cycleSort
+  },
+  odd_even: {
+    name: 'Odd-Even Sort',
+    best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)',
+    stable: true, inplace: true, comparison: true,
+    desc: 'Odd-Even Sort (Brick Sort) alternates between comparing odd-indexed and even-indexed pairs. Originally designed for parallel processors where odd and even comparisons can happen simultaneously.',
+    fn: oddEvenSort
+  },
+  tim: {
+    name: 'Tim Sort',
+    best: 'O(n)', avg: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)',
+    stable: true, inplace: false, comparison: true,
+    desc: 'TimSort is a hybrid sorting algorithm derived from Merge Sort and Insertion Sort. It finds naturally occurring runs (sorted sequences) and merges them efficiently. Used in Python\'s sorted() and Java\'s Arrays.sort().',
+    fn: timSort
+  }
+};
+
+const PATTERNS = {
+  random: { name: 'Random', fn: (n, m) => Array.from({length:n}, () => Math.floor(Math.random()*m)+1) },
+  sorted: { name: 'Sorted ↑', fn: (n, m) => Array.from({length:n}, (_,i) => Math.floor((i+1)*m/n)) },
+  reverse: { name: 'Sorted ↓', fn: (n, m) => Array.from({length:n}, (_,i) => Math.floor((n-i)*m/n)) },
+  nearly: { name: 'Nearly Sorted', fn: (n, m) => {
+    const a = Array.from({length:n}, (_,i) => Math.floor((i+1)*m/n));
+    for(let i=0;i<Math.floor(n*0.05);i++){ let x=Math.random()*n|0,y=Math.random()*n|0;[a[x],a[y]]=[a[y],a[x]]; }
+    return a;
+  }},
+  few_unique: { name: 'Few Unique', fn: (n, m) => { const vals=[Math.floor(m*0.2),Math.floor(m*0.5),Math.floor(m*0.8)]; return Array.from({length:n}, ()=>vals[Math.random()*3|0]); }},
+  pipe_organ: { name: 'Pipe Organ', fn: (n, m) => { const h=n>>1; return [...Array.from({length:h},(_,i)=>Math.floor((i+1)*m/h)), ...Array.from({length:n-h},(_,i)=>Math.floor((n-h-i)*m/(n-h)))]; }},
+  sawtooth: { name: 'Sawtooth', fn: (n, m) => { const seg=5; return Array.from({length:n}, (_,i)=> Math.floor(((i%Math.ceil(n/seg))+1)*m/Math.ceil(n/seg))); }},
+  alternating: { name: 'Alternating', fn: (n, m) => Array.from({length:n}, (_,i) => i%2===0 ? m : 1)},
+  staircase: { name: 'Staircase', fn: (n, m) => { const steps=6; return Array.from({length:n}, (_,i)=>Math.floor((Math.floor(i*steps/n)+1)*m/steps)); }},
+  single_swap: { name: 'Single Swap', fn: (n, m) => { const a=Array.from({length:n},(_,i)=>Math.floor((i+1)*m/n)); [a[0],a[n-1]]=[a[n-1],a[0]]; return a; }},
+  rotated: { name: 'Rotated', fn: (n, m) => { const a=Array.from({length:n},(_,i)=>Math.floor((i+1)*m/n)); const k=Math.floor(n/3); return [...a.slice(k),...a.slice(0,k)]; }},
+  gaussian: { name: 'Gaussian', fn: (n, m) => Array.from({length:n}, ()=>{ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); return Math.min(m,Math.max(1,Math.round(m/2+z*m/6))); })},
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let array = [];
+let steps = [];
+let stepIdx = 0;
+let animTimer = null;
+let running = false;
+let selectedAlgo = 'bubble';
+let selectedPattern = 'random';
+let comparisons = 0;
+let swaps = 0;
+let startTime = 0;
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  // Build algo grid
+  const ag = document.getElementById('algo-grid');
+  Object.entries(ALGORITHMS).forEach(([key, algo]) => {
+    const btn = document.createElement('button');
+    btn.className = 'algo-btn' + (key === selectedAlgo ? ' active' : '');
+    btn.textContent = algo.name;
+    btn.onclick = () => selectAlgo(key);
+    ag.appendChild(btn);
+  });
+
+  // Build pattern grid
+  const pg = document.getElementById('pattern-grid');
+  Object.entries(PATTERNS).forEach(([key, pat]) => {
+    const btn = document.createElement('button');
+    btn.className = 'pattern-btn' + (key === selectedPattern ? ' active' : '');
+    btn.textContent = pat.name;
+    btn.onclick = () => selectPattern(key);
+    pg.appendChild(btn);
+  });
+
+  // Sliders
+  const sizeSlider = document.getElementById('size-slider');
+  sizeSlider.oninput = () => {
+    document.getElementById('size-val').textContent = sizeSlider.value;
+    if (!running) generateArray();
+  };
+
+  const speedSlider = document.getElementById('speed-slider');
+  const speedLabels = ['Very Slow','Slow','Medium','Fast','Max'];
+  speedSlider.oninput = () => {
+    document.getElementById('speed-val').textContent = speedLabels[speedSlider.value-1];
+  };
+
+  selectAlgo(selectedAlgo);
+  generateArray();
+}
+
+function selectAlgo(key) {
+  if (running) return;
+  selectedAlgo = key;
+  document.querySelectorAll('.algo-btn').forEach((b,i) => {
+    b.classList.toggle('active', Object.keys(ALGORITHMS)[i] === key);
+  });
+  const algo = ALGORITHMS[key];
+  document.getElementById('viz-title').innerHTML = algo.name.replace(/(\w+)$/, '<span>$1</span>');
+  document.getElementById('cx-best').textContent = algo.best;
+  document.getElementById('cx-avg').textContent = algo.avg;
+  document.getElementById('cx-worst').textContent = algo.worst;
+  document.getElementById('cx-space').textContent = algo.space;
+  document.getElementById('algo-desc').textContent = algo.desc;
+
+  const tags = document.getElementById('algo-tags');
+  tags.innerHTML = '';
+  const addTag = (text, cls) => { const t=document.createElement('span'); t.className=`tag ${cls}`; t.textContent=text; tags.appendChild(t); };
+  addTag(algo.stable ? 'Stable' : 'Unstable', algo.stable ? 'tag-stable' : 'tag-unstable');
+  addTag(algo.inplace ? 'In-Place' : 'Extra Space', algo.inplace ? 'tag-inplace' : 'tag-notinplace');
+  addTag(algo.comparison ? 'Comparison Sort' : 'Non-Comparison Sort', algo.comparison ? 'tag-comparison' : 'tag-noncomparison');
+  resetStats();
+  updateCodeDisplay();
+}
+
+function selectPattern(key) {
+  if (running) return;
+  selectedPattern = key;
+  document.querySelectorAll('.pattern-btn').forEach((b,i) => {
+    b.classList.toggle('active', Object.keys(PATTERNS)[i] === key);
+  });
+  generateArray();
+}
+
+function generateArray() {
+  if (running) return;
+  const n = +document.getElementById('size-slider').value;
+  const maxH = document.getElementById('canvas-wrap').clientHeight || 280;
+  array = PATTERNS[selectedPattern].fn(n, maxH - 20);
+  resetStats();
+  renderBars(array, [], [], [], [], []);
+  document.getElementById('progress-fill').style.width = '0%';
+  setStatus('idle', 'Array generated — click ▶ Run Sort to begin');
+}
+
+function resetStats() {
+  comparisons = 0; swaps = 0;
+  document.getElementById('stat-comparisons').textContent = '0';
+  document.getElementById('stat-swaps').textContent = '0';
+  document.getElementById('stat-time').textContent = '0ms';
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderBars(arr, comparing=[], swapping=[], sorted=[], pivot=[], min=[]) {
+  const wrap = document.getElementById('canvas-wrap');
+  const maxH = wrap.clientHeight - 8;
+  const maxVal = Math.max(...arr, 1);
+
+  // Reuse existing bar elements for performance
+  while (wrap.children.length > arr.length) wrap.removeChild(wrap.lastChild);
+  while (wrap.children.length < arr.length) {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    wrap.appendChild(bar);
+  }
+
+  arr.forEach((v, i) => {
+    const bar = wrap.children[i];
+    const h = Math.max(2, (v / maxVal) * maxH);
+    bar.style.height = h + 'px';
+    if (swapping.includes(i)) bar.style.background = 'var(--bar-swap)';
+    else if (pivot.includes(i)) bar.style.background = 'var(--bar-pivot)';
+    else if (min.includes(i)) bar.style.background = 'var(--bar-min)';
+    else if (comparing.includes(i)) bar.style.background = 'var(--bar-compare)';
+    else if (sorted.includes(i)) bar.style.background = 'var(--bar-sorted)';
+    else bar.style.background = 'var(--bar-default)';
+  });
+}
+
+function setStatus(state, msg) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (state === 'running' ? ' running' : state === 'done' ? ' done' : '');
+  document.getElementById('status-text').textContent = msg;
+}
+
+// ============================================================
+// ANIMATION ENGINE
+// ============================================================
+async function startSort() {
+  if (running) return;
+  running = true;
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('stop-btn').disabled = false;
+  setStatus('running', `Running ${ALGORITHMS[selectedAlgo].name}...`);
+  resetStats();
+  startTime = performance.now();
+
+  const arr = [...array];
+  steps = [];
+  ALGORITHMS[selectedAlgo].fn(arr, steps);
+
+  const speeds = [300, 80, 25, 8, 1];
+  const delay = speeds[+document.getElementById('speed-slider').value - 1];
+
+  for (let i = 0; i < steps.length && running; i++) {
+    const s = steps[i];
+    if (s.comparisons !== undefined) comparisons = s.comparisons;
+    if (s.swaps !== undefined) swaps = s.swaps;
+    document.getElementById('stat-comparisons').textContent = comparisons;
+    document.getElementById('stat-swaps').textContent = swaps;
+    document.getElementById('stat-time').textContent = Math.round(performance.now() - startTime) + 'ms';
+    document.getElementById('progress-fill').style.width = ((i / steps.length) * 100) + '%';
+    renderBars(s.arr, s.comparing||[], s.swapping||[], s.sorted||[], s.pivot||[], s.min||[]);
+    if (delay > 0) await sleep(delay);
+  }
+
+  if (running) {
+    const allSorted = Array.from({length:array.length},(_,i)=>i);
+    renderBars(steps.length ? steps[steps.length-1].arr : array, [], [], allSorted, [], []);
+    document.getElementById('progress-fill').style.width = '100%';
+    setStatus('done', `✓ ${ALGORITHMS[selectedAlgo].name} complete — ${comparisons} comparisons, ${swaps} swaps, ${Math.round(performance.now()-startTime)}ms`);
+    document.getElementById('stat-time').textContent = Math.round(performance.now() - startTime) + 'ms';
+  }
+
+  running = false;
+  document.getElementById('start-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+}
+
+function stopSort() {
+  running = false;
+  document.getElementById('start-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+  setStatus('idle', 'Stopped — generate a new array or run again');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+// SORTING ALGORITHMS
+// ============================================================
+function step(steps, arr, opts={}) {
+  steps.push({ arr: [...arr], ...opts });
+}
+
+// Helper to track state
+function makeState() { return { comparisons: 0, swaps: 0 }; }
+
+// BUBBLE SORT
+function bubbleSort(arr, steps) {
+  const a = [...arr]; const n = a.length; let s = makeState(); let sorted = [];
+  for (let i = 0; i < n-1; i++) {
+    for (let j = 0; j < n-i-1; j++) {
+      s.comparisons++;
+      step(steps, a, {comparing:[j,j+1], sorted:[...sorted], comparisons:s.comparisons, swaps:s.swaps});
+      if (a[j] > a[j+1]) { [a[j],a[j+1]]=[a[j+1],a[j]]; s.swaps++; step(steps, a, {swapping:[j,j+1], sorted:[...sorted], swaps:s.swaps, comparisons:s.comparisons}); }
+    }
+    sorted.push(n-1-i);
+  }
+  sorted.push(0);
+}
+
+// SELECTION SORT
+function selectionSort(arr, steps) {
+  const a = [...arr]; const n = a.length; let s = makeState(); let sorted = [];
+  for (let i = 0; i < n-1; i++) {
+    let minIdx = i;
+    for (let j = i+1; j < n; j++) {
+      s.comparisons++;
+      step(steps, a, {comparing:[j, minIdx], sorted:[...sorted], min:[minIdx], comparisons:s.comparisons, swaps:s.swaps});
+      if (a[j] < a[minIdx]) minIdx = j;
+    }
+    if (minIdx !== i) { [a[i],a[minIdx]]=[a[minIdx],a[i]]; s.swaps++; step(steps, a, {swapping:[i,minIdx], sorted:[...sorted], swaps:s.swaps, comparisons:s.comparisons}); }
+    sorted.push(i);
+  }
+  sorted.push(n-1);
+}
+
+// INSERTION SORT
+function insertionSort(arr, steps) {
+  const a = [...arr]; const n = a.length; let s = makeState();
+  for (let i = 1; i < n; i++) {
+    let key = a[i], j = i-1;
+    while (j >= 0 && a[j] > key) {
+      s.comparisons++; s.swaps++;
+      a[j+1] = a[j]; j--;
+      step(steps, a, {comparing:[j+1,i], swapping:[j+1], comparisons:s.comparisons, swaps:s.swaps});
+    }
+    s.comparisons++;
+    a[j+1] = key;
+    step(steps, a, {comparing:[j+1], comparisons:s.comparisons, swaps:s.swaps});
+  }
+}
+
+// MERGE SORT
+function mergeSort(arr, steps) {
+  const a = [...arr]; let s = makeState();
+  function merge(a, l, m, r) {
+    const left = a.slice(l,m+1), right = a.slice(m+1,r+1);
+    let i=0,j=0,k=l;
+    while(i<left.length && j<right.length) {
+      s.comparisons++;
+      step(steps, a, {comparing:[l+i, m+1+j], comparisons:s.comparisons, swaps:s.swaps});
+      if(left[i]<=right[j]) { a[k++]=left[i++]; } else { a[k++]=right[j++]; s.swaps++; }
+      step(steps, a, {comparing:[k-1], comparisons:s.comparisons, swaps:s.swaps});
+    }
+    while(i<left.length){a[k++]=left[i++];}
+    while(j<right.length){a[k++]=right[j++];}
+    step(steps, a, {sorted:Array.from({length:r-l+1},(_,x)=>l+x), comparisons:s.comparisons, swaps:s.swaps});
+  }
+  function ms(a,l,r) {
+    if(l>=r) return;
+    const m=(l+r)>>1;
+    ms(a,l,m); ms(a,m+1,r); merge(a,l,m,r);
+  }
+  ms(a,0,a.length-1);
+}
+
+// QUICK SORT
+function quickSort(arr, steps) {
+  const a = [...arr]; let s = makeState();
+  function partition(a,l,r) {
+    const p=a[r]; let i=l-1;
+    step(steps, a, {pivot:[r], comparisons:s.comparisons, swaps:s.swaps});
+    for(let j=l;j<r;j++) {
+      s.comparisons++;
+      step(steps, a, {comparing:[j,r], pivot:[r], comparisons:s.comparisons, swaps:s.swaps});
+      if(a[j]<=p){i++;[a[i],a[j]]=[a[j],a[i]];s.swaps++;step(steps,a,{swapping:[i,j],pivot:[r],swaps:s.swaps,comparisons:s.comparisons});}
+    }
+    [a[i+1],a[r]]=[a[r],a[i+1]];s.swaps++;
+    step(steps, a, {swapping:[i+1,r], comparisons:s.comparisons, swaps:s.swaps});
+    return i+1;
+  }
+  function qs(a,l,r) {
+    if(l<r){const pi=partition(a,l,r);step(steps,a,{sorted:[pi],comparisons:s.comparisons,swaps:s.swaps});qs(a,l,pi-1);qs(a,pi+1,r);}
+  }
+  qs(a,0,a.length-1);
+}
+
+// HEAP SORT
+function heapSort(arr, steps) {
+  const a = [...arr]; const n = a.length; let s = makeState();
+  function heapify(a,n,i) {
+    let largest=i,l=2*i+1,r=2*i+2;
+    s.comparisons++;
+    if(l<n && a[l]>a[largest])largest=l;
+    s.comparisons++;
+    if(r<n && a[r]>a[largest])largest=r;
+    if(largest!==i){[a[i],a[largest]]=[a[largest],a[i]];s.swaps++;step(steps,a,{swapping:[i,largest],comparisons:s.comparisons,swaps:s.swaps});heapify(a,n,largest);}
+  }
+  for(let i=Math.floor(n/2)-1;i>=0;i--)heapify(a,n,i);
+  const sorted=[];
+  for(let i=n-1;i>0;i--){
+    [a[0],a[i]]=[a[i],a[0]];s.swaps++;sorted.push(i);
+    step(steps,a,{swapping:[0,i],sorted:[...sorted],comparisons:s.comparisons,swaps:s.swaps});
+    heapify(a,i,0);
+  }
+}
+
+// SHELL SORT
+function shellSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();
+  let gap=Math.floor(n/2);
+  while(gap>0){
+    for(let i=gap;i<n;i++){
+      let temp=a[i],j=i;
+      while(j>=gap&&a[j-gap]>temp){
+        s.comparisons++;s.swaps++;a[j]=a[j-gap];j-=gap;
+        step(steps,a,{comparing:[j,j+gap],swapping:[j],comparisons:s.comparisons,swaps:s.swaps});
+      }
+      s.comparisons++;a[j]=temp;
+      step(steps,a,{comparing:[j],comparisons:s.comparisons,swaps:s.swaps});
+    }
+    gap=Math.floor(gap/2);
+  }
+}
+
+// COUNTING SORT
+function countingSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();
+  const max=Math.max(...a),min=Math.min(...a),range=max-min+1;
+  const count=new Array(range).fill(0);
+  for(let i=0;i<n;i++){count[a[i]-min]++;s.comparisons++;step(steps,a,{comparing:[i],comparisons:s.comparisons,swaps:s.swaps});}
+  let idx=0;
+  for(let i=0;i<range;i++){
+    while(count[i]>0){a[idx++]=i+min;count[i]--;s.swaps++;step(steps,a,{swapping:[idx-1],comparisons:s.comparisons,swaps:s.swaps});}
+  }
+}
+
+// RADIX SORT
+function radixSort(arr, steps) {
+  const a=[...arr];let s=makeState();
+  const max=Math.max(...a);
+  for(let exp=1;Math.floor(max/exp)>0;exp*=10){
+    const output=new Array(a.length);const count=new Array(10).fill(0);
+    for(let i=0;i<a.length;i++){const d=Math.floor(a[i]/exp)%10;count[d]++;s.comparisons++;step(steps,a,{comparing:[i],comparisons:s.comparisons,swaps:s.swaps});}
+    for(let i=1;i<10;i++)count[i]+=count[i-1];
+    for(let i=a.length-1;i>=0;i--){const d=Math.floor(a[i]/exp)%10;output[--count[d]]=a[i];}
+    for(let i=0;i<a.length;i++){a[i]=output[i];s.swaps++;step(steps,a,{swapping:[i],comparisons:s.comparisons,swaps:s.swaps});}
+  }
+}
+
+// BUCKET SORT
+function bucketSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();
+  const max=Math.max(...a),min=Math.min(...a);
+  const buckets=Array.from({length:n},()=>[]);
+  for(let i=0;i<n;i++){
+    const bi=Math.floor((a[i]-min)/(max-min+1)*n);
+    buckets[bi].push(a[i]);s.comparisons++;
+    step(steps,a,{comparing:[i],comparisons:s.comparisons,swaps:s.swaps});
+  }
+  buckets.forEach(b=>b.sort((x,y)=>x-y));
+  let idx=0;
+  for(const b of buckets){for(const v of b){a[idx++]=v;s.swaps++;step(steps,a,{swapping:[idx-1],comparisons:s.comparisons,swaps:s.swaps});}}
+}
+
+// COCKTAIL SORT
+function cocktailSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();let sorted=[];
+  let start=0,end=n-1;
+  while(start<end){
+    for(let i=start;i<end;i++){s.comparisons++;step(steps,a,{comparing:[i,i+1],sorted:[...sorted],comparisons:s.comparisons,swaps:s.swaps});if(a[i]>a[i+1]){[a[i],a[i+1]]=[a[i+1],a[i]];s.swaps++;step(steps,a,{swapping:[i,i+1],sorted:[...sorted],swaps:s.swaps,comparisons:s.comparisons});}}
+    sorted.push(end--);
+    for(let i=end;i>start;i--){s.comparisons++;step(steps,a,{comparing:[i,i-1],sorted:[...sorted],comparisons:s.comparisons,swaps:s.swaps});if(a[i]<a[i-1]){[a[i],a[i-1]]=[a[i-1],a[i]];s.swaps++;step(steps,a,{swapping:[i,i-1],sorted:[...sorted],swaps:s.swaps,comparisons:s.comparisons});}}
+    sorted.push(start++);
+  }
+}
+
+// GNOME SORT
+function gnomeSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();let i=0;
+  while(i<n){
+    if(i===0||a[i]>=a[i-1]){step(steps,a,{comparing:[i],comparisons:s.comparisons,swaps:s.swaps});s.comparisons++;i++;}
+    else{[a[i],a[i-1]]=[a[i-1],a[i]];s.swaps++;step(steps,a,{swapping:[i,i-1],swaps:s.swaps,comparisons:s.comparisons});i--;}
+  }
+}
+
+// COMB SORT
+function combSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();
+  let gap=n;const shrink=1.3;let sorted=false;
+  while(!sorted){
+    gap=Math.floor(gap/shrink);if(gap<=1){gap=1;sorted=true;}
+    for(let i=0;i+gap<n;i++){s.comparisons++;step(steps,a,{comparing:[i,i+gap],comparisons:s.comparisons,swaps:s.swaps});if(a[i]>a[i+gap]){[a[i],a[i+gap]]=[a[i+gap],a[i]];s.swaps++;sorted=false;step(steps,a,{swapping:[i,i+gap],swaps:s.swaps,comparisons:s.comparisons});}}
+  }
+}
+
+// CYCLE SORT
+function cycleSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();
+  for(let cs=0;cs<n-1;cs++){
+    let item=a[cs];let pos=cs;
+    for(let i=cs+1;i<n;i++){s.comparisons++;if(a[i]<item)pos++;}
+    if(pos===cs)continue;
+    while(item===a[pos]){pos++;s.comparisons++;}
+    [a[pos],item]=[item,a[pos]];s.swaps++;step(steps,a,{swapping:[pos,cs],swaps:s.swaps,comparisons:s.comparisons});
+    while(pos!==cs){
+      pos=cs;
+      for(let i=cs+1;i<n;i++){s.comparisons++;if(a[i]<item)pos++;}
+      while(item===a[pos]){pos++;s.comparisons++;}
+      [a[pos],item]=[item,a[pos]];s.swaps++;step(steps,a,{swapping:[pos,cs],swaps:s.swaps,comparisons:s.comparisons});
+    }
+  }
+}
+
+// ODD-EVEN SORT
+function oddEvenSort(arr, steps) {
+  const a=[...arr];const n=a.length;let s=makeState();let sorted=false;
+  while(!sorted){
+    sorted=true;
+    for(let i=1;i<n-1;i+=2){s.comparisons++;step(steps,a,{comparing:[i,i+1],comparisons:s.comparisons,swaps:s.swaps});if(a[i]>a[i+1]){[a[i],a[i+1]]=[a[i+1],a[i]];s.swaps++;sorted=false;step(steps,a,{swapping:[i,i+1],swaps:s.swaps,comparisons:s.comparisons});}}
+    for(let i=0;i<n-1;i+=2){s.comparisons++;step(steps,a,{comparing:[i,i+1],comparisons:s.comparisons,swaps:s.swaps});if(a[i]>a[i+1]){[a[i],a[i+1]]=[a[i+1],a[i]];s.swaps++;sorted=false;step(steps,a,{swapping:[i,i+1],swaps:s.swaps,comparisons:s.comparisons});}}
+  }
+}
+
+// TIM SORT (simplified)
+function timSort(arr, steps) {
+  const a=[...arr];const n=a.length;const RUN=32;let s=makeState();
+  function insertionSortRange(a,l,r){
+    for(let i=l+1;i<=r;i++){let temp=a[i],j=i-1;while(j>=l&&a[j]>temp){s.comparisons++;s.swaps++;a[j+1]=a[j];j--;step(steps,a,{comparing:[j+1],swapping:[j+1],comparisons:s.comparisons,swaps:s.swaps});}s.comparisons++;a[j+1]=temp;step(steps,a,{comparing:[j+1],comparisons:s.comparisons,swaps:s.swaps});}
+  }
+  function merge(a,l,m,r){
+    const left=a.slice(l,m+1),right=a.slice(m+1,r+1);let i=0,j=0,k=l;
+    while(i<left.length&&j<right.length){s.comparisons++;if(left[i]<=right[j]){a[k++]=left[i++];}else{a[k++]=right[j++];s.swaps++;}step(steps,a,{comparing:[k-1],comparisons:s.comparisons,swaps:s.swaps});}
+    while(i<left.length)a[k++]=left[i++];while(j<right.length)a[k++]=right[j++];
+  }
+  for(let i=0;i<n;i+=RUN)insertionSortRange(a,i,Math.min(i+RUN-1,n-1));
+  for(let size=RUN;size<n;size*=2){for(let l=0;l<n;l+=2*size){const m=Math.min(l+size-1,n-1);const r=Math.min(l+2*size-1,n-1);if(m<r)merge(a,l,m,r);}}
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>

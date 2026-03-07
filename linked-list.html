@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linked List — DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050810;--surface:#0c1120;--surface2:#111827;
+  --border:#1e2d47;--accent:#a78bfa;--accent2:#7c3aed;
+  --green:#10b981;--blue:#00d4ff;--warn:#f59e0b;--danger:#ef4444;
+  --pink:#ec4899;--text:#e2e8f0;--muted:#64748b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(124,58,237,0.025) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(124,58,237,0.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrapper{position:relative;z-index:1;}
+header{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;background:rgba(12,17,32,0.85);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent2),var(--pink));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;}
+.logo-text span{color:var(--accent);}
+nav{display:flex;gap:8px;}
+.nav-link{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);
+  color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;
+  text-decoration:none;transition:all 0.2s;}
+.nav-link:hover{border-color:var(--accent);color:var(--accent);background:rgba(167,139,250,0.07);}
+
+.container{max-width:1280px;margin:0 auto;padding:28px 40px;display:grid;gap:22px;}
+
+/* Algo Selector */
+.algo-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.algo-btn{padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);
+  color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;
+  transition:all 0.2s;text-align:center;line-height:1.4;}
+.algo-btn:hover{border-color:var(--accent);color:var(--accent);}
+.algo-btn.active{background:rgba(124,58,237,0.12);border-color:var(--accent2);color:var(--accent);
+  box-shadow:0 0 14px rgba(124,58,237,0.25);}
+.algo-num{display:block;font-size:16px;font-weight:700;margin-bottom:4px;font-family:'Syne',sans-serif;}
+
+/* Main card */
+.viz-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.viz-top{padding:18px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.viz-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;}
+.viz-title span{color:var(--accent);}
+.stats{display:flex;gap:20px;}
+.stat{text-align:right;}
+.stat-val{font-size:17px;font-weight:700;color:var(--accent);}
+.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.input-row{padding:14px 26px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;}
+.txt-in{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;
+  outline:none;transition:border-color 0.2s;}
+.txt-in:focus{border-color:var(--accent);}
+.txt-in.wide{flex:1;min-width:160px;}
+.txt-in.sm{width:72px;}
+.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+  transition:all 0.2s;white-space:nowrap;}
+.btn-run{background:linear-gradient(135deg,var(--accent2),#5b21b6);color:#fff;
+  box-shadow:0 4px 16px rgba(124,58,237,0.3);}
+.btn-run:hover{transform:translateY(-1px);}
+.btn-run:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-stop{background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+input[type=range]{width:90px;-webkit-appearance:none;height:4px;background:var(--border);
+  border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--accent2);cursor:pointer;}
+
+/* LL Canvas */
+.ll-canvas-wrap{padding:20px 26px;min-height:240px;overflow-x:auto;}
+canvas#ll-canvas{display:block;}
+
+/* Second list row (for merge) */
+.ll-second-wrap{padding:0 26px 16px;min-height:100px;overflow-x:auto;display:none;}
+canvas#ll-canvas2{display:block;}
+
+/* Step trace */
+.trace-box{padding:12px 26px;border-top:1px solid var(--border);min-height:50px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.trace-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);flex-shrink:0;}
+.tr-node{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;transition:all 0.3s;}
+.tr-curr{background:rgba(167,139,250,0.15);border:1px solid var(--accent);color:var(--accent);}
+.tr-slow{background:rgba(16,185,129,0.15);border:1px solid var(--green);color:var(--green);}
+.tr-fast{background:rgba(245,158,11,0.15);border:1px solid var(--warn);color:var(--warn);}
+.tr-note{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:var(--blue);}
+.tr-done{background:rgba(16,185,129,0.15);border:1px solid var(--green);color:var(--green);}
+.tr-warn{background:rgba(239,68,68,0.1);border:1px solid var(--danger);color:var(--danger);}
+
+/* Progress + Status */
+.progress-bar{height:3px;background:var(--border);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--pink));
+  width:0%;transition:width 0.1s;}
+.status-bar{padding:12px 26px;border-top:1px solid var(--border);display:flex;align-items:center;
+  gap:12px;font-size:11px;color:var(--muted);min-height:44px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.status-dot.running{background:var(--accent2);box-shadow:0 0 8px var(--accent2);animation:pulse 1s infinite;}
+.status-dot.done{background:var(--green);box-shadow:0 0 8px var(--green);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Info */
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.info-card h3{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted);margin-bottom:14px;}
+.cx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cx-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.cx-l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;}
+.cx-v{font-size:13px;font-weight:600;}
+.cx-v.good{color:var(--green);}.cx-v.ok{color:var(--warn);}.cx-v.info{color:var(--blue);}
+.desc-text{font-size:12px;line-height:1.8;color:#94a3b8;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.tag{padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid;}
+.tg1{background:rgba(124,58,237,0.1);color:var(--accent);border-color:rgba(124,58,237,0.3);}
+.tg2{background:rgba(16,185,129,0.1);color:var(--green);border-color:rgba(16,185,129,0.3);}
+.tg3{background:rgba(0,212,255,0.1);color:var(--blue);border-color:rgba(0,212,255,0.2);}
+.tg4{background:rgba(245,158,11,0.1);color:var(--warn);border-color:rgba(245,158,11,0.3);}
+.recur-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:14px 18px;margin-top:12px;font-size:12px;line-height:2;color:#94a3b8;}
+.recur-box .hl{color:var(--accent);font-weight:600;}
+.recur-box .hl2{color:var(--green);font-weight:600;}
+.recur-box .hl3{color:var(--warn);font-weight:600;}
+
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:12px;}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);}
+.leg-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+
+@media(max-width:900px){
+  .container{padding:14px;}header{padding:14px;}
+  .algo-grid{grid-template-columns:repeat(4,1fr);}
+  .info-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<header>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">⬡</div>
+    <div class="logo-text">DSA<span>Visual</span></div>
+  </a>
+  <nav>
+    <a href="dp.html" class="nav-link">← DP</a>
+    <a href="index.html" class="nav-link">Hub →</a>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Algo selector -->
+  <div class="algo-grid">
+    <button class="algo-btn active" onclick="selectAlgo(0)"><span class="algo-num">01</span>Reverse List</button>
+    <button class="algo-btn" onclick="selectAlgo(1)"><span class="algo-num">02</span>Detect Cycle</button>
+    <button class="algo-btn" onclick="selectAlgo(2)"><span class="algo-num">03</span>Find Middle</button>
+    <button class="algo-btn" onclick="selectAlgo(3)"><span class="algo-num">04</span>Merge Sorted</button>
+    <button class="algo-btn" onclick="selectAlgo(4)"><span class="algo-num">05</span>Remove Nth</button>
+    <button class="algo-btn" onclick="selectAlgo(5)"><span class="algo-num">06</span>Add Numbers</button>
+    <button class="algo-btn" onclick="selectAlgo(6)"><span class="algo-num">07</span>Palindrome</button>
+  </div>
+
+  <!-- Viz card -->
+  <div class="viz-card">
+    <div class="viz-top">
+      <div class="viz-title" id="viz-title">Reverse <span>Linked List</span></div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="stat-steps">0</div><div class="stat-label">Steps</div></div>
+        <div class="stat"><div class="stat-val" id="stat-ans">—</div><div class="stat-label">Result</div></div>
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="lbl" id="lbl1">List 1:</span>
+      <input class="txt-in wide" id="in1" value="1, 2, 3, 4, 5">
+      <span class="lbl" id="lbl2" style="display:none">List 2:</span>
+      <input class="txt-in wide" id="in2" value="" style="display:none">
+      <span class="lbl" id="lbl3" style="display:none">N:</span>
+      <input class="txt-in sm" id="in3" value="2" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <span class="lbl">Speed</span>
+        <input type="range" id="speed-sl" min="1" max="5" value="3">
+      </div>
+      <button class="btn btn-run" id="run-btn" onclick="runAlgo()">▶ Run</button>
+      <button class="btn btn-sec" onclick="resetAlgo()">⟳ Reset</button>
+      <button class="btn btn-stop" id="stop-btn" onclick="stopAlgo()" disabled>■ Stop</button>
+    </div>
+
+    <!-- Canvas -->
+    <div class="ll-canvas-wrap" id="canvas1-wrap">
+      <canvas id="ll-canvas" width="1100" height="180"></canvas>
+    </div>
+    <div class="ll-second-wrap" id="canvas2-wrap">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">// List 2</div>
+      <canvas id="ll-canvas2" width="1100" height="120"></canvas>
+    </div>
+
+    <!-- Result display (merged list etc.) -->
+    <div id="result-wrap" style="display:none;padding:14px 26px;border-top:1px solid var(--border);">
+      <span style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);">// Result List</span>
+      <canvas id="ll-result-canvas" width="1100" height="120" style="margin-top:10px;display:block;"></canvas>
+    </div>
+
+    <div class="trace-box">
+      <span class="trace-lbl">Pointers:</span>
+      <div id="trace-nodes"></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="pfill"></div></div>
+    <div class="status-bar">
+      <div class="status-dot" id="sdot"></div>
+      <span id="stext">Ready — enter values and click ▶ Run</span>
+    </div>
+  </div>
+
+  <!-- Info row -->
+  <div class="info-row">
+    <div class="info-card">
+      <h3>// Complexity</h3>
+      <div class="cx-grid">
+        <div class="cx-item"><div class="cx-l">Time</div><div class="cx-v good" id="cx-t">O(n)</div></div>
+        <div class="cx-item"><div class="cx-l">Space</div><div class="cx-v info" id="cx-s">O(1)</div></div>
+        <div class="cx-item"><div class="cx-l">Technique</div><div class="cx-v ok" id="cx-tech">3 Pointers</div></div>
+        <div class="cx-item"><div class="cx-l">Passes</div><div class="cx-v" id="cx-pass" style="color:#94a3b8;font-size:11px">Single pass</div></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <h3>// Node Legend</h3>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#1e3a5f;border:2px solid #2d5a8f"></div>Default</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(167,139,250,0.3);border:2px solid #7c3aed"></div>Current (curr)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(16,185,129,0.3);border:2px solid #10b981"></div>Slow / Prev</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(245,158,11,0.3);border:2px solid #f59e0b"></div>Fast / Next</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(0,212,255,0.3);border:2px solid #00d4ff"></div>Reversed / Done</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(239,68,68,0.3);border:2px solid #ef4444"></div>Cycle / Remove</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-card" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;">
+    <h3 style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;">// Algorithm Details</h3>
+    <div class="desc-text" id="algo-desc">Reverse a linked list iteratively using three pointers: prev, curr, and next. At each step, reverse the curr→next link to curr→prev.</div>
+    <div class="recur-box" id="recur-box">
+      <span class="hl">prev</span> = null, <span class="hl2">curr</span> = head<br>
+      while curr: <span class="hl3">next</span> = curr.next<br>
+      curr.next = <span class="hl">prev</span>; <span class="hl">prev</span> = curr; <span class="hl2">curr</span> = <span class="hl3">next</span>
+    </div>
+    <div class="tag-row" id="algo-tags">
+      <span class="tag tg1">O(n) Time</span><span class="tag tg2">O(1) Space</span>
+      <span class="tag tg3">In-Place</span><span class="tag tg4">3 Pointers</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ============================================================
+// ALGOS CONFIG
+// ============================================================
+const ALGOS = [
+  {name:'Reverse <span>Linked List</span>',l1:'List:',l2:'',l3:'',d1:'1,2,3,4,5',d2:'',d3:'',show2:false,show3:false,
+   time:'O(n)',space:'O(1)',tech:'3 Pointers',pass:'Single pass',
+   desc:'Reverse a singly linked list in-place using three pointers: prev, curr, next. At each step we flip the next pointer of curr to point to prev, then advance all three pointers.',
+   recur:`<span class="hl">prev</span>=null, <span class="hl2">curr</span>=head<br>while curr: <span class="hl3">next</span>=curr.next<br>curr.next=<span class="hl">prev</span>; <span class="hl">prev</span>=curr; <span class="hl2">curr</span>=<span class="hl3">next</span>`,
+   tags:['O(n) Time','O(1) Space','In-Place','Iterative']},
+  {name:'Detect <span>Cycle</span>',l1:'List:',l2:'Cycle at idx:',l3:'',d1:'3,2,0,4',d2:'1',d3:'',show2:true,show3:false,
+   time:'O(n)',space:'O(1)',tech:"Floyd's Algorithm",pass:'Single pass',
+   desc:"Floyd's Cycle Detection uses two pointers: slow moves 1 step, fast moves 2 steps. If they meet, a cycle exists. The meeting point can find the cycle start.",
+   recur:`<span class="hl2">slow</span>=head, <span class="hl3">fast</span>=head<br>while fast&fast.next: slow=slow.next<br><span class="hl">fast</span>=fast.next.next<br>if slow==fast → <span class="hl">cycle!</span>`,
+   tags:['O(n) Time','O(1) Space',"Floyd's",'Two Pointers']},
+  {name:'Find <span>Middle</span>',l1:'List:',l2:'',l3:'',d1:'1,2,3,4,5,6',d2:'',d3:'',show2:false,show3:false,
+   time:'O(n)',space:'O(1)',tech:'Slow/Fast Pointers',pass:'Single pass',
+   desc:'Find the middle node using two pointers: slow moves 1 step, fast moves 2 steps. When fast reaches end, slow is at the middle. For even-length lists, returns second middle.',
+   recur:`<span class="hl2">slow</span>=head, <span class="hl3">fast</span>=head<br>while fast&fast.next:<br><span class="hl2">slow</span>=slow.next<br><span class="hl3">fast</span>=fast.next.next<br><span class="hl">middle</span>=slow`,
+   tags:['O(n) Time','O(1) Space','Slow/Fast','Single Pass']},
+  {name:'Merge <span>Sorted Lists</span>',l1:'List 1:',l2:'List 2:',l3:'',d1:'1,3,5,7',d2:'2,4,6,8',d3:'',show2:true,show3:false,
+   time:'O(m+n)',space:'O(1)',tech:'Two Pointers',pass:'Single pass',
+   desc:'Merge two sorted linked lists using a dummy head and two pointers. At each step pick the smaller node. O(m+n) time, O(1) space (just rearranging pointers).',
+   recur:`dummy→head; <span class="hl">p1</span>=l1, <span class="hl2">p2</span>=l2<br>while p1&p2:<br>if p1.val≤p2.val: tail=<span class="hl">p1</span>++<br>else: tail=<span class="hl2">p2</span>++`,
+   tags:['O(m+n) Time','O(1) Space','Two Pointers','In-Place']},
+  {name:'Remove <span>Nth From End</span>',l1:'List:',l2:'',l3:'N:',d1:'1,2,3,4,5',d2:'',d3:'2',show2:false,show3:true,
+   time:'O(n)',space:'O(1)',tech:'Two Pointers',pass:'Single pass',
+   desc:'Remove the Nth node from the end in one pass. Advance fast pointer N+1 steps ahead. Move both pointers until fast reaches null. Then remove slow.next.',
+   recur:`dummy→head; <span class="hl3">fast</span>=dummy<br>advance fast N+1 steps<br>while fast: <span class="hl2">slow</span>++, <span class="hl3">fast</span>++<br>slow.next=slow.next.next`,
+   tags:['O(n) Time','O(1) Space','Two Pointers','Single Pass']},
+  {name:'Add <span>Two Numbers</span>',l1:'Num 1:',l2:'Num 2:',l3:'',d1:'2,4,3',d2:'5,6,4',d3:'',show2:true,show3:false,
+   time:'O(max(m,n))',space:'O(max(m,n))',tech:'Digit-by-Digit',pass:'Single pass',
+   desc:'Numbers stored in reverse order. Add digit-by-digit with carry. E.g. 342+465=807 stored as 2→4→3 and 5→6→4 → result 7→0→8.',
+   recur:`carry=0; p=<span class="hl">l1</span>, q=<span class="hl2">l2</span><br>sum=p.val+q.val+carry<br>carry=sum/10; node=sum%10<br>advance both until done`,
+   tags:['O(max(m,n))','O(result) Space','Carry','Reverse Order']},
+  {name:'Palindrome <span>Check</span>',l1:'List:',l2:'',l3:'',d1:'1,2,3,2,1',d2:'',d3:'',show2:false,show3:false,
+   time:'O(n)',space:'O(1)',tech:'Reverse Half',pass:'Find mid → reverse → compare',
+   desc:'Check palindrome in O(1) space: find middle with slow/fast pointers, reverse the second half, compare both halves, then optionally restore.',
+   recur:`1. Find mid (<span class="hl2">slow</span>/<span class="hl3">fast</span>)<br>2. Reverse second half<br>3. Compare <span class="hl">p1</span>=head, <span class="hl2">p2</span>=mid<br>4. If all match → palindrome`,
+   tags:['O(n) Time','O(1) Space','Reverse Half','Slow/Fast']},
+];
+
+// ============================================================
+// NODE CLASS & LIST BUILDER
+// ============================================================
+class LLNode {
+  constructor(val, id) {
+    this.val=val; this.id=id; this.next=null;
+    this.x=0; this.y=0;
+    this.state='default'; // default|curr|slow|fast|prev|done|cycle|remove
+  }
+}
+
+function buildList(vals, cycleAt=-1) {
+  if(!vals.length) return null;
+  const nodes=vals.map((v,i)=>new LLNode(v,i));
+  for(let i=0;i<nodes.length-1;i++) nodes[i].next=nodes[i+1];
+  if(cycleAt>=0&&cycleAt<nodes.length) nodes[nodes.length-1].next=nodes[cycleAt];
+  return {head:nodes[0], nodes, cycle:cycleAt>=0?nodes[cycleAt]:null};
+}
+
+function listToArray(head) {
+  const arr=[]; let cur=head; let steps=0;
+  while(cur&&steps<50){arr.push(cur);cur=cur.next;steps++;}
+  return arr;
+}
+
+// ============================================================
+// CANVAS RENDERER
+// ============================================================
+const NODE_R=22, H_GAP=88, ROW_Y=75;
+const NODE_COLORS={
+  default:{fill:'#1e3a5f',stroke:'#2d5a8f',text:'#93c5fd'},
+  curr:   {fill:'rgba(124,58,237,0.25)',stroke:'#7c3aed',text:'#a78bfa'},
+  slow:   {fill:'rgba(16,185,129,0.25)',stroke:'#10b981',text:'#34d399'},
+  fast:   {fill:'rgba(245,158,11,0.25)',stroke:'#f59e0b',text:'#fbbf24'},
+  prev:   {fill:'rgba(0,212,255,0.2)',stroke:'#00d4ff',text:'#67e8f9'},
+  done:   {fill:'rgba(0,212,255,0.15)',stroke:'#00d4ff',text:'#67e8f9'},
+  cycle:  {fill:'rgba(239,68,68,0.25)',stroke:'#ef4444',text:'#fca5a5'},
+  remove: {fill:'rgba(239,68,68,0.15)',stroke:'#ef4444',text:'#fca5a5'},
+  match:  {fill:'rgba(16,185,129,0.2)',stroke:'#10b981',text:'#34d399'},
+  nomatch:{fill:'rgba(239,68,68,0.2)',stroke:'#ef4444',text:'#fca5a5'},
+  middle: {fill:'rgba(167,139,250,0.25)',stroke:'#7c3aed',text:'#a78bfa'},
+};
+
+function assignPositions(nodes, startX=50, y=ROW_Y) {
+  nodes.forEach((n,i)=>{n.x=startX+i*H_GAP; n.y=y;});
+}
+
+function drawLL(canvasId, nodes, ptrs={}, cycleEdge=null, arrowLabel='') {
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const w=Math.max(600,nodes.length*H_GAP+100);
+  canvas.width=w;
+  ctx.clearRect(0,0,w,canvas.height);
+
+  // Draw arrows between nodes
+  for(let i=0;i<nodes.length;i++){
+    const n=nodes[i];
+    const next=n.next;
+    if(!next) {
+      // NULL arrow
+      const ex=n.x+NODE_R+36;
+      ctx.strokeStyle='#1e2d47'; ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(n.x+NODE_R,n.y);ctx.lineTo(ex,n.y);ctx.stroke();
+      ctx.fillStyle='#475569'; ctx.font='10px JetBrains Mono';
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText('NULL',ex+4,n.y);
+    } else {
+      // Find next in visible nodes
+      const ni=nodes.indexOf(next);
+      if(ni>=0){
+        const x1=n.x+NODE_R, y1=n.y, x2=next.x-NODE_R, y2=next.y;
+        ctx.strokeStyle=n.state==='done'?'#00d4ff':n.state==='cycle'?'#ef4444':'#1e4a7a';
+        ctx.lineWidth=1.8;
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-8,y2);ctx.stroke();
+        // Arrowhead
+        const ang=Math.atan2(y2-y1,x2-x1);
+        ctx.beginPath();
+        ctx.moveTo(x2-8,y2);
+        ctx.lineTo(x2-8-10*Math.cos(ang-0.4),y2-10*Math.sin(ang-0.4));
+        ctx.lineTo(x2-8-10*Math.cos(ang+0.4),y2-10*Math.sin(ang+0.4));
+        ctx.closePath(); ctx.fillStyle=ctx.strokeStyle; ctx.fill();
+      } else if(cycleEdge&&n===cycleEdge[0]){
+        // Cycle back arrow (curved)
+        const cx2=cycleEdge[1];
+        const sx=n.x,sy=n.y+NODE_R,ex=cx2.x,ey=cx2.y+NODE_R;
+        ctx.strokeStyle='#ef4444'; ctx.lineWidth=2; ctx.setLineDash([5,4]);
+        ctx.beginPath();
+        ctx.moveTo(sx,sy);
+        ctx.bezierCurveTo(sx,sy+50,ex,ey+50,ex,ey);
+        ctx.stroke(); ctx.setLineDash([]);
+        // Label
+        ctx.fillStyle='#ef4444'; ctx.font='bold 10px JetBrains Mono';
+        ctx.textAlign='center';
+        ctx.fillText('cycle →',( sx+ex)/2,(sy+ey)/2+55);
+      }
+    }
+  }
+
+  // Draw nodes
+  nodes.forEach(n=>{
+    const c=NODE_COLORS[n.state]||NODE_COLORS.default;
+    if(n.state!=='default'){ctx.shadowBlur=14;ctx.shadowColor=c.stroke;}
+    else ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(n.x,n.y,NODE_R,0,Math.PI*2);
+    ctx.fillStyle=c.fill;ctx.fill();
+    ctx.strokeStyle=c.stroke;ctx.lineWidth=2;ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.fillStyle=c.text;ctx.font='bold 13px JetBrains Mono';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(n.val,n.x,n.y);
+  });
+
+  // Pointer labels above nodes
+  Object.entries(ptrs).forEach(([name,node])=>{
+    if(!node) return;
+    const colors={curr:'#a78bfa',slow:'#34d399',fast:'#fbbf24',prev:'#67e8f9',
+                  p1:'#a78bfa',p2:'#34d399',mid:'#f9a8d4',nth:'#ef4444'};
+    ctx.fillStyle=colors[name]||'#94a3b8';
+    ctx.font='bold 10px JetBrains Mono';
+    ctx.textAlign='center';
+    ctx.fillText(name.toUpperCase(),node.x,node.y-NODE_R-12);
+    // Arrow down
+    ctx.strokeStyle=colors[name]||'#94a3b8';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(node.x,node.y-NODE_R-8);ctx.lineTo(node.x,node.y-NODE_R-2);ctx.stroke();
+  });
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let curAlgo=0;
+let running=false, stopFlag=false, stepCount=0;
+
+function getDelay(){const s=[700,280,100,35,5];return s[+document.getElementById('speed-sl').value-1];}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setStatus(state,msg){
+  const d=document.getElementById('sdot');
+  d.className='status-dot'+(state==='running'?' running':state==='done'?' done':'');
+  document.getElementById('stext').textContent=msg;
+}
+function setProgress(v){document.getElementById('pfill').style.width=(v*100)+'%';}
+function setTrace(items){
+  document.getElementById('trace-nodes').innerHTML=items.map(({text,cls})=>
+    `<span class="tr-node tr-${cls}">${text}</span>`
+  ).join('');
+}
+
+// ============================================================
+// SELECT ALGO
+// ============================================================
+function selectAlgo(idx) {
+  if(running) return;
+  curAlgo=idx;
+  document.querySelectorAll('.algo-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  const a=ALGOS[idx];
+  document.getElementById('viz-title').innerHTML=a.name;
+  document.getElementById('lbl1').textContent=a.l1;
+  document.getElementById('in1').value=a.d1;
+  document.getElementById('lbl2').textContent=a.l2;
+  document.getElementById('in2').value=a.d2;
+  document.getElementById('lbl2').style.display=a.show2?'':'none';
+  document.getElementById('in2').style.display=a.show2?'':'none';
+  document.getElementById('lbl3').textContent=a.l3;
+  document.getElementById('in3').value=a.d3;
+  document.getElementById('lbl3').style.display=a.show3?'':'none';
+  document.getElementById('in3').style.display=a.show3?'':'none';
+  document.getElementById('cx-t').textContent=a.time;
+  document.getElementById('cx-s').textContent=a.space;
+  document.getElementById('cx-tech').textContent=a.tech;
+  document.getElementById('cx-pass').textContent=a.pass;
+  document.getElementById('algo-desc').textContent=a.desc;
+  document.getElementById('recur-box').innerHTML=a.recur;
+  const tags=document.getElementById('algo-tags');
+  const cls=['tg1','tg2','tg3','tg4'];
+  tags.innerHTML=a.tags.map((t,i)=>`<span class="tag ${cls[i%4]}">${t}</span>`).join('');
+  document.getElementById('canvas2-wrap').style.display=(idx===3||idx===5)?'block':'none';
+  document.getElementById('result-wrap').style.display='none';
+  resetAlgo();
+}
+
+function resetAlgo(){
+  stopFlag=true; running=false; stepCount=0;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+  document.getElementById('pfill').style.width='0%';
+  document.getElementById('stat-steps').textContent='0';
+  document.getElementById('stat-ans').textContent='—';
+  document.getElementById('trace-nodes').innerHTML='';
+  document.getElementById('result-wrap').style.display='none';
+  setStatus('idle','Ready — click ▶ Run');
+  // Draw initial list
+  drawInitial();
+}
+
+function parseInts(str){return str.split(',').map(s=>parseInt(s.trim())).filter(x=>!isNaN(x));}
+
+function drawInitial(){
+  const vals=parseInts(document.getElementById('in1').value);
+  if(!vals.length) return;
+  const {nodes}=buildList(vals);
+  assignPositions(nodes);
+  drawLL('ll-canvas',nodes,{});
+  if(curAlgo===3||curAlgo===5){
+    const v2=parseInts(document.getElementById('in2').value);
+    if(v2.length){
+      const {nodes:n2}=buildList(v2);
+      assignPositions(n2);
+      drawLL('ll-canvas2',n2,{});
+    }
+  }
+}
+
+// ============================================================
+// ALGORITHM IMPLEMENTATIONS
+// ============================================================
+
+// 1. REVERSE LINKED LIST
+async function reverseList(vals){
+  const {nodes}=buildList(vals);
+  assignPositions(nodes);
+  const n=nodes.length;
+  let prev=null, curr=nodes[0];
+  let step=0;
+  while(curr&&!stopFlag){
+    const next=curr.next;
+    // Highlight
+    nodes.forEach(n=>n.state='default');
+    if(prev) prev.state='prev';
+    curr.state='curr';
+    if(next) next.state='fast';
+    drawLL('ll-canvas',nodes,{prev,curr,next:next||null});
+    setTrace([
+      {text:`prev=${prev?prev.val:'null'}`,cls:'slow'},
+      {text:`curr=${curr.val}`,cls:'curr'},
+      {text:`next=${next?next.val:'null'}`,cls:'fast'},
+    ]);
+    setStatus('running',`Reversing: curr(${curr.val}).next → prev(${prev?prev.val:'null'})`);
+    await sleep(getDelay()); if(stopFlag) return;
+    // Perform reverse
+    curr.next=prev;
+    prev=curr;
+    curr=next;
+    step++; stepCount=step;
+    document.getElementById('stat-steps').textContent=step;
+    setProgress(step/n);
+    await sleep(getDelay()*0.3);
+  }
+  if(!stopFlag){
+    // Show reversed list
+    const reversed=[];
+    let c=prev;
+    while(c){reversed.push(c);c=c.next;}
+    reversed.forEach((n,i)=>{n.x=50+i*H_GAP;n.y=ROW_Y;n.state='done';});
+    drawLL('ll-canvas',reversed,{});
+    document.getElementById('stat-ans').textContent=reversed.map(n=>n.val).join('→');
+    setStatus('done',`Reversed: ${reversed.map(n=>n.val).join(' → ')}`);
+    setTrace([{text:'Reversed!',cls:'done'}]);
+    setProgress(1);
+  }
+}
+
+// 2. DETECT CYCLE
+async function detectCycle(vals, cycleAt){
+  const {nodes,cycle}=buildList(vals,cycleAt);
+  assignPositions(nodes);
+  let slow=nodes[0], fast=nodes[0];
+  let step=0;
+  const visibleNodes=nodes; // don't show cycle edge initially
+  drawLL('ll-canvas',visibleNodes,{slow,fast});
+  await sleep(getDelay()); if(stopFlag) return;
+  while(fast&&fast.next&&!stopFlag){
+    slow=slow.next;
+    fast=fast.next.next;
+    step++; stepCount=step;
+    document.getElementById('stat-steps').textContent=step;
+    if(!slow||!fast) break;
+    // Map next to valid nodes
+    const slowNode=nodes.find(n=>n===slow)||nodes[0];
+    const fastNode=nodes.find(n=>n===fast)||nodes[0];
+    nodes.forEach(n=>n.state='default');
+    slowNode.state='slow'; fastNode.state='fast';
+    if(slowNode===fastNode) slowNode.state='cycle';
+    drawLL('ll-canvas',nodes,{slow:slowNode,fast:fastNode},
+      cycleAt>=0?[nodes[nodes.length-1],nodes[cycleAt]]:null);
+    setTrace([{text:`slow=${slowNode.val}`,cls:'slow'},{text:`fast=${fastNode.val}`,cls:'fast'}]);
+    if(slowNode===fastNode){
+      setStatus('done',`Cycle detected! slow and fast meet at node ${slowNode.val}`);
+      document.getElementById('stat-ans').textContent='Cycle!';
+      setTrace([{text:`CYCLE FOUND at ${slowNode.val}`,cls:'warn'}]);
+      setProgress(1); return;
+    }
+    setStatus('running',`Step ${step}: slow=${slowNode.val}, fast=${fastNode.val}`);
+    setProgress(step/nodes.length);
+    await sleep(getDelay()); if(stopFlag) return;
+  }
+  if(!stopFlag){
+    setStatus('done','No cycle detected — fast reached null');
+    document.getElementById('stat-ans').textContent='No cycle';
+    setTrace([{text:'No cycle',cls:'done'}]);
+    setProgress(1);
+  }
+}
+
+// 3. FIND MIDDLE
+async function findMiddle(vals){
+  const {nodes}=buildList(vals);
+  assignPositions(nodes);
+  let slow=nodes[0], fast=nodes[0];
+  let step=0;
+  while(fast&&fast.next&&!stopFlag){
+    nodes.forEach(n=>n.state='default');
+    nodes[nodes.indexOf(slow)].state='slow';
+    nodes[nodes.indexOf(fast)].state='fast';
+    drawLL('ll-canvas',nodes,{slow,fast});
+    setTrace([{text:`slow=${slow.val}`,cls:'slow'},{text:`fast=${fast.val}`,cls:'fast'},{text:`slow advances 1, fast advances 2`,cls:'note'}]);
+    setStatus('running',`slow@${slow.val}, fast@${fast.val}`);
+    setProgress(step/Math.ceil(nodes.length/2));
+    await sleep(getDelay()); if(stopFlag) return;
+    slow=slow.next;
+    fast=fast.next.next;
+    step++; stepCount=step; document.getElementById('stat-steps').textContent=step;
+  }
+  if(!stopFlag&&slow){
+    nodes.forEach(n=>n.state='default');
+    nodes[nodes.indexOf(slow)].state='middle';
+    drawLL('ll-canvas',nodes,{mid:slow});
+    setStatus('done',`Middle node = ${slow.val} (index ${nodes.indexOf(slow)})`);
+    document.getElementById('stat-ans').textContent=slow.val;
+    setTrace([{text:`Middle = ${slow.val}`,cls:'done'}]);
+    setProgress(1);
+  }
+}
+
+// 4. MERGE TWO SORTED LISTS
+async function mergeSorted(vals1, vals2){
+  const {nodes:n1}=buildList(vals1);
+  const {nodes:n2}=buildList(vals2);
+  assignPositions(n1,50,70);
+  assignPositions(n2,50,70);
+  drawLL('ll-canvas',n1,{});
+  drawLL('ll-canvas2',n2,{});
+  await sleep(getDelay()); if(stopFlag) return;
+  const resultNodes=[];
+  let p1=n1[0], p2=n2[0];
+  let step=0;
+  while(p1&&p2&&!stopFlag){
+    n1.forEach(n=>n.state='default');
+    n2.forEach(n=>n.state='default');
+    const pi1=n1.indexOf(p1), pi2=n2.indexOf(p2);
+    if(pi1>=0) n1[pi1].state='slow';
+    if(pi2>=0) n2[pi2].state='fast';
+    drawLL('ll-canvas',n1,{p1});
+    drawLL('ll-canvas2',n2,{p2});
+    setTrace([{text:`p1=${p1.val}`,cls:'slow'},{text:`p2=${p2.val}`,cls:'fast'},{text:`pick ${p1.val<=p2.val?`p1=${p1.val}`:`p2=${p2.val}`}`,cls:'curr'}]);
+    setStatus('running',`Comparing ${p1.val} vs ${p2.val} → take ${Math.min(p1.val,p2.val)}`);
+    await sleep(getDelay()); if(stopFlag) return;
+    const taken=new LLNode(p1.val<=p2.val?p1.val:p2.val, resultNodes.length);
+    taken.state='done';
+    resultNodes.push(taken);
+    if(p1.val<=p2.val) p1=p1.next; else p2=p2.next;
+    step++; stepCount=step; document.getElementById('stat-steps').textContent=step;
+    setProgress(step/(n1.length+n2.length));
+    assignPositions(resultNodes,50,60);
+    // Show partial result
+    document.getElementById('result-wrap').style.display='block';
+    drawLL('ll-result-canvas',resultNodes,{});
+    await sleep(getDelay()*0.3);
+  }
+  while(p1&&!stopFlag){
+    const taken=new LLNode(p1.val,resultNodes.length); taken.state='done';
+    resultNodes.push(taken); p1=p1.next; step++;
+    assignPositions(resultNodes,50,60);
+    drawLL('ll-result-canvas',resultNodes,{});
+    await sleep(getDelay()*0.5);
+  }
+  while(p2&&!stopFlag){
+    const taken=new LLNode(p2.val,resultNodes.length); taken.state='done';
+    resultNodes.push(taken); p2=p2.next; step++;
+    assignPositions(resultNodes,50,60);
+    drawLL('ll-result-canvas',resultNodes,{});
+    await sleep(getDelay()*0.5);
+  }
+  if(!stopFlag){
+    setStatus('done',`Merged: ${resultNodes.map(n=>n.val).join(' → ')}`);
+    document.getElementById('stat-ans').textContent=resultNodes.map(n=>n.val).join('→');
+    setTrace([{text:'Merged!',cls:'done'}]);
+    setProgress(1);
+  }
+}
+
+// 5. REMOVE NTH FROM END
+async function removeNth(vals, n){
+  const {nodes}=buildList(vals);
+  assignPositions(nodes);
+  // Add dummy
+  const dummy=new LLNode(0,-1); dummy.next=nodes[0];
+  let fast=nodes[0], slow=dummy;
+  // Advance fast N steps
+  for(let i=0;i<n;i++){
+    if(!fast) break;
+    fast=fast.next;
+    nodes.forEach(nn=>nn.state='default');
+    if(fast){const fi=nodes.indexOf(fast);if(fi>=0)nodes[fi].state='fast';}
+    drawLL('ll-canvas',nodes,{fast:fast||null});
+    setTrace([{text:`Advance fast ${i+1}/${n} steps`,cls:'fast'},{text:`fast=${fast?fast.val:'null'}`,cls:'fast'}]);
+    setStatus('running',`Moving fast pointer: step ${i+1}/${n}`);
+    await sleep(getDelay()*0.7); if(stopFlag) return;
+  }
+  // Move both
+  let step=0;
+  while(fast&&!stopFlag){
+    const si=nodes.indexOf(slow); // may be -1 for dummy
+    const fi=nodes.indexOf(fast);
+    nodes.forEach(nn=>nn.state='default');
+    if(si>=0) nodes[si].state='slow';
+    if(fi>=0) nodes[fi].state='fast';
+    drawLL('ll-canvas',nodes,{slow:si>=0?slow:null,fast});
+    setTrace([{text:`slow=${slow.val===0&&slow.id===-1?'dummy':slow.val}`,cls:'slow'},{text:`fast=${fast.val}`,cls:'fast'}]);
+    setStatus('running',`Moving both pointers forward`);
+    await sleep(getDelay()); if(stopFlag) return;
+    slow=slow.next; fast=fast.next; step++;
+  }
+  // Mark removal
+  if(slow.next){
+    const ri=nodes.indexOf(slow.next);
+    if(ri>=0){
+      nodes.forEach(nn=>nn.state='default');
+      nodes[ri].state='remove';
+      drawLL('ll-canvas',nodes,{nth:nodes[ri]});
+      setStatus('running',`Removing node ${nodes[ri].val}`);
+      setTrace([{text:`Remove node ${nodes[ri].val}`,cls:'warn'}]);
+      await sleep(getDelay()); if(stopFlag) return;
+      slow.next=slow.next.next;
+    }
+  }
+  const result=[];let c=nodes[0];
+  while(c){if(c.state!=='remove')result.push(c);c=c.next;}
+  result.forEach((nd,i)=>{nd.x=50+i*H_GAP;nd.y=ROW_Y;nd.state='done';});
+  drawLL('ll-canvas',result,{});
+  setStatus('done',`Removed ${n}th from end → [${result.map(x=>x.val).join(',')}]`);
+  document.getElementById('stat-ans').textContent=result.map(x=>x.val).join('→');
+  setProgress(1);
+}
+
+// 6. ADD TWO NUMBERS
+async function addTwoNumbers(vals1, vals2){
+  const {nodes:n1}=buildList(vals1);
+  const {nodes:n2}=buildList(vals2);
+  assignPositions(n1,50,70); assignPositions(n2,50,70);
+  drawLL('ll-canvas',n1,{}); drawLL('ll-canvas2',n2,{});
+  document.getElementById('result-wrap').style.display='block';
+  let p1=n1[0], p2=n2[0], carry=0;
+  const resultNodes=[];
+  let step=0;
+  while((p1||p2||carry)&&!stopFlag){
+    const v1=p1?p1.val:0, v2=p2?p2.val:0;
+    const sum=v1+v2+carry;
+    carry=Math.floor(sum/10);
+    const digit=sum%10;
+    n1.forEach(n=>n.state='default');
+    n2.forEach(n=>n.state='default');
+    const pi1=p1?n1.indexOf(p1):-1, pi2=p2?n2.indexOf(p2):-1;
+    if(pi1>=0) n1[pi1].state='curr';
+    if(pi2>=0) n2[pi2].state='curr';
+    drawLL('ll-canvas',n1,{p1:p1||null});
+    drawLL('ll-canvas2',n2,{p2:p2||null});
+    setTrace([{text:`${v1}+${v2}+carry(${carry>0?carry-Math.floor((v1+v2+(carry-digit>0?1:0))/10):0})=${sum}`,cls:'note'},{text:`digit=${digit}`,cls:'curr'},{text:`carry=${carry}`,cls:carry?'warn':'note'}]);
+    setStatus('running',`${v1} + ${v2} + carry = ${sum} → digit=${digit}, carry=${carry}`);
+    const rn=new LLNode(digit,resultNodes.length); rn.state='done';
+    resultNodes.push(rn);
+    assignPositions(resultNodes,50,60);
+    drawLL('ll-result-canvas',resultNodes,{});
+    if(p1) p1=p1.next; if(p2) p2=p2.next;
+    step++; stepCount=step; document.getElementById('stat-steps').textContent=step;
+    setProgress(step/Math.max(n1.length,n2.length));
+    await sleep(getDelay()); if(stopFlag) return;
+  }
+  if(!stopFlag){
+    setStatus('done',`Sum: ${resultNodes.map(n=>n.val).join('→')} (reversed = ${[...resultNodes].reverse().map(n=>n.val).join('')})`);
+    document.getElementById('stat-ans').textContent=resultNodes.map(n=>n.val).join('→');
+    setTrace([{text:'Done!',cls:'done'}]);
+    setProgress(1);
+  }
+}
+
+// 7. PALINDROME
+async function palindromeCheck(vals){
+  const {nodes}=buildList(vals);
+  assignPositions(nodes);
+  // Step 1: Find middle
+  let slow=nodes[0], fast=nodes[0];
+  setStatus('running','Step 1: Finding middle with slow/fast pointers...');
+  let step=0;
+  while(fast&&fast.next&&!stopFlag){
+    nodes.forEach(n=>n.state='default');
+    nodes[nodes.indexOf(slow)].state='slow';
+    nodes[nodes.indexOf(fast)].state='fast';
+    drawLL('ll-canvas',nodes,{slow,fast});
+    setTrace([{text:`slow=${slow.val}`,cls:'slow'},{text:`fast=${fast.val}`,cls:'fast'}]);
+    setStatus('running',`Finding mid: slow=${slow.val}, fast=${fast.val}`);
+    await sleep(getDelay()); if(stopFlag) return;
+    slow=slow.next; fast=fast.next.next;
+    step++;
+  }
+  // Step 2: Reverse second half
+  setStatus('running','Step 2: Reversing second half...');
+  await sleep(getDelay()); if(stopFlag) return;
+  let prev=null, cur=slow;
+  while(cur&&!stopFlag){
+    const nxt=cur.next; cur.next=prev; prev=cur; cur=nxt;
+    const ci=nodes.indexOf(cur_);  // just animate
+    nodes.forEach(n=>n.state='default');
+    const prevI=nodes.indexOf(prev); if(prevI>=0) nodes[prevI].state='done';
+    drawLL('ll-canvas',nodes,{});
+    await sleep(getDelay()*0.5); if(stopFlag) return;
+  }
+  // Step 3: Compare
+  setStatus('running','Step 3: Comparing both halves...');
+  let p1=nodes[0], p2=prev;
+  let isPalin=true;
+  const halfLen=Math.ceil(nodes.length/2);
+  for(let i=0;i<halfLen&&!stopFlag;i++){
+    if(!p1||!p2) break;
+    nodes.forEach(n=>n.state='default');
+    const p1i=nodes.indexOf(p1); const p2i=nodes.indexOf(p2);
+    if(p1i>=0) nodes[p1i].state=p1.val===p2.val?'match':'cycle';
+    if(p2i>=0) nodes[p2i].state=p1.val===p2.val?'match':'cycle';
+    drawLL('ll-canvas',nodes,{p1,p2});
+    setTrace([{text:`p1=${p1.val}`,cls:'curr'},{text:`p2=${p2.val}`,cls:'fast'},{text:p1.val===p2.val?'✓ match':'✗ mismatch',cls:p1.val===p2.val?'done':'warn'}]);
+    setStatus('running',`Compare: ${p1.val} ${p1.val===p2.val?'=':'≠'} ${p2.val}`);
+    await sleep(getDelay()); if(stopFlag) return;
+    if(p1.val!==p2.val){isPalin=false;break;}
+    p1=p1.next; p2=p2.next; step++;
+    document.getElementById('stat-steps').textContent=step;
+  }
+  if(!stopFlag){
+    nodes.forEach(n=>n.state=isPalin?'done':'cycle');
+    drawLL('ll-canvas',nodes,{});
+    setStatus('done',`"${vals.join(',')}" is ${isPalin?'a PALINDROME ✓':'NOT a palindrome ✗'}`);
+    document.getElementById('stat-ans').textContent=isPalin?'Yes ✓':'No ✗';
+    setTrace([{text:`${isPalin?'Palindrome ✓':'Not a palindrome ✗'}`,cls:isPalin?'done':'warn'}]);
+    setProgress(1);
+  }
+}
+
+// helper (needed for palindrome)
+let cur_ = null;
+
+// ============================================================
+// MAIN RUN
+// ============================================================
+async function runAlgo(){
+  if(running) return;
+  running=true; stopFlag=false; stepCount=0;
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('stop-btn').disabled=false;
+  document.getElementById('stat-steps').textContent='0';
+  document.getElementById('stat-ans').textContent='—';
+  document.getElementById('trace-nodes').innerHTML='';
+  document.getElementById('result-wrap').style.display='none';
+  setProgress(0); setStatus('running','Running...');
+  const v1=parseInts(document.getElementById('in1').value);
+  const v2=parseInts(document.getElementById('in2').value);
+  const n=parseInt(document.getElementById('in3').value)||2;
+  if(!v1.length){setStatus('idle','Enter valid values');running=false;document.getElementById('run-btn').disabled=false;document.getElementById('stop-btn').disabled=true;return;}
+  try{
+    switch(curAlgo){
+      case 0: await reverseList(v1); break;
+      case 1: await detectCycle(v1,parseInt(document.getElementById('in2').value)||1); break;
+      case 2: await findMiddle(v1); break;
+      case 3: await mergeSorted(v1,v2.length?v2:[2,4,6,8]); break;
+      case 4: await removeNth(v1,n); break;
+      case 5: await addTwoNumbers(v1,v2.length?v2:[5,6,4]); break;
+      case 6: await palindromeCheck(v1); break;
+    }
+  }catch(e){console.error(e);}
+  if(!stopFlag){document.getElementById('sdot').className='status-dot done';setProgress(1);}
+  running=false;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+}
+
+function stopAlgo(){
+  stopFlag=true;running=false;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+  setStatus('idle','Stopped — click ▶ Run to restart');
+}
+
+// Init
+selectAlgo(0);
+</script>
+</body>
+</html>

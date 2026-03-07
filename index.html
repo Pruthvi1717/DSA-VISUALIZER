@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Visual Lab — Striver Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050810;
+  --surface: #0c1120;
+  --surface2: #111827;
+  --border: #1e2d47;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --text: #e2e8f0;
+  --muted: #64748b;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+.wrapper { position: relative; z-index: 1; }
+
+header {
+  padding: 24px 40px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(12,17,32,0.8);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+.logo-text span { color: var(--accent); }
+.header-badge {
+  font-size: 10px; padding: 4px 10px;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 20px;
+  color: var(--accent);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+.hero {
+  padding: 60px 40px 40px;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.hero h1 span { color: var(--accent); }
+.hero p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.hero-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 40px 60px;
+}
+
+.section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin: 40px 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.25s;
+  border-radius: 16px;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--card-accent, var(--accent)); }
+.card:hover::before { opacity: 1; }
+
+.card.cyan { --card-accent: #00d4ff; }
+.card.cyan::before { background: radial-gradient(ellipse at top left, rgba(0,212,255,0.06), transparent 70%); }
+.card.purple { --card-accent: #7c3aed; }
+.card.purple::before { background: radial-gradient(ellipse at top left, rgba(124,58,237,0.08), transparent 70%); }
+.card.green { --card-accent: #10b981; }
+.card.green::before { background: radial-gradient(ellipse at top left, rgba(16,185,129,0.08), transparent 70%); }
+.card.amber { --card-accent: #f59e0b; }
+.card.amber::before { background: radial-gradient(ellipse at top left, rgba(245,158,11,0.08), transparent 70%); }
+.card.pink { --card-accent: #ec4899; }
+.card.pink::before { background: radial-gradient(ellipse at top left, rgba(236,72,153,0.08), transparent 70%); }
+.card.red { --card-accent: #ef4444; }
+.card.red::before { background: radial-gradient(ellipse at top left, rgba(239,68,68,0.08), transparent 70%); }
+
+.card-icon {
+  font-size: 28px;
+  margin-bottom: 16px;
+  display: block;
+}
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.card-desc {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.card-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.topic-tag {
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+.card-arrow {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  font-size: 18px;
+  opacity: 0;
+  transition: all 0.25s;
+  transform: translateX(-8px);
+}
+.card:hover .card-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--card-accent, var(--accent));
+}
+.card-badge {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.badge-existing {
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: var(--accent3);
+}
+
+.progress-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+.progress-item {}
+.progress-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.progress-bar-wrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+.progress-count { font-size: 11px; color: var(--muted); }
+.progress-count span { color: var(--text); font-weight: 600; }
+
+footer {
+  padding: 24px 40px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+}
+footer a { color: var(--accent); text-decoration: none; }
+
+@media(max-width: 768px) {
+  header, .hero, .container { padding-left: 20px; padding-right: 20px; }
+  .hero h1 { font-size: 28px; }
+  .cards-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⬡</div>
+      <div class="logo-text">DSA<span>Visual</span></div>
+    </div>
+    <div class="header-badge">Striver Sheet</div>
+  </header>
+
+  <div class="hero">
+    <h1>Master DSA with<br><span>Visual Learning</span></h1>
+    <p>Interactive visualizations for every major pattern on Striver's A2Z DSA Sheet.<br>
+    Watch algorithms execute step-by-step on real data structures.</p>
+    <div class="hero-tags">
+      <span class="hero-tag">16 Topics</span>
+      <span class="hero-tag">80+ Patterns</span>
+      <span class="hero-tag">Multi-language Code</span>
+      <span class="hero-tag">Step-by-step</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="section-label">// Core Data Structures</div>
+    <div class="cards-grid">
+
+      <a href="arrays.html" class="card cyan">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">▦</span>
+        <div class="card-title">Arrays & Hashing</div>
+        <div class="card-desc">Two pointers, sliding window, prefix sum, Kadane's algorithm, Dutch national flag and more array manipulation patterns.</div>
+        <div class="card-topics">
+          <span class="topic-tag">Two Pointers</span>
+          <span class="topic-tag">Sliding Window</span>
+          <span class="topic-tag">Prefix Sum</span>
+          <span class="topic-tag">Kadane's</span>
+          <span class="topic-tag">DNF</span>
+        </div>
+      </a>
+
+      <a href="sorting.html" class="card green">
+        <span class="card-badge badge-existing">Existing</span>
+        <span class="card-icon">↕</span>
+        <div class="card-title">Sorting Algorithms</div>
+        <div class="card-desc">16 sorting algorithms visualized with comparisons, swaps, and time tracking. Multiple input patterns supported.</div>
+        <div class="card-topics">
+          <span class="topic-tag">Bubble</span>
+          <span class="topic-tag">Merge</span>
+          <span class="topic-tag">Quick</span>
+          <span class="topic-tag">Heap</span>
+          <span class="topic-tag">Radix</span>
+          <span class="topic-tag">Tim</span>
+        </div>
+      </a>
+
+      <a href="binary-search.html" class="card amber">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">⌖</span>
+        <div class="card-title">Binary Search</div>
+        <div class="card-desc">Classic binary search variants — lower/upper bound, rotated arrays, peak finding, answer-space search patterns.</div>
+        <div class="card-topics">
+          <span class="topic-tag">Lower Bound</span>
+          <span class="topic-tag">Upper Bound</span>
+          <span class="topic-tag">Rotated Array</span>
+          <span class="topic-tag">Peak Element</span>
+          <span class="topic-tag">Ans Space</span>
+        </div>
+      </a>
+
+      <a href="linked-list.html" class="card purple">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">⬡</span>
+        <div class="card-title">Linked Lists</div>
+        <div class="card-desc">Visualize pointer manipulation — reverse, detect cycles, find middle, merge sorted lists, and Floyd's algorithm.</div>
+        <div class="card-topics">
+          <span class="topic-tag">Reverse</span>
+          <span class="topic-tag">Cycle Detection</span>
+          <span class="topic-tag">Find Middle</span>
+          <span class="topic-tag">Merge Sorted</span>
+          <span class="topic-tag">Floyd's</span>
+        </div>
+      </a>
+
+      <a href="trees.html" class="card green">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">⋔</span>
+        <div class="card-title">Trees & BST</div>
+        <div class="card-desc">Binary tree traversals, BST insert/delete/search, height, diameter, LCA and level-order operations visualized.</div>
+        <div class="card-topics">
+          <span class="topic-tag">Inorder/Pre/Post</span>
+          <span class="topic-tag">Level Order</span>
+          <span class="topic-tag">BST Ops</span>
+          <span class="topic-tag">LCA</span>
+          <span class="topic-tag">Diameter</span>
+        </div>
+      </a>
+
+      <a href="graphs.html" class="card pink">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">◈</span>
+        <div class="card-title">Graphs</div>
+        <div class="card-desc">BFS, DFS on grids and adjacency lists. Topological sort, cycle detection, Dijkstra's shortest path visualized live.</div>
+        <div class="card-topics">
+          <span class="topic-tag">BFS</span>
+          <span class="topic-tag">DFS</span>
+          <span class="topic-tag">Topo Sort</span>
+          <span class="topic-tag">Dijkstra</span>
+          <span class="topic-tag">Cycle Detect</span>
+        </div>
+      </a>
+      <a href="backtracking.html" class="card pink">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">◈</span>
+        <div class="card-title">Backtracking</div>
+        <div class="card-desc">NQeen soduku word finder </div>
+        <div class="card-topics">
+          <span class="topic-tag">NQueen</span>
+          <span class="topic-tag">Soduku</span>
+          <span class="topic-tag">Topo Sort</span>
+          <span class="topic-tag">Dijkstra</span>
+          <span class="topic-tag">Cycle Detect</span>
+        </div>
+      </a>
+
+      <a href="segment-tree.html" class="card red">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">⧖</span>
+        <div class="card-title">Segment Tree</div>
+        <div class="card-desc">Build, range sum query, range min query, and point update operations on a segment tree — each node highlighted as it's touched.</div>
+        <div class="card-topics">
+          <span class="topic-tag">Build</span>
+          <span class="topic-tag">Range Sum</span>
+          <span class="topic-tag">Range Min</span>
+          <span class="topic-tag">Point Update</span>
+          <span class="topic-tag">Lazy Prop</span>
+        </div>
+      </a>
+
+      <a href="dp.html" class="card amber">
+        <span class="card-arrow">→</span>
+        <span class="card-icon">◫</span>
+        <div class="card-title">Dynamic Programming</div>
+        <div class="card-desc">DP table filling visualized — 1D/2D DP, LCS, LIS, Knapsack, Coin Change, Edit Distance with cell-by-cell animation.</div>
+        <div class="card-topics">
+          <span class="topic-tag">LCS</span>
+          <span class="topic-tag">LIS</span>
+          <span class="topic-tag">Knapsack</span>
+          <span class="topic-tag">Coin Change</span>
+          <span class="topic-tag">Edit Dist</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="section-label">// Sheet Progress Tracker</div>
+    <div class="progress-section">
+      <div class="progress-item">
+        <div class="progress-label">Arrays</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%;background:var(--accent)"></div></div>
+        <div class="progress-count"><span>0</span> / 53 done</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">Binary Search</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%;background:var(--warn)"></div></div>
+        <div class="progress-count"><span>0</span> / 32 done</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">Linked List</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%;background:var(--accent2)"></div></div>
+        <div class="progress-count"><span>0</span> / 31 done</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">Trees</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%;background:var(--accent3)"></div></div>
+        <div class="progress-count"><span>0</span> / 39 done</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">Graphs</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%;background:#ec4899"></div></div>
+        <div class="progress-count"><span>0</span> / 54 done</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">DP</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%;background:var(--warn)"></div></div>
+        <div class="progress-count"><span>0</span> / 56 done</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>DSA Visual Lab — Striver's A2Z Sheet</span>
+    <span>Built with vanilla JS · <a href="#">Back to Sorting</a></span>
+  </footer>
+</div>
+</body>
+</html>

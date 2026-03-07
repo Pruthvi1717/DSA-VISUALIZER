@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trees & BST — DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#050810;--surface:#0c1120;--surface2:#111827;
+  --border:#1e2d47;--accent:#00d4ff;--accent2:#7c3aed;
+  --accent3:#10b981;--warn:#f59e0b;--danger:#ef4444;
+  --text:#e2e8f0;--muted:#64748b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrapper{position:relative;z-index:1;}
+header{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(12,17,32,0.8);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;}
+.logo-text span{color:var(--accent);}
+nav{display:flex;gap:8px;}
+.nav-link{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+.nav-link:hover,.nav-link.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,0.08);}
+.container{max-width:1200px;margin:0 auto;padding:32px 40px;display:grid;gap:24px;}
+.ptabs{display:flex;gap:8px;flex-wrap:wrap;}
+.ptab{padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+.ptab:hover{border-color:var(--accent3);color:var(--accent3);}
+.ptab.active{background:rgba(16,185,129,0.1);border-color:var(--accent3);color:var(--accent3);box-shadow:0 0 12px rgba(16,185,129,0.2);}
+.viz-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.viz-top{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.viz-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;}
+.viz-title span{color:var(--accent3);}
+.stats{display:flex;gap:20px;}
+.stat{text-align:right;}
+.stat-val{font-size:18px;font-weight:700;color:var(--accent3);}
+.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.input-row{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.input-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;}
+.arr-input{flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:border-color 0.2s;}
+.arr-input:focus{border-color:var(--accent3);}
+.target-in{width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;}
+.btn{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;transition:all 0.2s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,var(--accent3),#059669);color:#000;box-shadow:0 4px 16px rgba(16,185,129,0.25);}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-danger{background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+input[type=range]{width:100px;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent3);cursor:pointer;}
+
+/* Tree Canvas */
+.tree-canvas-wrap{padding:24px;overflow:auto;}
+canvas#tree-canvas{display:block;margin:0 auto;}
+
+/* Traversal output */
+.traversal-output{padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:52px;}
+.trav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);}
+.trav-node{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;font-size:12px;font-weight:600;margin:2px;transition:all 0.3s;}
+.trav-node.default{background:var(--surface2);border:1px solid var(--border);color:var(--text);}
+.trav-node.highlighted{background:rgba(16,185,129,0.2);border:2px solid var(--accent3);color:var(--accent3);box-shadow:0 0 12px rgba(16,185,129,0.3);}
+
+.progress-bar{height:3px;background:var(--border);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent2));width:0%;transition:width 0.1s;}
+.status-bar{padding:12px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:11px;color:var(--muted);min-height:44px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.status-dot.running{background:var(--accent3);box-shadow:0 0 8px var(--accent3);animation:pulse 1s infinite;}
+.status-dot.done{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.info-card h3{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px;}
+.cx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cx-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.cx-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;}
+.cx-val{font-size:13px;font-weight:600;}
+.cx-val.good{color:var(--accent3);}.cx-val.ok{color:var(--warn);}.cx-val.info{color:var(--accent);}
+.desc-text{font-size:12px;line-height:1.8;color:#94a3b8;}
+.legend{display:flex;flex-wrap:wrap;gap:12px;}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);}
+.leg-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+
+@media(max-width:768px){.container{padding:16px;}header{padding:16px;}.info-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <a href="index.html" class="logo">
+      <div class="logo-icon">⬡</div>
+      <div class="logo-text">DSA<span>Visual</span></div>
+    </a>
+    <nav>
+      <a href="arrays.html" class="nav-link">← Arrays</a>
+      <a href="graphs.html" class="nav-link">Graphs →</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="ptabs">
+      <button class="ptab active" onclick="selectOp('inorder')">Inorder</button>
+      <button class="ptab" onclick="selectOp('preorder')">Preorder</button>
+      <button class="ptab" onclick="selectOp('postorder')">Postorder</button>
+      <button class="ptab" onclick="selectOp('levelorder')">Level Order</button>
+      <button class="ptab" onclick="selectOp('bst-insert')">BST Insert</button>
+      <button class="ptab" onclick="selectOp('bst-search')">BST Search</button>
+      <button class="ptab" onclick="selectOp('height')">Height</button>
+      <button class="ptab" onclick="selectOp('lca')">LCA</button>
+    </div>
+
+    <div class="viz-card">
+      <div class="viz-top">
+        <div class="viz-title" id="viz-title">In<span>order</span> Traversal</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-val" id="stat-nodes">0</div><div class="stat-label">Nodes Visited</div></div>
+          <div class="stat"><div class="stat-val" id="stat-result">—</div><div class="stat-label">Result</div></div>
+        </div>
+      </div>
+      <div class="input-row">
+        <span class="input-label">Tree (level-order):</span>
+        <input type="text" class="arr-input" id="tree-input" value="5, 3, 8, 2, 4, 7, 9, 1, null, null, null, 6">
+        <span class="input-label" id="val-label">Value:</span>
+        <input type="text" class="target-in" id="val-input" value="6">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="input-label">Speed</span>
+          <input type="range" id="speed-sl" min="1" max="5" value="3">
+        </div>
+        <button class="btn btn-primary" id="run-btn" onclick="runOp()">▶ Run</button>
+        <button class="btn btn-sec" onclick="resetOp()">⟳ Reset</button>
+        <button class="btn btn-danger" id="stop-btn" onclick="stopOp()" disabled>■ Stop</button>
+      </div>
+
+      <div class="tree-canvas-wrap">
+        <canvas id="tree-canvas" width="900" height="360"></canvas>
+      </div>
+
+      <div class="traversal-output">
+        <span class="trav-label">Order:</span>
+        <div id="trav-nodes"></div>
+      </div>
+
+      <div class="progress-bar"><div class="progress-fill" id="pfill"></div></div>
+      <div class="status-bar">
+        <div class="status-dot" id="sdot"></div>
+        <span id="stext">Ready — enter tree values and click ▶ Run</span>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h3>// Complexity</h3>
+        <div class="cx-grid">
+          <div class="cx-item"><div class="cx-label">Time</div><div class="cx-val good" id="cx-t">O(n)</div></div>
+          <div class="cx-item"><div class="cx-label">Space</div><div class="cx-val info" id="cx-s">O(h)</div></div>
+          <div class="cx-item"><div class="cx-label">Order</div><div class="cx-val ok" id="cx-ord">Left-Root-Right</div></div>
+          <div class="cx-item"><div class="cx-label">Use Case</div><div class="cx-val" id="cx-use" style="color:#94a3b8;font-size:11px;">Sorted output</div></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3>// Legend</h3>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#1e3a5f"></div>Unvisited</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Current (active)</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#10b981"></div>Visited</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>Result / Found</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Not Found</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <h3 style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;">// Algorithm Details</h3>
+      <div class="desc-text" id="algo-desc">Inorder traversal visits Left subtree → Root → Right subtree. For a BST, this produces elements in sorted ascending order.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// TREE NODE & BUILDER
+// ============================================================
+class TreeNode {
+  constructor(val) { this.val=val; this.left=null; this.right=null; this.x=0; this.y=0; this.state='default'; }
+}
+
+function buildTree(vals) {
+  if (!vals.length || vals[0] === null) return null;
+  const root = new TreeNode(vals[0]);
+  const q = [root];
+  let i = 1;
+  while (q.length && i < vals.length) {
+    const node = q.shift();
+    if (i < vals.length && vals[i] !== null) { node.left = new TreeNode(vals[i]); q.push(node.left); }
+    i++;
+    if (i < vals.length && vals[i] !== null) { node.right = new TreeNode(vals[i]); q.push(node.right); }
+    i++;
+  }
+  return root;
+}
+
+function parseTreeInput(str) {
+  return str.split(',').map(s => {
+    const t = s.trim();
+    return t === 'null' || t === '' ? null : parseInt(t);
+  }).filter((v, i) => i === 0 || v !== undefined);
+}
+
+// ============================================================
+// LAYOUT & DRAWING
+// ============================================================
+const CANVAS_W = 900, CANVAS_H = 360;
+const NODE_R = 20;
+const COLORS = {
+  default: { fill:'#1e3a5f', stroke:'#2d5a8f', text:'#93c5fd' },
+  active:  { fill:'rgba(245,158,11,0.2)', stroke:'#f59e0b', text:'#fbbf24' },
+  visited: { fill:'rgba(16,185,129,0.2)', stroke:'#10b981', text:'#34d399' },
+  found:   { fill:'rgba(124,58,237,0.25)', stroke:'#7c3aed', text:'#a78bfa' },
+  notfound:{ fill:'rgba(239,68,68,0.2)', stroke:'#ef4444', text:'#fca5a5' },
+};
+
+function getTreeWidth(node) {
+  if (!node) return 0;
+  return Math.max(1, getTreeWidth(node.left) + getTreeWidth(node.right));
+}
+
+function assignPositions(node, depth, left, right) {
+  if (!node) return;
+  const mid = (left + right) / 2;
+  node.x = mid * (CANVAS_W - 40) + 20;
+  node.y = depth * 80 + 50;
+  assignPositions(node.left, depth+1, left, mid);
+  assignPositions(node.right, depth+1, mid, right);
+}
+
+function drawTree(root) {
+  const canvas = document.getElementById('tree-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+  if (!root) return;
+
+  function drawEdges(node) {
+    if (!node) return;
+    ctx.strokeStyle = '#1e2d47';
+    ctx.lineWidth = 2;
+    if (node.left) {
+      ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(node.left.x, node.left.y); ctx.stroke();
+      drawEdges(node.left);
+    }
+    if (node.right) {
+      ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(node.right.x, node.right.y); ctx.stroke();
+      drawEdges(node.right);
+    }
+  }
+  function drawNodes(node) {
+    if (!node) return;
+    const c = COLORS[node.state] || COLORS.default;
+    // Glow
+    if (node.state === 'active') {
+      ctx.shadowBlur = 16; ctx.shadowColor = '#f59e0b';
+    } else if (node.state === 'visited') {
+      ctx.shadowBlur = 10; ctx.shadowColor = '#10b981';
+    } else if (node.state === 'found') {
+      ctx.shadowBlur = 16; ctx.shadowColor = '#7c3aed';
+    } else {
+      ctx.shadowBlur = 0;
+    }
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, NODE_R, 0, Math.PI*2);
+    ctx.fillStyle = c.fill;
+    ctx.fill();
+    ctx.strokeStyle = c.stroke;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = c.text;
+    ctx.font = 'bold 13px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(node.val, node.x, node.y);
+    drawNodes(node.left);
+    drawNodes(node.right);
+  }
+  drawEdges(root); drawNodes(root);
+}
+
+// ============================================================
+// TRAVERSAL RESULT BAR
+// ============================================================
+let traversalResult = [];
+function addToResult(val) {
+  traversalResult.push(val);
+  const wrap = document.getElementById('trav-nodes');
+  wrap.innerHTML = traversalResult.map((v,i) =>
+    `<div class="trav-node ${i===traversalResult.length-1?'highlighted':'default'}">${v}</div>`
+  ).join('');
+}
+function updateResultHighlights() {
+  const wrap = document.getElementById('trav-nodes');
+  const nodes = wrap.querySelectorAll('.trav-node');
+  nodes.forEach((n,i) => { n.className = 'trav-node ' + (i===traversalResult.length-1?'highlighted':'default'); });
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let currentOp = 'inorder';
+let running = false;
+let stopFlag = false;
+let stepCount = 0;
+let rootNode = null;
+
+const OPS_INFO = {
+  'inorder':    { title:'In<span>order</span> Traversal', time:'O(n)', space:'O(h)', order:'Left→Root→Right', use:'BST sorted output', desc:'Inorder visits Left → Root → Right. On a BST this produces nodes in ascending sorted order. Recursion depth = tree height h = O(log n) for balanced.', showVal:false },
+  'preorder':   { title:'Pre<span>order</span> Traversal', time:'O(n)', space:'O(h)', order:'Root→Left→Right', use:'Tree serialization', desc:'Preorder visits Root → Left → Right. Useful for creating a copy of the tree or serializing its structure. Root is always processed first.', showVal:false },
+  'postorder':  { title:'Post<span>order</span> Traversal', time:'O(n)', space:'O(h)', order:'Left→Right→Root', use:'Deletion / eval', desc:'Postorder visits Left → Right → Root. Useful when children must be processed before the parent — like tree deletion or evaluating expression trees.', showVal:false },
+  'levelorder': { title:'Level <span>Order</span> BFS', time:'O(n)', space:'O(w)', order:'Level by Level', use:'Shortest path', desc:'Level Order (BFS) uses a queue to visit nodes level by level. Space O(w) where w is max width. Used in finding shortest paths in unweighted trees.', showVal:false },
+  'bst-insert': { title:'BST <span>Insert</span>', time:'O(h)', space:'O(h)', order:'Recursive', use:'Maintain BST', desc:'BST Insert compares new value with each node: go left if smaller, right if larger. Insert at first null position. O(log n) for balanced BST, O(n) worst case.', showVal:true, valLabel:'Insert:' },
+  'bst-search': { title:'BST <span>Search</span>', time:'O(h)', space:'O(h)', order:'Recursive', use:'Lookup', desc:'BST Search exploits BST property: go left if target < node, right if target > node. O(log n) average, O(n) worst case (skewed tree).', showVal:true, valLabel:'Search:' },
+  'height':     { title:'Tree <span>Height</span>', time:'O(n)', space:'O(h)', order:'Postorder', use:'Balance check', desc:'Tree height = max(height(left), height(right)) + 1. Base case: null node returns -1. Computed via postorder DFS — both children processed before parent.', showVal:false },
+  'lca':        { title:'Lowest Common <span>Ancestor</span>', time:'O(n)', space:'O(h)', order:'Postorder DFS', use:'Tree queries', desc:'LCA: traverse tree, if current node equals p or q return it. If both left and right return non-null, current node is the LCA. Otherwise return the non-null child.', showVal:true, valLabel:'p,q:' },
+};
+
+function selectOp(op) {
+  if (running) return;
+  currentOp = op;
+  document.querySelectorAll('.ptab').forEach((b,i) => {
+    b.classList.toggle('active', Object.keys(OPS_INFO)[i] === op);
+  });
+  const info = OPS_INFO[op];
+  document.getElementById('viz-title').innerHTML = info.title;
+  document.getElementById('cx-t').textContent = info.time;
+  document.getElementById('cx-s').textContent = info.space;
+  document.getElementById('cx-ord').textContent = info.order;
+  document.getElementById('cx-use').textContent = info.use;
+  document.getElementById('algo-desc').textContent = info.desc.replace(/<[^>]+>/g,'');
+  document.getElementById('val-label').style.display = info.showVal ? '' : 'none';
+  document.getElementById('val-input').style.display = info.showVal ? '' : 'none';
+  if (info.showVal) document.getElementById('val-label').textContent = info.valLabel || 'Value:';
+  resetOp();
+}
+
+function getDelay() {
+  const spd = [600, 250, 100, 40, 5];
+  return spd[+document.getElementById('speed-sl').value - 1];
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setStatus(state, msg) {
+  const dot = document.getElementById('sdot');
+  dot.className = 'status-dot' + (state==='running'?' running':state==='done'?' done':'');
+  document.getElementById('stext').textContent = msg;
+}
+
+function resetOp() {
+  stopFlag = true; running = false;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+  document.getElementById('pfill').style.width = '0%';
+  document.getElementById('stat-nodes').textContent = '0';
+  document.getElementById('stat-result').textContent = '—';
+  document.getElementById('trav-nodes').innerHTML = '';
+  traversalResult = []; stepCount = 0;
+  buildAndDrawTree();
+  setStatus('idle', 'Ready — click ▶ Run');
+}
+
+function buildAndDrawTree() {
+  const vals = parseTreeInput(document.getElementById('tree-input').value);
+  rootNode = buildTree(vals);
+  if (rootNode) {
+    assignPositions(rootNode, 0, 0, 1);
+    drawTree(rootNode);
+  }
+}
+
+function resetNodeStates(node) {
+  if (!node) return;
+  node.state = 'default';
+  resetNodeStates(node.left);
+  resetNodeStates(node.right);
+}
+
+// ============================================================
+// ALGORITHM IMPLEMENTATIONS
+// ============================================================
+async function inorder(node, total) {
+  if (!node || stopFlag) return;
+  await inorder(node.left, total);
+  if (stopFlag) return;
+  node.state = 'active'; drawTree(rootNode);
+  stepCount++;
+  document.getElementById('stat-nodes').textContent = stepCount;
+  setStatus('running', `Visiting node ${node.val}`);
+  document.getElementById('pfill').style.width = (stepCount/total*100)+'%';
+  await sleep(getDelay());
+  if (stopFlag) return;
+  addToResult(node.val);
+  node.state = 'visited'; drawTree(rootNode);
+  await sleep(getDelay() * 0.3);
+  await inorder(node.right, total);
+}
+
+async function preorder(node, total) {
+  if (!node || stopFlag) return;
+  node.state = 'active'; drawTree(rootNode);
+  stepCount++; document.getElementById('stat-nodes').textContent = stepCount;
+  setStatus('running', `Visiting node ${node.val}`);
+  document.getElementById('pfill').style.width = (stepCount/total*100)+'%';
+  await sleep(getDelay());
+  if (stopFlag) return;
+  addToResult(node.val);
+  node.state = 'visited'; drawTree(rootNode);
+  await sleep(getDelay() * 0.3);
+  await preorder(node.left, total);
+  await preorder(node.right, total);
+}
+
+async function postorder(node, total) {
+  if (!node || stopFlag) return;
+  await postorder(node.left, total);
+  await postorder(node.right, total);
+  if (stopFlag) return;
+  node.state = 'active'; drawTree(rootNode);
+  stepCount++; document.getElementById('stat-nodes').textContent = stepCount;
+  setStatus('running', `Visiting node ${node.val}`);
+  document.getElementById('pfill').style.width = (stepCount/total*100)+'%';
+  await sleep(getDelay());
+  if (stopFlag) return;
+  addToResult(node.val);
+  node.state = 'visited'; drawTree(rootNode);
+  await sleep(getDelay() * 0.3);
+}
+
+async function levelorder(root) {
+  if (!root || stopFlag) return;
+  const q = [root];
+  const total = countNodes(root);
+  while (q.length && !stopFlag) {
+    const node = q.shift();
+    node.state = 'active'; drawTree(rootNode);
+    stepCount++; document.getElementById('stat-nodes').textContent = stepCount;
+    setStatus('running', `Level order visiting ${node.val}`);
+    document.getElementById('pfill').style.width = (stepCount/total*100)+'%';
+    await sleep(getDelay());
+    if (stopFlag) return;
+    addToResult(node.val);
+    node.state = 'visited'; drawTree(rootNode);
+    if (node.left) q.push(node.left);
+    if (node.right) q.push(node.right);
+    await sleep(getDelay()*0.3);
+  }
+}
+
+async function bstSearch(node, target) {
+  if (!node || stopFlag) return false;
+  node.state = 'active'; drawTree(rootNode);
+  stepCount++; document.getElementById('stat-nodes').textContent = stepCount;
+  await sleep(getDelay());
+  if (stopFlag) return false;
+  if (node.val === target) {
+    node.state = 'found'; drawTree(rootNode);
+    setStatus('done', `✓ Found ${target}!`);
+    document.getElementById('stat-result').textContent = `Found`;
+    return true;
+  }
+  node.state = 'visited';
+  if (target < node.val) {
+    setStatus('running', `${target} < ${node.val} → go left`);
+    return await bstSearch(node.left, target);
+  } else {
+    setStatus('running', `${target} > ${node.val} → go right`);
+    return await bstSearch(node.right, target);
+  }
+}
+
+async function bstInsert(node, val, parent=null, side=null) {
+  if (!node) {
+    const newNode = new TreeNode(val);
+    if (parent && side==='left') parent.left = newNode;
+    else if (parent && side==='right') parent.right = newNode;
+    else if (!parent) rootNode = newNode;
+    // Recompute positions
+    assignPositions(rootNode, 0, 0, 1);
+    newNode.state = 'found';
+    drawTree(rootNode);
+    setStatus('done', `Inserted ${val}`);
+    document.getElementById('stat-result').textContent = `Inserted`;
+    return;
+  }
+  if (stopFlag) return;
+  node.state = 'active'; drawTree(rootNode);
+  stepCount++; document.getElementById('stat-nodes').textContent = stepCount;
+  await sleep(getDelay());
+  if (stopFlag) return;
+  node.state = 'visited';
+  if (val < node.val) {
+    setStatus('running', `${val} < ${node.val} → go left`);
+    await bstInsert(node.left, val, node, 'left');
+  } else if (val > node.val) {
+    setStatus('running', `${val} > ${node.val} → go right`);
+    await bstInsert(node.right, val, node, 'right');
+  } else {
+    setStatus('done', `${val} already exists`);
+    document.getElementById('stat-result').textContent = 'Exists';
+  }
+}
+
+async function calcHeight(node) {
+  if (!node || stopFlag) return -1;
+  const lh = await calcHeight(node.left);
+  if (stopFlag) return -1;
+  const rh = await calcHeight(node.right);
+  if (stopFlag) return -1;
+  const h = Math.max(lh, rh) + 1;
+  node.state = 'active'; drawTree(rootNode);
+  stepCount++; document.getElementById('stat-nodes').textContent = stepCount;
+  setStatus('running', `Height of node ${node.val} = max(${lh},${rh})+1 = ${h}`);
+  await sleep(getDelay());
+  node.state = 'visited'; drawTree(rootNode);
+  return h;
+}
+
+async function findLCA(node, p, q) {
+  if (!node || stopFlag) return null;
+  node.state = 'active'; drawTree(rootNode);
+  stepCount++; document.getElementById('stat-nodes').textContent = stepCount;
+  await sleep(getDelay());
+  if (stopFlag) return null;
+  if (node.val === p || node.val === q) {
+    node.state = 'found'; drawTree(rootNode);
+    setStatus('running', `Found target ${node.val}`);
+    await sleep(getDelay()*0.5);
+    return node;
+  }
+  node.state = 'visited';
+  const left = await findLCA(node.left, p, q);
+  if (stopFlag) return null;
+  const right = await findLCA(node.right, p, q);
+  if (stopFlag) return null;
+  if (left && right) {
+    node.state = 'found'; drawTree(rootNode);
+    return node;
+  }
+  return left || right;
+}
+
+function countNodes(node) {
+  if (!node) return 0;
+  return 1 + countNodes(node.left) + countNodes(node.right);
+}
+
+// ============================================================
+// RUN
+// ============================================================
+async function runOp() {
+  if (running) return;
+  running = true; stopFlag = false; stepCount = 0; traversalResult = [];
+  document.getElementById('run-btn').disabled = true;
+  document.getElementById('stop-btn').disabled = false;
+  document.getElementById('trav-nodes').innerHTML = '';
+  document.getElementById('stat-nodes').textContent = '0';
+  document.getElementById('stat-result').textContent = '—';
+  document.getElementById('pfill').style.width = '0%';
+  setStatus('running', 'Running...');
+
+  buildAndDrawTree();
+  resetNodeStates(rootNode);
+  drawTree(rootNode);
+
+  const valStr = document.getElementById('val-input').value.trim();
+  const total = countNodes(rootNode);
+
+  try {
+    switch(currentOp) {
+      case 'inorder':    await inorder(rootNode, total); break;
+      case 'preorder':   await preorder(rootNode, total); break;
+      case 'postorder':  await postorder(rootNode, total); break;
+      case 'levelorder': await levelorder(rootNode); break;
+      case 'bst-search': {
+        const target = parseInt(valStr);
+        const found = await bstSearch(rootNode, target);
+        if (!found && !stopFlag) { setStatus('done', `${target} not found in tree`); document.getElementById('stat-result').textContent='Not found'; }
+        break;
+      }
+      case 'bst-insert': {
+        await bstInsert(rootNode, parseInt(valStr));
+        break;
+      }
+      case 'height': {
+        const h = await calcHeight(rootNode);
+        if (!stopFlag) { setStatus('done', `Tree height = ${h}`); document.getElementById('stat-result').textContent = h; document.getElementById('pfill').style.width='100%'; }
+        break;
+      }
+      case 'lca': {
+        const [p, q] = valStr.split(',').map(s => parseInt(s.trim()));
+        const lca = await findLCA(rootNode, p, q);
+        if (!stopFlag) {
+          setStatus('done', lca ? `LCA(${p},${q}) = ${lca.val}` : 'One or both nodes not found');
+          document.getElementById('stat-result').textContent = lca ? lca.val : '—';
+          document.getElementById('pfill').style.width='100%';
+        }
+        break;
+      }
+    }
+  } catch(e) { console.error(e); }
+
+  if (!stopFlag) {
+    const res = traversalResult.length ? '['+traversalResult.join(',')+']' : document.getElementById('stat-result').textContent;
+    if (traversalResult.length) document.getElementById('stat-result').textContent = `${traversalResult.length} nodes`;
+    document.getElementById('pfill').style.width = '100%';
+    document.getElementById('sdot').className = 'status-dot done';
+    // Highlight all trav nodes as done
+    document.querySelectorAll('.trav-node').forEach(n => n.classList.replace('highlighted','default'));
+  }
+
+  running = false;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+}
+
+function stopOp() {
+  stopFlag = true; running = false;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+  setStatus('idle', 'Stopped');
+}
+
+// Init
+selectOp('inorder');
+buildAndDrawTree();
+</script>
+</body>
+</html>

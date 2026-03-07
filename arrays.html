@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays & Patterns — DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050810; --surface: #0c1120; --surface2: #111827;
+  --border: #1e2d47; --accent: #00d4ff; --accent2: #7c3aed;
+  --accent3: #10b981; --warn: #f59e0b; --danger: #ef4444;
+  --text: #e2e8f0; --muted: #64748b;
+  --el-default: #1e40af; --el-active: #00d4ff; --el-compare: #f59e0b;
+  --el-match: #10b981; --el-exclude: #ef4444; --el-pivot: #7c3aed;
+  --el-window: rgba(0,212,255,0.15);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; min-height:100vh; }
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px; pointer-events:none; z-index:0;
+}
+.wrapper { position:relative; z-index:1; }
+
+header {
+  padding:20px 40px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(12,17,32,0.8); backdrop-filter:blur(12px);
+  position:sticky; top:0; z-index:100;
+}
+.logo { display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; }
+.logo-icon { width:32px; height:32px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.logo-text { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; }
+.logo-text span { color:var(--accent); }
+nav { display:flex; gap:8px; }
+.nav-link {
+  padding:6px 14px; border-radius:8px; border:1px solid var(--border);
+  background:var(--surface2); color:var(--muted); font-family:'JetBrains Mono',monospace;
+  font-size:11px; cursor:pointer; text-decoration:none; transition:all 0.2s;
+}
+.nav-link:hover, .nav-link.active { border-color:var(--accent); color:var(--accent); background:rgba(0,212,255,0.08); }
+
+.container { max-width:1200px; margin:0 auto; padding:32px 40px; display:grid; gap:24px; }
+
+/* Pattern Selector */
+.pattern-tabs {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.ptab {
+  padding:10px 18px; border-radius:10px; border:1px solid var(--border);
+  background:var(--surface2); color:var(--muted); font-family:'JetBrains Mono',monospace;
+  font-size:11px; cursor:pointer; transition:all 0.2s;
+}
+.ptab:hover { border-color:var(--accent); color:var(--accent); }
+.ptab.active { background:rgba(0,212,255,0.1); border-color:var(--accent); color:var(--accent); box-shadow:0 0 12px rgba(0,212,255,0.2); }
+
+/* Main viz card */
+.viz-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden;
+}
+.viz-top {
+  padding:20px 28px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+}
+.viz-title { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; }
+.viz-title span { color:var(--accent); }
+.stats { display:flex; gap:20px; }
+.stat { text-align:right; }
+.stat-val { font-size:18px; font-weight:700; color:var(--accent); }
+.stat-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+
+/* Input row */
+.input-row {
+  padding:16px 28px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.input-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); white-space:nowrap; }
+.array-input {
+  flex:1; min-width:200px;
+  background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+  padding:8px 14px; color:var(--text); font-family:'JetBrains Mono',monospace;
+  font-size:12px; outline:none; transition:border-color 0.2s;
+}
+.array-input:focus { border-color:var(--accent); }
+.target-input {
+  width:80px;
+  background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+  padding:8px 14px; color:var(--text); font-family:'JetBrains Mono',monospace;
+  font-size:12px; outline:none; transition:border-color 0.2s;
+}
+.target-input:focus { border-color:var(--accent); }
+.btn {
+  padding:8px 20px; border-radius:8px; border:none; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
+  transition:all 0.2s; white-space:nowrap;
+}
+.btn-primary { background:linear-gradient(135deg,var(--accent),#0096cc); color:#000; box-shadow:0 4px 16px rgba(0,212,255,0.25); }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 24px rgba(0,212,255,0.4); }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+.btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+.btn-secondary:hover { border-color:var(--muted); }
+.btn-danger { background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); }
+
+/* Array visualization */
+.array-viz-wrap {
+  padding:32px 28px 20px;
+  display:flex; flex-direction:column; gap:16px;
+  min-height:200px;
+}
+.array-row-label { font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:6px; }
+.array-row {
+  display:flex; gap:4px; align-items:flex-end; flex-wrap:nowrap; overflow-x:auto;
+}
+.cell {
+  min-width:44px; height:44px;
+  border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:600;
+  background:var(--surface2); border:2px solid var(--border); color:var(--text);
+  transition:all 0.25s ease; position:relative; flex-shrink:0;
+}
+.cell.active { background:rgba(0,212,255,0.15); border-color:var(--accent); color:var(--accent); box-shadow:0 0 14px rgba(0,212,255,0.35); }
+.cell.compare { background:rgba(245,158,11,0.15); border-color:var(--warn); color:var(--warn); }
+.cell.match { background:rgba(16,185,129,0.15); border-color:var(--accent3); color:var(--accent3); box-shadow:0 0 14px rgba(16,185,129,0.3); }
+.cell.exclude { background:rgba(239,68,68,0.1); border-color:var(--danger); color:var(--danger); opacity:0.6; }
+.cell.pivot { background:rgba(124,58,237,0.15); border-color:var(--accent2); color:#a78bfa; }
+.cell.window { background:rgba(0,212,255,0.07); border-color:rgba(0,212,255,0.4); }
+.cell.zero { background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.4); color:#fca5a5; }
+.cell.one { background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.4); color:var(--warn); }
+.cell.two-val { background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.4); color:var(--accent3); }
+
+.cell-idx {
+  position:absolute; bottom:-18px; left:50%; transform:translateX(-50%);
+  font-size:9px; color:var(--muted); font-weight:400;
+}
+.ptr-label {
+  position:absolute; top:-22px; left:50%; transform:translateX(-50%);
+  font-size:9px; color:var(--accent); white-space:nowrap; font-weight:600;
+}
+.ptr-label.right-ptr { color:var(--warn); }
+.ptr-label.green-ptr { color:var(--accent3); }
+.ptr-label.purple-ptr { color:#a78bfa; }
+
+/* Prefix sum row */
+.prefix-row {
+  display:flex; gap:4px; margin-top:24px;
+}
+.prefix-cell {
+  min-width:44px; height:36px;
+  border-radius:6px; display:flex; align-items:center; justify-content:center;
+  font-size:11px; background:var(--surface2); border:1px dashed var(--border); color:var(--muted);
+  transition:all 0.25s; flex-shrink:0;
+}
+.prefix-cell.filled { border-color:var(--accent2); color:#a78bfa; background:rgba(124,58,237,0.1); }
+
+/* Progress */
+.progress-bar { height:3px; background:var(--border); }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); width:0%; transition:width 0.1s; }
+
+/* Status */
+.status-bar {
+  padding:12px 28px; border-top:1px solid var(--border);
+  display:flex; align-items:center; gap:12px; font-size:11px; color:var(--muted); min-height:44px;
+}
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+.status-dot.running { background:var(--accent); box-shadow:0 0 8px var(--accent); animation:pulse 1s infinite; }
+.status-dot.done { background:var(--accent3); box-shadow:0 0 8px var(--accent3); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Speed control */
+.speed-wrap { display:flex; align-items:center; gap:10px; }
+.speed-wrap label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); }
+input[type=range] { width:100px; -webkit-appearance:none; height:4px; background:var(--border); border-radius:2px; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--accent); cursor:pointer; box-shadow:0 0 6px rgba(0,212,255,0.5); }
+
+/* Info cards */
+.info-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.info-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; }
+.info-card h3 { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:14px; }
+.cx-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cx-item { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; }
+.cx-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:4px; }
+.cx-val { font-size:13px; font-weight:600; }
+.cx-val.good { color:var(--accent3); } .cx-val.ok { color:var(--warn); } .cx-val.bad { color:var(--danger); } .cx-val.info { color:var(--accent); }
+.desc-text { font-size:12px; line-height:1.8; color:#94a3b8; }
+.tag-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.tag { padding:3px 10px; border-radius:20px; font-size:10px; letter-spacing:0.5px; border:1px solid; }
+.tag-green { background:rgba(16,185,129,0.1); color:var(--accent3); border-color:rgba(16,185,129,0.3); }
+.tag-blue { background:rgba(0,212,255,0.1); color:var(--accent); border-color:rgba(0,212,255,0.2); }
+.tag-purple { background:rgba(124,58,237,0.1); color:#a78bfa; border-color:rgba(124,58,237,0.3); }
+
+/* Legend */
+.legend { display:flex; flex-wrap:wrap; gap:12px; }
+.leg-item { display:flex; align-items:center; gap:8px; font-size:10px; color:var(--muted); }
+.leg-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+
+/* Window highlight overlay */
+.window-overlay {
+  position:absolute; top:0; left:0; bottom:0;
+  background:rgba(0,212,255,0.06);
+  border:2px dashed rgba(0,212,255,0.3);
+  border-radius:10px;
+  pointer-events:none;
+  transition:all 0.25s;
+}
+
+@media(max-width:768px) {
+  .container { padding:16px; }
+  header { padding:16px; }
+  .info-row { grid-template-columns:1fr; }
+  .stats { gap:12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <a href="index.html" class="logo">
+      <div class="logo-icon">⬡</div>
+      <div class="logo-text">DSA<span>Visual</span></div>
+    </a>
+    <nav>
+      <a href="index.html" class="nav-link">← Hub</a>
+      <a href="binary-search.html" class="nav-link">Binary Search →</a>
+    </nav>
+  </header>
+
+  <div class="container">
+
+    <!-- Pattern Tabs -->
+    <div class="pattern-tabs" id="ptabs">
+      <button class="ptab active" onclick="selectPattern('two-pointers')">Two Pointers</button>
+      <button class="ptab" onclick="selectPattern('sliding-window')">Sliding Window</button>
+      <button class="ptab" onclick="selectPattern('prefix-sum')">Prefix Sum</button>
+      <button class="ptab" onclick="selectPattern('kadane')">Kadane's Algo</button>
+      <button class="ptab" onclick="selectPattern('dnf')">Dutch National Flag</button>
+      <button class="ptab" onclick="selectPattern('next-greater')">Next Greater Element</button>
+    </div>
+
+    <!-- Visualization Card -->
+    <div class="viz-card">
+      <div class="viz-top">
+        <div class="viz-title" id="viz-title">Two <span>Pointers</span></div>
+        <div class="stats">
+          <div class="stat"><div class="stat-val" id="stat-steps">0</div><div class="stat-label">Steps</div></div>
+          <div class="stat"><div class="stat-val" id="stat-result">—</div><div class="stat-label">Result</div></div>
+        </div>
+      </div>
+
+      <!-- Input Row -->
+      <div class="input-row">
+        <span class="input-label">Array:</span>
+        <input type="text" class="array-input" id="array-input" value="1, 3, 5, 7, 9, 11, 13, 15" placeholder="Enter comma-separated numbers">
+        <span class="input-label" id="target-label">Target:</span>
+        <input type="text" class="target-input" id="target-input" value="16">
+        <div class="speed-wrap">
+          <label>Speed</label>
+          <input type="range" id="speed-slider" min="1" max="5" value="3">
+        </div>
+        <button class="btn btn-primary" id="run-btn" onclick="runAlgo()">▶ Run</button>
+        <button class="btn btn-secondary" onclick="resetViz()">⟳ Reset</button>
+        <button class="btn btn-danger" id="stop-btn" onclick="stopAlgo()" disabled>■ Stop</button>
+      </div>
+
+      <!-- Array Display -->
+      <div class="array-viz-wrap" id="array-viz-wrap">
+        <div class="array-row-label" id="arr-label">// Input Array</div>
+        <div class="array-row" id="main-array-row" style="padding-bottom:32px;position:relative;margin-top:24px;"></div>
+        <div id="extra-row-wrap" style="display:none">
+          <div class="array-row-label" id="extra-label">// Prefix Sums</div>
+          <div class="array-row" id="extra-row" style="margin-top:16px;"></div>
+        </div>
+      </div>
+
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Ready — enter an array and click ▶ Run</span>
+      </div>
+    </div>
+
+    <!-- Info Row -->
+    <div class="info-row">
+      <div class="info-card">
+        <h3>// Complexity</h3>
+        <div class="cx-grid">
+          <div class="cx-item"><div class="cx-label">Time</div><div class="cx-val good" id="cx-time">O(n)</div></div>
+          <div class="cx-item"><div class="cx-label">Space</div><div class="cx-val info" id="cx-space">O(1)</div></div>
+          <div class="cx-item"><div class="cx-label">Pattern</div><div class="cx-val ok" id="cx-pattern">Two Pointers</div></div>
+          <div class="cx-item"><div class="cx-label">Requires</div><div class="cx-val" id="cx-req" style="color:#94a3b8">Sorted Array</div></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3>// Legend</h3>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--accent)"></div>Left / Active Pointer</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--warn)"></div>Right / Compare Pointer</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--accent3)"></div>Match / Result</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--danger)"></div>Excluded / Skip</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--accent2)"></div>Pivot / Window</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#1e40af"></div>Default</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="info-card">
+      <h3>// Algorithm Details</h3>
+      <div class="desc-text" id="algo-desc">
+        Two Pointers technique uses two indices that move toward each other (or in the same direction) to solve problems in O(n) instead of O(n²). Works on sorted arrays for pair-sum problems.
+      </div>
+      <div class="tag-row" id="algo-tags">
+        <span class="tag tag-green">O(n) Time</span>
+        <span class="tag tag-blue">O(1) Space</span>
+        <span class="tag tag-purple">Sorted Array</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let currentPattern = 'two-pointers';
+let running = false;
+let stopFlag = false;
+let animSteps = [];
+
+const PATTERNS_INFO = {
+  'two-pointers': {
+    title: 'Two <span>Pointers</span>',
+    desc: 'Two Pointers uses two indices to traverse a sorted array from both ends. For pair-sum: if current sum < target, move left pointer right; if sum > target, move right pointer left. O(n) vs O(n²) brute force.',
+    time: 'O(n)', space: 'O(1)', pattern: 'Two Pointers', req: 'Sorted Array',
+    targetLabel: 'Target:', showTarget: true,
+    tags: ['O(n) Time', 'O(1) Space', 'Sorted Array'],
+    defaultArr: '1, 3, 5, 7, 9, 11, 13, 15', defaultTarget: '16'
+  },
+  'sliding-window': {
+    title: 'Sliding <span>Window</span>',
+    desc: 'Sliding Window maintains a window of fixed size k, adding the next element and removing the first element as it slides. O(n) time by reusing previous window sum instead of recomputing.',
+    time: 'O(n)', space: 'O(1)', pattern: 'Sliding Window', req: 'Window Size k',
+    targetLabel: 'k (size):', showTarget: true,
+    tags: ['O(n) Time', 'O(1) Space', 'Fixed Window'],
+    defaultArr: '4, 2, 7, 3, 6, 1, 9, 5, 8', defaultTarget: '3'
+  },
+  'prefix-sum': {
+    title: 'Prefix <span>Sum</span>',
+    desc: 'Prefix Sum precomputes cumulative sums so any range sum [l,r] = prefix[r+1] - prefix[l] in O(1). Build takes O(n), each query O(1). Useful for range sum queries on static arrays.',
+    time: 'O(n)', space: 'O(n)', pattern: 'Prefix Sum', req: 'Static Array',
+    targetLabel: 'Query [l,r]:', showTarget: true,
+    tags: ['O(n) Build', 'O(1) Query', 'Extra Space'],
+    defaultArr: '3, 1, 4, 1, 5, 9, 2, 6', defaultTarget: '2,5'
+  },
+  'kadane': {
+    title: "Kadane's <span>Algorithm</span>",
+    desc: "Kadane's Algorithm finds maximum sum subarray in O(n). Key insight: if current subarray sum becomes negative, discard it and start fresh. Keep track of global maximum seen so far.",
+    time: 'O(n)', space: 'O(1)', pattern: "Kadane's", req: 'Any Array',
+    targetLabel: '', showTarget: false,
+    tags: ['O(n) Time', 'O(1) Space', 'Max Subarray'],
+    defaultArr: '-2, 1, -3, 4, -1, 2, 1, -5, 4', defaultTarget: ''
+  },
+  'dnf': {
+    title: 'Dutch National <span>Flag</span>',
+    desc: 'Dutch National Flag (3-way partition) sorts an array of 0s, 1s, and 2s in one pass using three pointers: low, mid, high. Elements < pivot go left, elements > pivot go right.',
+    time: 'O(n)', space: 'O(1)', pattern: '3-Way Partition', req: 'Values 0,1,2',
+    targetLabel: '', showTarget: false,
+    tags: ['O(n) Time', 'O(1) Space', 'In-Place'],
+    defaultArr: '2, 0, 1, 2, 1, 0, 0, 2, 1, 0', defaultTarget: ''
+  },
+  'next-greater': {
+    title: 'Next Greater <span>Element</span>',
+    desc: 'Next Greater Element uses a monotonic stack to find the next larger element for each index in O(n). Process right to left, popping elements from the stack that are ≤ current element.',
+    time: 'O(n)', space: 'O(n)', pattern: 'Monotonic Stack', req: 'Any Array',
+    targetLabel: '', showTarget: false,
+    tags: ['O(n) Time', 'O(n) Stack', 'Monotonic'],
+    defaultArr: '4, 3, 2, 10, 5, 8', defaultTarget: ''
+  }
+};
+
+function selectPattern(p) {
+  if (running) return;
+  currentPattern = p;
+  document.querySelectorAll('.ptab').forEach((b,i) => {
+    b.classList.toggle('active', Object.keys(PATTERNS_INFO)[i] === p);
+  });
+  const info = PATTERNS_INFO[p];
+  document.getElementById('viz-title').innerHTML = info.title;
+  document.getElementById('cx-time').textContent = info.time;
+  document.getElementById('cx-space').textContent = info.space;
+  document.getElementById('cx-pattern').textContent = info.pattern;
+  document.getElementById('cx-req').textContent = info.req;
+  document.getElementById('algo-desc').textContent = info.desc;
+  document.getElementById('target-label').textContent = info.targetLabel;
+  document.getElementById('target-input').style.display = info.showTarget ? '' : 'none';
+  document.getElementById('target-label').style.display = info.showTarget ? '' : 'none';
+  document.getElementById('array-input').value = info.defaultArr;
+  document.getElementById('target-input').value = info.defaultTarget;
+  document.getElementById('extra-row-wrap').style.display = 'none';
+  const tags = document.getElementById('algo-tags');
+  tags.innerHTML = '';
+  info.tags.forEach((t,i) => {
+    const cls = i===0?'tag-green':i===1?'tag-blue':'tag-purple';
+    tags.innerHTML += `<span class="tag ${cls}">${t}</span>`;
+  });
+  resetViz();
+}
+
+function parseArray() {
+  return document.getElementById('array-input').value
+    .split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+}
+function parseTarget() {
+  const v = document.getElementById('target-input').value.trim();
+  if (v.includes(',')) return v.split(',').map(n => parseInt(n.trim()));
+  return parseInt(v);
+}
+
+function getDelay() {
+  const speeds = [500, 200, 80, 30, 5];
+  return speeds[+document.getElementById('speed-slider').value - 1];
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function resetViz() {
+  stopFlag = true;
+  running = false;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('stat-steps').textContent = '0';
+  document.getElementById('stat-result').textContent = '—';
+  setStatus('idle', 'Ready — enter an array and click ▶ Run');
+  const arr = parseArray();
+  renderArray(arr, [], [], [], [], [], []);
+  document.getElementById('extra-row-wrap').style.display = 'none';
+}
+
+function setStatus(state, msg) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (state==='running'?' running':state==='done'?' done':'');
+  document.getElementById('status-text').textContent = msg;
+}
+
+// Render array with pointer labels
+function renderArray(arr, active=[], compare=[], match=[], exclude=[], pivot=[], window_=[],
+                     ptrs={}, cellClass={}) {
+  const row = document.getElementById('main-array-row');
+  row.innerHTML = '';
+  arr.forEach((v, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    if (window_.includes(i)) cell.classList.add('window');
+    if (exclude.includes(i)) cell.classList.add('exclude');
+    if (pivot.includes(i)) cell.classList.add('pivot');
+    if (compare.includes(i)) cell.classList.add('compare');
+    if (match.includes(i)) cell.classList.add('match');
+    if (active.includes(i)) cell.classList.add('active');
+    if (cellClass[i]) cell.classList.add(cellClass[i]);
+
+    cell.innerHTML = `${v}<span class="cell-idx">${i}</span>`;
+
+    // Pointer labels
+    if (ptrs.L === i) cell.innerHTML += `<span class="ptr-label">L</span>`;
+    if (ptrs.R === i && ptrs.R !== ptrs.L) cell.innerHTML += `<span class="ptr-label right-ptr">R</span>`;
+    else if (ptrs.R === i && ptrs.R === ptrs.L) cell.innerHTML += `<span class="ptr-label">L/R</span>`;
+    if (ptrs.M === i) cell.innerHTML += `<span class="ptr-label green-ptr">M</span>`;
+    if (ptrs.H === i) cell.innerHTML += `<span class="ptr-label purple-ptr">H</span>`;
+    if (ptrs.CUR === i) cell.innerHTML += `<span class="ptr-label">CUR</span>`;
+
+    row.appendChild(cell);
+  });
+}
+
+function renderExtra(arr, filled=[]) {
+  const row = document.getElementById('extra-row');
+  row.innerHTML = '';
+  arr.forEach((v, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'prefix-cell' + (filled.includes(i) ? ' filled' : '');
+    cell.textContent = filled.includes(i) ? v : '?';
+    row.appendChild(cell);
+  });
+}
+
+let stepCount = 0;
+async function addStep(msg, progressFrac) {
+  stepCount++;
+  document.getElementById('stat-steps').textContent = stepCount;
+  document.getElementById('progress-fill').style.width = (progressFrac * 100) + '%';
+  setStatus('running', msg);
+  await sleep(getDelay());
+}
+
+// ============================================================
+// ALGORITHMS
+// ============================================================
+async function runTwoPointers(arr, target) {
+  let L = 0, R = arr.length - 1;
+  while (L < R && !stopFlag) {
+    const sum = arr[L] + arr[R];
+    renderArray(arr, [L], [R], [], [], [], [], {L, R});
+    await addStep(`L=${L}(${arr[L]}) + R=${R}(${arr[R]}) = ${sum} vs target ${target}`, L / arr.length);
+    if (stopFlag) return;
+    if (sum === target) {
+      renderArray(arr, [], [], [L, R], [], [], [], {L, R});
+      await addStep(`✓ Found pair! indices [${L}, ${R}] → ${arr[L]} + ${arr[R]} = ${target}`, 1);
+      document.getElementById('stat-result').textContent = `[${L},${R}]`;
+      return;
+    } else if (sum < target) {
+      renderArray(arr, [L], [], [], [], [], [], {L, R});
+      await addStep(`Sum ${sum} < ${target} → move L right`, (L+1) / arr.length);
+      L++;
+    } else {
+      renderArray(arr, [], [R], [], [], [], [], {L, R});
+      await addStep(`Sum ${sum} > ${target} → move R left`, (arr.length - R) / arr.length);
+      R--;
+    }
+  }
+  renderArray(arr, [], [], [], [], [], []);
+  setStatus('done', `No pair found with sum = ${target}`);
+  document.getElementById('stat-result').textContent = 'None';
+}
+
+async function runSlidingWindow(arr, k) {
+  const n = arr.length;
+  if (k > n || k < 1) { setStatus('done', 'Invalid window size'); return; }
+  let windowSum = 0, maxSum = -Infinity, maxStart = 0;
+  // Build initial window
+  for (let i = 0; i < k; i++) windowSum += arr[i];
+  maxSum = windowSum;
+  renderArray(arr, [], [], [], [], [], Array.from({length:k},(_,i)=>i), {L:0, R:k-1});
+  await addStep(`Initial window [0..${k-1}] sum = ${windowSum}`, 0);
+  if (stopFlag) return;
+  for (let i = k; i <= n && !stopFlag; i++) {
+    const wIdx = Array.from({length:k},(_,j)=>i-k+j);
+    renderArray(arr, [i-1], [], i===n?[i-k]:[], [], [], wIdx, {L:i-k, R:i-1});
+    if (i < n) {
+      windowSum = windowSum - arr[i-k] + arr[i];
+      await addStep(`Remove arr[${i-k}]=${arr[i-k]}, Add arr[${i}]=${arr[i]} → sum=${windowSum}`, (i)/n);
+    }
+    if (windowSum > maxSum) { maxSum = windowSum; maxStart = i - k; }
+    if (stopFlag) return;
+  }
+  const maxWin = Array.from({length:k},(_,j)=>maxStart+j);
+  renderArray(arr, [], [], maxWin, [], [], [], {});
+  setStatus('done', `Max sum subarray of size ${k}: indices [${maxStart}..${maxStart+k-1}] = ${maxSum}`);
+  document.getElementById('stat-result').textContent = maxSum;
+}
+
+async function runPrefixSum(arr, query) {
+  const n = arr.length;
+  const prefix = new Array(n+1).fill(0);
+  document.getElementById('extra-row-wrap').style.display = '';
+  document.getElementById('extra-label').textContent = '// Prefix Sums (prefix[i] = sum of arr[0..i-1])';
+  renderExtra(prefix, []);
+  renderArray(arr, [0], [], [], [], [], []);
+  await addStep('Building prefix sum array...', 0);
+  if (stopFlag) return;
+  for (let i = 1; i <= n && !stopFlag; i++) {
+    prefix[i] = prefix[i-1] + arr[i-1];
+    renderArray(arr, [i-1], [], [], [], [], [], {CUR:i-1});
+    renderExtra(prefix, Array.from({length:i+1},(_,x)=>x));
+    await addStep(`prefix[${i}] = prefix[${i-1}] + arr[${i-1}] = ${prefix[i-1]} + ${arr[i-1]} = ${prefix[i]}`, i/n);
+    if (stopFlag) return;
+  }
+  // Answer query
+  let [l, r] = Array.isArray(query) ? query : [0, n-1];
+  l = Math.max(0, Math.min(l, n-1));
+  r = Math.max(l, Math.min(r, n-1));
+  const qArr = Array.from({length:r-l+1},(_,i)=>l+i);
+  renderArray(arr, [], qArr, [], [], [], [], {});
+  renderExtra(prefix, [l, r+1]);
+  const rangeSum = prefix[r+1] - prefix[l];
+  await addStep(`Range sum [${l},${r}] = prefix[${r+1}] - prefix[${l}] = ${prefix[r+1]} - ${prefix[l]} = ${rangeSum}`, 1);
+  document.getElementById('stat-result').textContent = rangeSum;
+  setStatus('done', `Sum of arr[${l}..${r}] = ${rangeSum}`);
+}
+
+async function runKadane(arr) {
+  const n = arr.length;
+  let maxSum = arr[0], curSum = arr[0];
+  let maxStart = 0, maxEnd = 0, curStart = 0;
+  renderArray(arr, [0], [], [], [], [], [], {CUR:0});
+  await addStep(`Init: curSum = arr[0] = ${arr[0]}, maxSum = ${arr[0]}`, 0);
+  if (stopFlag) return;
+  for (let i = 1; i < n && !stopFlag; i++) {
+    const extend = curSum + arr[i];
+    const fresh = arr[i];
+    if (fresh > extend) {
+      curSum = fresh; curStart = i;
+      renderArray(arr, [i], [], [], Array.from({length:i-curStart},(_,x)=>curStart+x), [], [], {CUR:i});
+      await addStep(`arr[${i}]=${arr[i]}: Start fresh (${fresh} > ${extend}). curSum=${curSum}`, i/n);
+    } else {
+      curSum = extend;
+      const wArr = Array.from({length:i-curStart+1},(_,x)=>curStart+x);
+      renderArray(arr, wArr, [i], [], [], [], [], {});
+      await addStep(`arr[${i}]=${arr[i]}: Extend subarray. curSum=${curSum}`, i/n);
+    }
+    if (curSum > maxSum) { maxSum = curSum; maxStart = curStart; maxEnd = i; }
+    if (stopFlag) return;
+  }
+  const maxWin = Array.from({length:maxEnd-maxStart+1},(_,i)=>maxStart+i);
+  renderArray(arr, [], [], maxWin, [], [], [], {});
+  setStatus('done', `Max subarray sum = ${maxSum} (indices [${maxStart}..${maxEnd}])`);
+  document.getElementById('stat-result').textContent = maxSum;
+}
+
+async function runDNF(arr) {
+  const a = [...arr];
+  const n = a.length;
+  let low = 0, mid = 0, high = n - 1;
+
+  while (mid <= high && !stopFlag) {
+    const cellClass = {};
+    a.forEach((v,i) => { if(i<low)cellClass[i]='zero'; else if(i>high)cellClass[i]='two-val'; else cellClass[i]='one'; });
+    if (a[mid] === 0) {
+      renderArray(a, [mid], [low], [], [], [], [], {L:low, M:mid, H:high}, cellClass);
+      await addStep(`a[mid=${mid}]=0 → swap with low=${low}, move low++ mid++`, mid/n);
+      if (stopFlag) return;
+      [a[low], a[mid]] = [a[mid], a[low]]; low++; mid++;
+    } else if (a[mid] === 1) {
+      renderArray(a, [], [mid], [], [], [], [], {L:low, M:mid, H:high}, cellClass);
+      await addStep(`a[mid=${mid}]=1 → correct place, mid++`, mid/n);
+      if (stopFlag) return;
+      mid++;
+    } else {
+      renderArray(a, [], [], [], [high], [], [], {L:low, M:mid, H:high}, cellClass);
+      await addStep(`a[mid=${mid}]=2 → swap with high=${high}, high--`, mid/n);
+      if (stopFlag) return;
+      [a[mid], a[high]] = [a[high], a[mid]]; high--;
+    }
+  }
+  const fc = {};
+  a.forEach((v,i) => { fc[i] = v===0?'zero':v===1?'one':'two-val'; });
+  renderArray(a, [], [], Array.from({length:n},(_,i)=>i), [], [], [], {}, fc);
+  setStatus('done', `Sorted: [${a.join(', ')}]`);
+  document.getElementById('stat-result').textContent = 'Sorted';
+}
+
+async function runNextGreater(arr) {
+  const n = arr.length;
+  const result = new Array(n).fill(-1);
+  const stack = [];
+  for (let i = n - 1; i >= 0 && !stopFlag; i--) {
+    while (stack.length > 0 && stack[stack.length-1] <= arr[i]) stack.pop();
+    result[i] = stack.length === 0 ? -1 : stack[stack.length-1];
+    stack.push(arr[i]);
+    renderArray(arr, [i], [], result.map((v,x)=>v!==-1?x:-1).filter(x=>x!==-1), [], [], [], {CUR:i});
+    await addStep(`arr[${i}]=${arr[i]} → NGE = ${result[i]}. Stack: [${stack.join(',')}]`, (n-i)/n);
+    if (stopFlag) return;
+  }
+  renderArray(result, [], [], Array.from({length:n},(_,i)=>i), [], [], [], {});
+  document.getElementById('arr-label').textContent = '// Next Greater Elements';
+  setStatus('done', `Result: [${result.join(', ')}]`);
+  document.getElementById('stat-result').textContent = `[${result.join(',')}]`;
+}
+
+async function runAlgo() {
+  if (running) return;
+  running = true; stopFlag = false; stepCount = 0;
+  document.getElementById('run-btn').disabled = true;
+  document.getElementById('stop-btn').disabled = false;
+  document.getElementById('stat-steps').textContent = '0';
+  document.getElementById('stat-result').textContent = '—';
+  document.getElementById('extra-row-wrap').style.display = 'none';
+  document.getElementById('arr-label').textContent = '// Input Array';
+  setStatus('running', 'Running...');
+
+  const arr = parseArray();
+  const target = parseTarget();
+  if (!arr.length) { setStatus('idle', 'Please enter a valid array'); running = false; document.getElementById('run-btn').disabled = false; document.getElementById('stop-btn').disabled = true; return; }
+
+  renderArray(arr);
+
+  try {
+    switch(currentPattern) {
+      case 'two-pointers': await runTwoPointers(arr, target); break;
+      case 'sliding-window': await runSlidingWindow(arr, Array.isArray(target)?target[0]:target); break;
+      case 'prefix-sum': await runPrefixSum(arr, target); break;
+      case 'kadane': await runKadane(arr); break;
+      case 'dnf': await runDNF(arr); break;
+      case 'next-greater': await runNextGreater(arr); break;
+    }
+  } catch(e) { console.error(e); }
+
+  if (!stopFlag) {
+    const dot = document.getElementById('status-dot');
+    dot.className = 'status-dot done';
+  }
+  running = false;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+}
+
+function stopAlgo() {
+  stopFlag = true;
+  running = false;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('stop-btn').disabled = true;
+  setStatus('idle', 'Stopped — press Reset to start over');
+}
+
+// Init
+selectPattern('two-pointers');
+</script>
+</body>
+</html>

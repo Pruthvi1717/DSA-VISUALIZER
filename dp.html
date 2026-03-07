@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Programming — DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050810;--surface:#0c1120;--surface2:#111827;
+  --border:#1e2d47;--accent:#f59e0b;--accent2:#7c3aed;
+  --accent3:#10b981;--blue:#00d4ff;--danger:#ef4444;
+  --text:#e2e8f0;--muted:#64748b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(245,158,11,0.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(245,158,11,0.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrapper{position:relative;z-index:1;}
+header{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;background:rgba(12,17,32,0.85);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;}
+.logo-text span{color:var(--accent);}
+nav{display:flex;gap:8px;}
+.nav-link{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);
+  color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;
+  text-decoration:none;transition:all 0.2s;}
+.nav-link:hover{border-color:var(--accent);color:var(--accent);background:rgba(245,158,11,0.07);}
+
+.container{max-width:1280px;margin:0 auto;padding:28px 40px;display:grid;gap:22px;}
+
+/* Problem Selector */
+.prob-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.prob-btn{padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);
+  color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;
+  transition:all 0.2s;text-align:center;line-height:1.4;}
+.prob-btn:hover{border-color:var(--accent);color:var(--accent);}
+.prob-btn.active{background:rgba(245,158,11,0.12);border-color:var(--accent);color:var(--accent);
+  box-shadow:0 0 14px rgba(245,158,11,0.2);}
+.prob-num{display:block;font-size:16px;font-weight:700;margin-bottom:4px;font-family:'Syne',sans-serif;}
+
+/* Main card */
+.viz-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.viz-top{padding:18px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.viz-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;}
+.viz-title span{color:var(--accent);}
+.stats{display:flex;gap:20px;}
+.stat{text-align:right;}
+.stat-val{font-size:17px;font-weight:700;color:var(--accent);}
+.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+
+/* Inputs */
+.input-row{padding:14px 26px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;}
+.txt-in{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;
+  outline:none;transition:border-color 0.2s;}
+.txt-in:focus{border-color:var(--accent);}
+.txt-in.wide{flex:1;min-width:160px;}
+.txt-in.sm{width:72px;}
+.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+  transition:all 0.2s;white-space:nowrap;}
+.btn-run{background:linear-gradient(135deg,var(--accent),#b45309);color:#000;
+  box-shadow:0 4px 16px rgba(245,158,11,0.3);}
+.btn-run:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(245,158,11,0.45);}
+.btn-run:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-stop{background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+input[type=range]{width:90px;-webkit-appearance:none;height:4px;background:var(--border);
+  border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 6px rgba(245,158,11,0.5);}
+
+/* 1D DP Array strip */
+.dp-strip-wrap{padding:24px 26px;overflow-x:auto;}
+.strip-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  margin-bottom:10px;}
+.dp-strip{display:flex;gap:6px;align-items:flex-end;flex-wrap:nowrap;}
+.dp-cell{min-width:52px;height:52px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:600;position:relative;flex-shrink:0;
+  transition:all 0.3s;background:var(--surface2);border:2px solid var(--border);color:var(--text);}
+.dp-cell .ci{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+  font-size:9px;color:var(--muted);font-weight:400;}
+.dp-cell.curr{background:rgba(245,158,11,0.18);border-color:var(--accent);color:var(--accent);
+  box-shadow:0 0 16px rgba(245,158,11,0.35);transform:scale(1.08);}
+.dp-cell.src{background:rgba(0,212,255,0.12);border-color:var(--blue);color:var(--blue);}
+.dp-cell.done{background:rgba(16,185,129,0.12);border-color:var(--accent3);color:var(--accent3);}
+.dp-cell.ans{background:rgba(124,58,237,0.18);border-color:var(--accent2);color:#a78bfa;
+  box-shadow:0 0 18px rgba(124,58,237,0.4);transform:scale(1.12);}
+.dp-cell.empty{color:var(--muted);}
+.dp-cell.compare{background:rgba(0,212,255,0.1);border-color:var(--blue);color:var(--blue);}
+
+/* 2D DP Table */
+.dp-table-wrap{padding:20px 26px;overflow:auto;max-height:480px;}
+.dp-table{border-collapse:collapse;font-size:12px;}
+.dp-table th{background:var(--surface2);border:1px solid var(--border);padding:8px 12px;
+  color:var(--muted);font-size:10px;text-align:center;white-space:nowrap;}
+.dp-table td{border:1px solid var(--border);width:52px;height:44px;text-align:center;
+  font-weight:600;transition:all 0.25s;background:var(--surface2);color:var(--muted);}
+.dp-table td.filled{background:rgba(245,158,11,0.08);color:#fbbf24;}
+.dp-table td.curr{background:rgba(245,158,11,0.22);color:var(--accent);
+  box-shadow:inset 0 0 12px rgba(245,158,11,0.3);}
+.dp-table td.src{background:rgba(0,212,255,0.1);color:var(--blue);}
+.dp-table td.ans{background:rgba(124,58,237,0.2);color:#a78bfa;font-size:14px;}
+.dp-table td.path{background:rgba(16,185,129,0.15);color:var(--accent3);}
+.dp-table td.compare{background:rgba(245,158,11,0.06);color:#fcd34d;border-color:rgba(245,158,11,0.3);}
+
+/* Input row display (for LCS etc) */
+.seq-row{display:flex;gap:4px;margin:10px 0;}
+.seq-cell{min-width:44px;height:40px;border-radius:6px;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;background:var(--surface2);
+  border:2px solid var(--border);color:var(--text);flex-shrink:0;transition:all 0.25s;}
+.seq-cell.hl{background:rgba(245,158,11,0.15);border-color:var(--accent);color:var(--accent);}
+.seq-cell.match{background:rgba(16,185,129,0.15);border-color:var(--accent3);color:var(--accent3);}
+
+/* Decision trace */
+.trace-box{padding:14px 26px;border-top:1px solid var(--border);min-height:52px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.trace-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);flex-shrink:0;}
+.trace-item{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;
+  transition:all 0.3s;}
+.trace-item.take{background:rgba(16,185,129,0.15);border:1px solid var(--accent3);color:var(--accent3);}
+.trace-item.skip{background:rgba(239,68,68,0.1);border:1px solid var(--danger);color:var(--danger);}
+.trace-item.note{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:var(--accent);}
+
+/* Progress + status */
+.progress-bar{height:3px;background:var(--border);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  width:0%;transition:width 0.1s;}
+.status-bar{padding:12px 26px;border-top:1px solid var(--border);display:flex;align-items:center;
+  gap:12px;font-size:11px;color:var(--muted);min-height:44px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.status-dot.running{background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 1s infinite;}
+.status-dot.done{background:var(--accent3);box-shadow:0 0 8px var(--accent3);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Info panel */
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.info-card h3{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted);margin-bottom:14px;}
+.cx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cx-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.cx-l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;}
+.cx-v{font-size:13px;font-weight:600;}
+.cx-v.good{color:var(--accent3);}.cx-v.ok{color:var(--accent);}.cx-v.warn{color:var(--accent);}
+.desc-text{font-size:12px;line-height:1.8;color:#94a3b8;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.tag{padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid;}
+.tg1{background:rgba(245,158,11,0.1);color:var(--accent);border-color:rgba(245,158,11,0.3);}
+.tg2{background:rgba(16,185,129,0.1);color:var(--accent3);border-color:rgba(16,185,129,0.3);}
+.tg3{background:rgba(124,58,237,0.1);color:#a78bfa;border-color:rgba(124,58,237,0.3);}
+.tg4{background:rgba(0,212,255,0.1);color:var(--blue);border-color:rgba(0,212,255,0.2);}
+
+/* Recurrence display */
+.recur-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:14px 18px;margin-top:12px;font-size:12px;line-height:2;color:#94a3b8;}
+.recur-box .hl{color:var(--accent);font-weight:600;}
+.recur-box .hl2{color:var(--accent3);font-weight:600;}
+.recur-box .hl3{color:#a78bfa;font-weight:600;}
+
+@media(max-width:900px){
+  .container{padding:14px;}header{padding:14px;}
+  .prob-grid{grid-template-columns:repeat(4,1fr);}
+  .info-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<header>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">◫</div>
+    <div class="logo-text">DSA<span>Visual</span></div>
+  </a>
+  <nav>
+    <a href="index.html" class="nav-link">← Hub</a>
+    <a href="linked-list.html" class="nav-link">Linked List →</a>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Problem selector -->
+  <div class="prob-grid" id="prob-grid">
+    <button class="prob-btn active" onclick="selectProb(0)"><span class="prob-num">01</span>Climbing Stairs</button>
+    <button class="prob-btn" onclick="selectProb(1)"><span class="prob-num">02</span>House Robber</button>
+    <button class="prob-btn" onclick="selectProb(2)"><span class="prob-num">03</span>Coin Change</button>
+    <button class="prob-btn" onclick="selectProb(3)"><span class="prob-num">04</span>0/1 Knapsack</button>
+    <button class="prob-btn" onclick="selectProb(4)"><span class="prob-num">05</span>LCS</button>
+    <button class="prob-btn" onclick="selectProb(5)"><span class="prob-num">06</span>LIS</button>
+    <button class="prob-btn" onclick="selectProb(6)"><span class="prob-num">07</span>Edit Distance</button>
+  </div>
+
+  <!-- Viz card -->
+  <div class="viz-card">
+    <div class="viz-top">
+      <div class="viz-title" id="viz-title">Climbing <span>Stairs</span></div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="stat-ops">0</div><div class="stat-label">States Filled</div></div>
+        <div class="stat"><div class="stat-val" id="stat-ans">—</div><div class="stat-label">Answer</div></div>
+      </div>
+    </div>
+
+    <!-- Dynamic input row -->
+    <div class="input-row" id="input-row">
+      <span class="lbl" id="lbl1">n (stairs):</span>
+      <input class="txt-in sm" id="in1" value="8">
+      <span class="lbl" id="lbl2" style="display:none">B:</span>
+      <input class="txt-in wide" id="in2" value="" style="display:none">
+      <span class="lbl" id="lbl3" style="display:none">C:</span>
+      <input class="txt-in sm" id="in3" value="" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <span class="lbl">Speed</span>
+        <input type="range" id="speed-sl" min="1" max="5" value="3">
+      </div>
+      <button class="btn btn-run" id="run-btn" onclick="runDP()">▶ Run</button>
+      <button class="btn btn-sec" onclick="resetDP()">⟳ Reset</button>
+      <button class="btn btn-stop" id="stop-btn" onclick="stopDP()" disabled>■ Stop</button>
+    </div>
+
+    <!-- Sequence rows (for LCS / Edit dist) -->
+    <div id="seq-rows" style="display:none;padding:12px 26px 0;gap:12px;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);width:28px;">S1:</span>
+        <div class="seq-row" id="seq-row-1"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);width:28px;">S2:</span>
+        <div class="seq-row" id="seq-row-2"></div>
+      </div>
+    </div>
+
+    <!-- 1D strip container -->
+    <div id="strip-container" class="dp-strip-wrap">
+      <div class="strip-label" id="strip-label">dp[ i ] = number of ways to reach stair i</div>
+      <div class="dp-strip" id="dp-strip" style="padding-bottom:24px;"></div>
+    </div>
+
+    <!-- 2D table container -->
+    <div id="table-container" class="dp-table-wrap" style="display:none;">
+      <div id="dp-table-wrap"></div>
+    </div>
+
+    <!-- Trace row -->
+    <div class="trace-box">
+      <span class="trace-lbl" id="trace-lbl">Decision:</span>
+      <div id="trace-nodes"></div>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="pfill"></div></div>
+    <div class="status-bar">
+      <div class="status-dot" id="sdot"></div>
+      <span id="stext">Ready — set inputs and click ▶ Run</span>
+    </div>
+  </div>
+
+  <!-- Info row -->
+  <div class="info-row">
+    <div class="info-card">
+      <h3>// Complexity</h3>
+      <div class="cx-grid">
+        <div class="cx-item"><div class="cx-l">Time</div><div class="cx-v good" id="cx-t">O(n)</div></div>
+        <div class="cx-item"><div class="cx-l">Space</div><div class="cx-v ok" id="cx-s">O(n)</div></div>
+        <div class="cx-item"><div class="cx-l">Type</div><div class="cx-v warn" id="cx-type">1D Bottom-Up</div></div>
+        <div class="cx-item"><div class="cx-l">Subproblem</div><div class="cx-v" id="cx-sub" style="color:#94a3b8;font-size:11px">dp[i-1]+dp[i-2]</div></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <h3>// Recurrence Relation</h3>
+      <div class="desc-text" id="algo-desc">Count distinct ways to climb n stairs taking 1 or 2 steps at a time. Classic Fibonacci DP.</div>
+      <div class="recur-box" id="recur-box">
+        <span class="hl">dp[i]</span> = ways to reach stair <span class="hl">i</span><br>
+        <span class="hl2">dp[i]</span> = <span class="hl3">dp[i-1]</span> + <span class="hl3">dp[i-2]</span><br>
+        Base: <span class="hl">dp[0]=1, dp[1]=1</span>
+      </div>
+      <div class="tag-row" id="algo-tags">
+        <span class="tag tg1">O(n) Time</span><span class="tag tg2">O(n) Space</span>
+        <span class="tag tg3">Bottom-Up</span><span class="tag tg4">1D DP</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ============================================================
+// PROBLEMS CONFIG
+// ============================================================
+const PROBLEMS = [
+  {
+    id:0, name:'Climbing <span>Stairs</span>', short:'Climbing Stairs',
+    l1:'n (stairs):', l2:'', l3:'', d1:'8', d2:'', d3:'',
+    show2:false, show3:false, type:'1d',
+    time:'O(n)', space:'O(n)', ptype:'1D Bottom-Up', sub:'dp[i-1]+dp[i-2]',
+    desc:'Count distinct ways to climb n stairs by taking 1 or 2 steps. Classic Fibonacci variant — dp[i] = ways to reach stair i.',
+    recur:`<span class="hl">dp[i]</span> = ways to reach stair i<br>
+<span class="hl2">dp[i]</span> = <span class="hl3">dp[i-1]</span> + <span class="hl3">dp[i-2]</span><br>
+Base: <span class="hl">dp[0]=1, dp[1]=1</span>`,
+    tags:['O(n) Time','O(n) Space','Bottom-Up','Fibonacci'],
+  },
+  {
+    id:1, name:'House <span>Robber</span>', short:'House Robber',
+    l1:'Values:', l2:'', l3:'', d1:'2,7,9,3,1,5,8', d2:'', d3:'',
+    show2:false, show3:false, type:'1d',
+    time:'O(n)', space:'O(n)', ptype:'1D Bottom-Up', sub:'max(dp[i-1], dp[i-2]+a[i])',
+    desc:'Rob houses on a street. Cannot rob two adjacent houses. Find the maximum amount. dp[i] = max money robbing up to house i.',
+    recur:`<span class="hl">dp[i]</span> = max money up to house i<br>
+<span class="hl2">dp[i]</span> = max(<span class="hl3">dp[i-1]</span>, <span class="hl3">dp[i-2] + a[i]</span>)<br>
+Choice: <span class="hl">skip</span> house i, or <span class="hl">take</span> it + best 2 back`,
+    tags:['O(n) Time','O(n) Space','Max Subproblem','No-Adjacent'],
+  },
+  {
+    id:2, name:'Coin <span>Change</span>', short:'Coin Change',
+    l1:'Coins:', l2:'Amount:', l3:'', d1:'1,3,4,5', d2:'7', d3:'',
+    show2:true, show3:false, type:'1d',
+    time:'O(n×W)', space:'O(W)', ptype:'1D Bottom-Up', sub:'1 + min(dp[i - coin])',
+    desc:'Find minimum number of coins to make up a given amount. Unbounded knapsack variant — can use each coin unlimited times.',
+    recur:`<span class="hl">dp[i]</span> = min coins to make amount i<br>
+<span class="hl2">dp[i]</span> = 1 + min(<span class="hl3">dp[i - c]</span>) for each coin c<br>
+Base: <span class="hl">dp[0]=0</span>, rest = <span class="hl">∞</span>`,
+    tags:['O(n×W) Time','O(W) Space','Unbounded','Min Coins'],
+  },
+  {
+    id:3, name:'0/1 <span>Knapsack</span>', short:'0/1 Knapsack',
+    l1:'Weights:', l2:'Values:', l3:'Capacity:', d1:'1,3,4,5', d2:'1,4,5,7', d3:'7',
+    show2:true, show3:true, type:'2d',
+    time:'O(n×W)', space:'O(n×W)', ptype:'2D Bottom-Up', sub:'max(skip, take)',
+    desc:'Given items with weight and value, maximize value in a knapsack of capacity W. Each item can be taken at most once.',
+    recur:`<span class="hl">dp[i][w]</span> = max value with i items, capacity w<br>
+if w[i] > w: <span class="hl2">dp[i][w]</span> = <span class="hl3">dp[i-1][w]</span> (skip)<br>
+else: <span class="hl2">dp[i][w]</span> = max(<span class="hl3">dp[i-1][w]</span>, <span class="hl3">dp[i-1][w-w[i]] + v[i]</span>)`,
+    tags:['O(nW) Time','O(nW) Space','Take/Skip','Classic DP'],
+  },
+  {
+    id:4, name:'<span>LCS</span>', short:'LCS',
+    l1:'String 1:', l2:'String 2:', l3:'', d1:'ABCBDAB', d2:'BDCAB', d3:'',
+    show2:true, show3:false, type:'2d',
+    time:'O(m×n)', space:'O(m×n)', ptype:'2D Bottom-Up', sub:'match→+1, else max(up,left)',
+    desc:'Longest Common Subsequence: find the longest sequence present in both strings (not necessarily contiguous). Classic 2D DP.',
+    recur:`<span class="hl">dp[i][j]</span> = LCS of s1[0..i-1] and s2[0..j-1]<br>
+if s1[i-1]==s2[j-1]: <span class="hl2">dp[i][j]</span> = <span class="hl3">dp[i-1][j-1] + 1</span><br>
+else: <span class="hl2">dp[i][j]</span> = max(<span class="hl3">dp[i-1][j]</span>, <span class="hl3">dp[i][j-1]</span>)`,
+    tags:['O(mn) Time','O(mn) Space','Strings','Subsequence'],
+  },
+  {
+    id:5, name:'<span>LIS</span>', short:'LIS',
+    l1:'Array:', l2:'', l3:'', d1:'10,9,2,5,3,7,101,18', d2:'', d3:'',
+    show2:false, show3:false, type:'1d',
+    time:'O(n²)', space:'O(n)', ptype:'1D Bottom-Up', sub:'max(dp[j]+1) where a[j]<a[i]',
+    desc:'Longest Increasing Subsequence: find the length of the longest strictly increasing subsequence. For each index, check all previous smaller elements.',
+    recur:`<span class="hl">dp[i]</span> = LIS ending at index i<br>
+<span class="hl2">dp[i]</span> = 1 + max(<span class="hl3">dp[j]</span>) where j<i and a[j]<a[i]<br>
+Answer = max of all <span class="hl">dp[i]</span>`,
+    tags:['O(n²) Time','O(n) Space','1D DP','LIS'],
+  },
+  {
+    id:6, name:'Edit <span>Distance</span>', short:'Edit Distance',
+    l1:'Word 1:', l2:'Word 2:', l3:'', d1:'horse', d2:'ros', d3:'',
+    show2:true, show3:false, type:'2d',
+    time:'O(m×n)', space:'O(m×n)', ptype:'2D Bottom-Up', sub:'ins/del/replace',
+    desc:'Edit Distance (Levenshtein): minimum operations (insert, delete, replace) to convert string A to string B. Classic string DP.',
+    recur:`<span class="hl">dp[i][j]</span> = edits to convert A[0..i-1] to B[0..j-1]<br>
+if A[i-1]==B[j-1]: <span class="hl2">dp[i][j]</span> = <span class="hl3">dp[i-1][j-1]</span><br>
+else: <span class="hl2">dp[i][j]</span> = 1 + min(<span class="hl3">dp[i-1][j-1]</span>, <span class="hl3">dp[i-1][j]</span>, <span class="hl3">dp[i][j-1]</span>)`,
+    tags:['O(mn) Time','O(mn) Space','Ins/Del/Rep','Strings'],
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let curProb = 0;
+let running = false, stopFlag = false, opCount = 0;
+let dpTable = null;  // for 2D
+let dpArr = null;    // for 1D
+
+function getDelay(){const s=[600,220,80,25,3];return s[+document.getElementById('speed-sl').value-1];}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setStatus(state,msg){
+  const d=document.getElementById('sdot');
+  d.className='status-dot'+(state==='running'?' running':state==='done'?' done':'');
+  document.getElementById('stext').textContent=msg;
+}
+function setProgress(v){document.getElementById('pfill').style.width=(v*100)+'%';}
+
+// ============================================================
+// SELECT PROBLEM
+// ============================================================
+function selectProb(idx) {
+  if(running) return;
+  curProb = idx;
+  document.querySelectorAll('.prob-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  const p = PROBLEMS[idx];
+  document.getElementById('viz-title').innerHTML = p.name;
+  document.getElementById('lbl1').textContent = p.l1;
+  document.getElementById('in1').value = p.d1;
+  document.getElementById('lbl2').textContent = p.l2;
+  document.getElementById('in2').value = p.d2;
+  document.getElementById('lbl2').style.display = p.show2?'':'none';
+  document.getElementById('in2').style.display = p.show2?'':'none';
+  document.getElementById('lbl3').textContent = p.l3;
+  document.getElementById('in3').value = p.d3;
+  document.getElementById('lbl3').style.display = p.show3?'':'none';
+  document.getElementById('in3').style.display = p.show3?'':'none';
+  document.getElementById('cx-t').textContent = p.time;
+  document.getElementById('cx-s').textContent = p.space;
+  document.getElementById('cx-type').textContent = p.ptype;
+  document.getElementById('cx-sub').textContent = p.sub;
+  document.getElementById('algo-desc').textContent = p.desc;
+  document.getElementById('recur-box').innerHTML = p.recur;
+  const tags = document.getElementById('algo-tags');
+  const cls = ['tg1','tg2','tg3','tg4'];
+  tags.innerHTML = p.tags.map((t,i)=>`<span class="tag ${cls[i%4]}">${t}</span>`).join('');
+  document.getElementById('strip-container').style.display = p.type==='1d'?'':'none';
+  document.getElementById('table-container').style.display = p.type==='2d'?'':'none';
+  const seqRows = document.getElementById('seq-rows');
+  seqRows.style.display = (p.id===4||p.id===6)?'flex':'none';
+  resetDP();
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetDP() {
+  stopFlag=true; running=false; opCount=0;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+  document.getElementById('pfill').style.width='0%';
+  document.getElementById('stat-ops').textContent='0';
+  document.getElementById('stat-ans').textContent='—';
+  document.getElementById('trace-nodes').innerHTML='';
+  document.getElementById('dp-strip').innerHTML='';
+  document.getElementById('dp-table-wrap').innerHTML='';
+  setStatus('idle','Ready — click ▶ Run');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function parseInts(str){return str.split(',').map(s=>parseInt(s.trim())).filter(x=>!isNaN(x));}
+function parseStr(str){return str.trim();}
+
+function render1D(arr, states={}, label='') {
+  const strip = document.getElementById('dp-strip');
+  strip.innerHTML='';
+  if(label) document.getElementById('strip-label').textContent=label;
+  arr.forEach((v,i)=>{
+    const cell=document.createElement('div');
+    cell.className='dp-cell '+(states[i]||'empty');
+    cell.innerHTML = (v===Infinity?'∞':v===undefined?'?':v) + `<span class="ci">${i}</span>`;
+    strip.appendChild(cell);
+  });
+}
+
+function build2DTable(rows, cols, rowLabels, colLabels) {
+  const wrap = document.getElementById('dp-table-wrap');
+  let html='<table class="dp-table"><thead><tr><th></th>';
+  colLabels.forEach(c=>html+=`<th>${c}</th>`);
+  html+='</tr></thead><tbody>';
+  for(let i=0;i<rows;i++){
+    html+=`<tr><th>${rowLabels[i]}</th>`;
+    for(let j=0;j<cols;j++) html+=`<td id="td-${i}-${j}">0</td>`;
+    html+='</tr>';
+  }
+  html+='</tbody></table>';
+  wrap.innerHTML=html;
+}
+
+function setCell(i,j,val,cls='filled'){
+  const td=document.getElementById(`td-${i}-${j}`);
+  if(td){td.textContent=val===Infinity?'∞':val;td.className=cls;}
+}
+
+function setTrace(items){
+  document.getElementById('trace-nodes').innerHTML=items.map(({text,cls})=>
+    `<span class="trace-item ${cls}">${text}</span>`
+  ).join('');
+}
+
+function renderSeqRows(s1, s2, hl1=[], hl2=[], match1=[], match2=[]) {
+  ['seq-row-1','seq-row-2'].forEach((id,si)=>{
+    const str=si===0?s1:s2;
+    const row=document.getElementById(id);
+    row.innerHTML='';
+    str.split('').forEach((c,i)=>{
+      const cell=document.createElement('div');
+      const isMatch=si===0?match1.includes(i):match2.includes(i);
+      const isHl=si===0?hl1.includes(i):hl2.includes(i);
+      cell.className='seq-cell'+(isMatch?' match':isHl?' hl':'');
+      cell.textContent=c;
+      row.appendChild(cell);
+    });
+  });
+}
+
+// ============================================================
+// PROBLEM RUNNERS
+// ============================================================
+
+// 1. CLIMBING STAIRS
+async function runClimbingStairs(){
+  const n=Math.min(Math.max(parseInt(document.getElementById('in1').value)||8,2),20);
+  const dp=new Array(n+1).fill(0);
+  dp[0]=1; dp[1]=1;
+  const states={0:'done',1:'done'};
+  render1D(dp,states,'dp[i] = number of ways to reach stair i');
+  setStatus('running','Initialized dp[0]=1, dp[1]=1');
+  await sleep(getDelay()); if(stopFlag)return;
+  for(let i=2;i<=n&&!stopFlag;i++){
+    states[i-1]='src'; states[i-2]='src'; render1D(dp,{...states,[i]:'curr'},'dp[i] = dp[i-1] + dp[i-2]');
+    setTrace([{text:`dp[${i-1}]=${dp[i-1]}`,cls:'take'},{text:'+',cls:'note'},{text:`dp[${i-2}]=${dp[i-2]}`,cls:'take'},{text:`→ dp[${i}]=?`,cls:'note'}]);
+    await sleep(getDelay()); if(stopFlag)return;
+    dp[i]=dp[i-1]+dp[i-2];
+    states[i]='done'; states[i-1]='done'; states[i-2]='done';
+    render1D(dp,states); setTrace([{text:`dp[${i}] = ${dp[i]}`,cls:'take'}]);
+    opCount++; document.getElementById('stat-ops').textContent=opCount;
+    setProgress(i/n); await sleep(getDelay()*0.4);
+  }
+  if(!stopFlag){
+    const s={}; for(let i=0;i<=n;i++)s[i]='done'; s[n]='ans';
+    render1D(dp,s);
+    document.getElementById('stat-ans').textContent=dp[n];
+    setStatus('done',`Ways to climb ${n} stairs = ${dp[n]}`);
+    setTrace([{text:`Answer = dp[${n}] = ${dp[n]}`,cls:'take'}]);
+  }
+}
+
+// 2. HOUSE ROBBER
+async function runHouseRobber(){
+  const a=parseInts(document.getElementById('in1').value);
+  if(!a.length)return;
+  const n=a.length;
+  const dp=new Array(n).fill(0);
+  dp[0]=a[0];
+  if(n>1) dp[1]=Math.max(a[0],a[1]);
+  const states={0:'done'}; if(n>1)states[1]='done';
+  // Show original array above dp
+  document.getElementById('strip-label').textContent='House values: '+a.join(', ')+'  |  dp[i] = max money up to house i';
+  render1D(dp,states);
+  setStatus('running',`dp[0]=${dp[0]}, dp[1]=${n>1?dp[1]:'N/A'}`);
+  await sleep(getDelay()); if(stopFlag)return;
+  for(let i=2;i<n&&!stopFlag;i++){
+    states[i-1]='src'; states[i-2]='src';
+    render1D(dp,{...states,[i]:'curr'});
+    const skip=dp[i-1], take=dp[i-2]+a[i];
+    setTrace([{text:`skip: dp[${i-1}]=${skip}`,cls:'skip'},{text:`take: dp[${i-2}]+a[${i}]=${take}`,cls:'take'},{text:`→ max=${Math.max(skip,take)}`,cls:'note'}]);
+    await sleep(getDelay()); if(stopFlag)return;
+    dp[i]=Math.max(skip,take);
+    states[i]='done'; render1D(dp,states);
+    opCount++; document.getElementById('stat-ops').textContent=opCount;
+    setProgress(i/n); await sleep(getDelay()*0.4);
+  }
+  if(!stopFlag){
+    const s={}; for(let i=0;i<n;i++)s[i]='done'; s[n-1]='ans';
+    render1D(dp,s);
+    document.getElementById('stat-ans').textContent=dp[n-1];
+    setStatus('done',`Max money = ${dp[n-1]}`);
+    setTrace([{text:`Answer = ${dp[n-1]}`,cls:'take'}]);
+  }
+}
+
+// 3. COIN CHANGE
+async function runCoinChange(){
+  const coins=parseInts(document.getElementById('in1').value);
+  const amount=parseInt(document.getElementById('in2').value)||7;
+  const dp=new Array(amount+1).fill(Infinity);
+  dp[0]=0;
+  const states={0:'done'};
+  render1D(dp,states,`dp[i] = min coins for amount i | coins: [${coins.join(',')}]`);
+  await sleep(getDelay()); if(stopFlag)return;
+  for(let i=1;i<=amount&&!stopFlag;i++){
+    render1D(dp,{...states,[i]:'curr'});
+    setStatus('running',`Computing dp[${i}]...`);
+    await sleep(getDelay()*0.5); if(stopFlag)return;
+    for(const c of coins){
+      if(c<=i&&dp[i-c]!==Infinity){
+        const cand=dp[i-c]+1;
+        setTrace([{text:`coin=${c}`,cls:'note'},{text:`dp[${i-c}]+1=${cand}`,cls:cand<dp[i]?'take':'skip'},{text:`current best=${dp[i]===Infinity?'∞':dp[i]}`,cls:'note'}]);
+        await sleep(getDelay()*0.6); if(stopFlag)return;
+        if(cand<dp[i]) dp[i]=cand;
+      }
+    }
+    states[i]=dp[i]===Infinity?'empty':'done';
+    render1D(dp,states);
+    opCount++; document.getElementById('stat-ops').textContent=opCount;
+    setProgress(i/amount); await sleep(getDelay()*0.3);
+  }
+  if(!stopFlag){
+    const s={}; for(let i=0;i<=amount;i++)s[i]=dp[i]===Infinity?'empty':'done'; s[amount]='ans';
+    render1D(dp,s);
+    const ans=dp[amount]===Infinity?-1:dp[amount];
+    document.getElementById('stat-ans').textContent=ans;
+    setStatus('done',`Min coins for ${amount} = ${ans}`);
+    setTrace([{text:`Answer = ${ans}`,cls:ans===-1?'skip':'take'}]);
+  }
+}
+
+// 4. 0/1 KNAPSACK
+async function run01Knapsack(){
+  const weights=parseInts(document.getElementById('in1').value);
+  const values=parseInts(document.getElementById('in2').value);
+  const W=parseInt(document.getElementById('in3').value)||7;
+  const n=Math.min(weights.length,values.length);
+  if(!n)return;
+  const dp=Array.from({length:n+1},()=>new Array(W+1).fill(0));
+  const rowLabels=['∅',...weights.slice(0,n).map((w,i)=>`i${i+1}(w=${w},v=${values[i]})`)];
+  const colLabels=Array.from({length:W+1},(_,i)=>i);
+  build2DTable(n+1,W+1,rowLabels,colLabels);
+  for(let w=0;w<=W;w++) setCell(0,w,0,'done');
+  await sleep(getDelay()); if(stopFlag)return;
+  for(let i=1;i<=n&&!stopFlag;i++){
+    for(let w=0;w<=W&&!stopFlag;w++){
+      setCell(i,w,'?','curr');
+      setStatus('running',`Item ${i} (w=${weights[i-1]}, v=${values[i-1]}), capacity=${w}`);
+      await sleep(getDelay()*0.6); if(stopFlag)return;
+      if(weights[i-1]>w){
+        dp[i][w]=dp[i-1][w];
+        setTrace([{text:`w[${i}]=${weights[i-1]} > cap=${w} → skip`,cls:'skip'},{text:`dp=${dp[i][w]}`,cls:'note'}]);
+        setCell(i-1,w,dp[i-1][w],'compare');
+      } else {
+        const skip=dp[i-1][w], take=dp[i-1][w-weights[i-1]]+values[i-1];
+        dp[i][w]=Math.max(skip,take);
+        setTrace([{text:`skip=${skip}`,cls:'skip'},{text:`take=${take}`,cls:'take'},{text:`→ max=${dp[i][w]}`,cls:'note'}]);
+        setCell(i-1,w,dp[i-1][w],'compare');
+        setCell(i-1,w-weights[i-1],dp[i-1][w-weights[i-1]],'src');
+      }
+      await sleep(getDelay()*0.4); if(stopFlag)return;
+      setCell(i,w,dp[i][w],'done');
+      opCount++; document.getElementById('stat-ops').textContent=opCount;
+      setProgress((i*W+w)/(n*W));
+    }
+  }
+  if(!stopFlag){
+    setCell(n,W,dp[n][W],'ans');
+    document.getElementById('stat-ans').textContent=dp[n][W];
+    setStatus('done',`Max value = ${dp[n][W]}`);
+    setTrace([{text:`Answer = dp[${n}][${W}] = ${dp[n][W]}`,cls:'take'}]);
+  }
+}
+
+// 5. LCS
+async function runLCS(){
+  const s1=parseStr(document.getElementById('in1').value)||'ABCBDAB';
+  const s2=parseStr(document.getElementById('in2').value)||'BDCAB';
+  const m=s1.length, n=s2.length;
+  renderSeqRows(s1,s2);
+  const dp=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  const rowLabels=['',...s1.split('')];
+  const colLabels=['',...s2.split('')];
+  build2DTable(m+1,n+1,rowLabels,colLabels);
+  await sleep(getDelay()); if(stopFlag)return;
+  for(let i=1;i<=m&&!stopFlag;i++){
+    for(let j=1;j<=n&&!stopFlag;j++){
+      setCell(i,j,'?','curr');
+      setStatus('running',`Comparing s1[${i-1}]='${s1[i-1]}' with s2[${j-1}]='${s2[j-1]}'`);
+      renderSeqRows(s1,s2,[i-1],[j-1]);
+      await sleep(getDelay()*0.7); if(stopFlag)return;
+      if(s1[i-1]===s2[j-1]){
+        dp[i][j]=dp[i-1][j-1]+1;
+        setCell(i-1,j-1,dp[i-1][j-1],'src');
+        setTrace([{text:`'${s1[i-1]}'='${s2[j-1]}' ✓ match`,cls:'take'},{text:`dp[${i-1}][${j-1}]+1=${dp[i][j]}`,cls:'take'}]);
+        renderSeqRows(s1,s2,[],[],[i-1],[j-1]);
+      } else {
+        dp[i][j]=Math.max(dp[i-1][j],dp[i][j-1]);
+        setTrace([{text:`'${s1[i-1]}'≠'${s2[j-1]}'`,cls:'skip'},{text:`max(${dp[i-1][j]},${dp[i][j-1]})=${dp[i][j]}`,cls:'note'}]);
+      }
+      await sleep(getDelay()*0.3); if(stopFlag)return;
+      setCell(i,j,dp[i][j],'done');
+      opCount++; document.getElementById('stat-ops').textContent=opCount;
+      setProgress((i*(n+1)+j)/((m+1)*(n+1)));
+    }
+  }
+  if(!stopFlag){
+    setCell(m,n,dp[m][n],'ans');
+    document.getElementById('stat-ans').textContent=dp[m][n];
+    setStatus('done',`LCS length = ${dp[m][n]}`);
+    setTrace([{text:`Answer = ${dp[m][n]}`,cls:'take'}]);
+    renderSeqRows(s1,s2);
+  }
+}
+
+// 6. LIS
+async function runLIS(){
+  const a=parseInts(document.getElementById('in1').value);
+  if(!a.length)return;
+  const n=a.length;
+  const dp=new Array(n).fill(1);
+  const states={};
+  document.getElementById('strip-label').textContent=`Array: [${a.join(',')}]  |  dp[i] = LIS ending at index i`;
+  render1D(dp,states);
+  await sleep(getDelay()); if(stopFlag)return;
+  let maxLen=1, maxIdx=0;
+  for(let i=1;i<n&&!stopFlag;i++){
+    for(let j=0;j<i&&!stopFlag;j++){
+      render1D(dp,{...states,[i]:'curr',[j]:'src'});
+      setStatus('running',`a[${j}]=${a[j]} < a[${i}]=${a[i]}? ${a[j]<a[i]?'YES → can extend':'NO → skip'}`);
+      setTrace([{text:`j=${j}: a[j]=${a[j]}`,cls:'note'},{text:`a[i]=${a[i]}`,cls:'note'},{text:a[j]<a[i]?`extend: dp[${j}]+1=${dp[j]+1}`:`skip`,cls:a[j]<a[i]?'take':'skip'}]);
+      await sleep(getDelay()*0.6); if(stopFlag)return;
+      if(a[j]<a[i]) dp[i]=Math.max(dp[i],dp[j]+1);
+    }
+    states[i]='done';
+    if(dp[i]>maxLen){maxLen=dp[i];maxIdx=i;}
+    render1D(dp,states);
+    opCount++; document.getElementById('stat-ops').textContent=opCount;
+    setProgress(i/n); await sleep(getDelay()*0.3);
+  }
+  if(!stopFlag){
+    const s={}; for(let i=0;i<n;i++)s[i]='done'; s[maxIdx]='ans';
+    render1D(dp,s);
+    document.getElementById('stat-ans').textContent=maxLen;
+    setStatus('done',`LIS length = ${maxLen}`);
+    setTrace([{text:`Answer = ${maxLen}`,cls:'take'}]);
+  }
+}
+
+// 7. EDIT DISTANCE
+async function runEditDistance(){
+  const A=parseStr(document.getElementById('in1').value)||'horse';
+  const B=parseStr(document.getElementById('in2').value)||'ros';
+  const m=A.length, n=B.length;
+  renderSeqRows(A,B);
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  const rowLabels=['',...A.split('')];
+  const colLabels=['',...B.split('')];
+  build2DTable(m+1,n+1,rowLabels,colLabels);
+  // Init base cases
+  for(let j=0;j<=n;j++) setCell(0,j,j,'done');
+  for(let i=1;i<=m;i++) setCell(i,0,i,'done');
+  await sleep(getDelay()); if(stopFlag)return;
+  for(let i=1;i<=m&&!stopFlag;i++){
+    for(let j=1;j<=n&&!stopFlag;j++){
+      setCell(i,j,'?','curr');
+      setStatus('running',`A[${i-1}]='${A[i-1]}' vs B[${j-1}]='${B[j-1]}'`);
+      renderSeqRows(A,B,[i-1],[j-1]);
+      await sleep(getDelay()*0.7); if(stopFlag)return;
+      if(A[i-1]===B[j-1]){
+        dp[i][j]=dp[i-1][j-1];
+        setTrace([{text:`'${A[i-1]}'='${B[j-1]}' ✓`,cls:'take'},{text:`no op: dp=${dp[i][j]}`,cls:'take'}]);
+        setCell(i-1,j-1,dp[i-1][j-1],'src');
+      } else {
+        const ins=dp[i][j-1]+1, del=dp[i-1][j]+1, rep=dp[i-1][j-1]+1;
+        dp[i][j]=Math.min(ins,del,rep);
+        const best=dp[i][j]===ins?'Insert':dp[i][j]===del?'Delete':'Replace';
+        setTrace([{text:`ins=${ins}`,cls:'skip'},{text:`del=${del}`,cls:'skip'},{text:`rep=${rep}`,cls:'skip'},{text:`→ ${best}=${dp[i][j]}`,cls:'take'}]);
+      }
+      await sleep(getDelay()*0.3); if(stopFlag)return;
+      setCell(i,j,dp[i][j],'done');
+      opCount++; document.getElementById('stat-ops').textContent=opCount;
+      setProgress((i*(n+1)+j)/((m+1)*(n+1)));
+    }
+  }
+  if(!stopFlag){
+    setCell(m,n,dp[m][n],'ans');
+    document.getElementById('stat-ans').textContent=dp[m][n];
+    setStatus('done',`Edit distance "${A}" → "${B}" = ${dp[m][n]}`);
+    setTrace([{text:`Answer = ${dp[m][n]} operations`,cls:'take'}]);
+    renderSeqRows(A,B);
+  }
+}
+
+// ============================================================
+// MAIN DISPATCHER
+// ============================================================
+async function runDP() {
+  if(running) return;
+  running=true; stopFlag=false; opCount=0;
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('stop-btn').disabled=false;
+  document.getElementById('stat-ops').textContent='0';
+  document.getElementById('stat-ans').textContent='—';
+  document.getElementById('trace-nodes').innerHTML='';
+  document.getElementById('dp-strip').innerHTML='';
+  document.getElementById('dp-table-wrap').innerHTML='';
+  setProgress(0); setStatus('running','Running...');
+  try{
+    switch(curProb){
+      case 0: await runClimbingStairs(); break;
+      case 1: await runHouseRobber(); break;
+      case 2: await runCoinChange(); break;
+      case 3: await run01Knapsack(); break;
+      case 4: await runLCS(); break;
+      case 5: await runLIS(); break;
+      case 6: await runEditDistance(); break;
+    }
+  }catch(e){console.error(e);}
+  if(!stopFlag){document.getElementById('sdot').className='status-dot done';setProgress(1);}
+  running=false;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+}
+
+function stopDP(){
+  stopFlag=true; running=false;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+  setStatus('idle','Stopped — click ▶ Run to restart');
+}
+
+// Init
+selectProb(0);
+</script>
+</body>
+</html>

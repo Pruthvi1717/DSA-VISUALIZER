@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphs — DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050810;--surface:#0c1120;--surface2:#111827;--border:#1e2d47;--accent:#00d4ff;--accent2:#7c3aed;--accent3:#10b981;--warn:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--muted:#64748b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(236,72,153,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(236,72,153,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrapper{position:relative;z-index:1;}
+header{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(12,17,32,0.8);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#ec4899,var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;}.logo-text span{color:#ec4899;}
+nav{display:flex;gap:8px;}
+.nav-link{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+.nav-link:hover{border-color:#ec4899;color:#ec4899;}
+.container{max-width:1200px;margin:0 auto;padding:32px 40px;display:grid;gap:24px;}
+.ptabs{display:flex;gap:8px;flex-wrap:wrap;}
+.ptab{padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+.ptab:hover{border-color:#ec4899;color:#ec4899;}
+.ptab.active{background:rgba(236,72,153,0.1);border-color:#ec4899;color:#ec4899;box-shadow:0 0 12px rgba(236,72,153,0.2);}
+.viz-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.viz-top{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.viz-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;}.viz-title span{color:#ec4899;}
+.stats{display:flex;gap:20px;}
+.stat{text-align:right;}.stat-val{font-size:18px;font-weight:700;color:#ec4899;}.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.ctrl-row{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ctrl-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;}
+.btn{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;transition:all 0.2s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,#ec4899,#9d174d);color:#fff;box-shadow:0 4px 16px rgba(236,72,153,0.3);}
+.btn-primary:hover{transform:translateY(-1px);}.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-stop{background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+.btn-sm{padding:6px 12px;font-size:10px;}
+input[type=range]{width:90px;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#ec4899;cursor:pointer;}
+
+/* Graph Canvas */
+.graph-wrap{padding:20px;position:relative;}
+canvas#graph-canvas{display:block;margin:0 auto;cursor:crosshair;border-radius:8px;background:var(--surface2);}
+.canvas-hint{text-align:center;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:0.5px;}
+
+/* Queue/Stack display */
+.ds-display{padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;min-height:56px;flex-wrap:wrap;}
+.ds-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);flex-shrink:0;}
+.ds-node{padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;transition:all 0.3s;}
+.ds-node.queue-item{background:rgba(236,72,153,0.15);border:1px solid #ec4899;color:#f9a8d4;}
+.ds-node.visited-item{background:rgba(16,185,129,0.1);border:1px solid var(--accent3);color:var(--accent3);}
+.ds-node.path-item{background:rgba(245,158,11,0.15);border:1px solid var(--warn);color:var(--warn);}
+
+.progress-bar{height:3px;background:var(--border);}
+.progress-fill{height:100%;background:linear-gradient(90deg,#ec4899,var(--accent2));width:0%;transition:width 0.1s;}
+.status-bar{padding:12px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:11px;color:var(--muted);min-height:44px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.status-dot.running{background:#ec4899;box-shadow:0 0 8px #ec4899;animation:pulse 1s infinite;}
+.status-dot.done{background:var(--accent3);box-shadow:0 0 8px var(--accent3);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.info-card h3{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px;}
+.cx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cx-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.cx-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;}
+.cx-val{font-size:13px;font-weight:600;}
+.cx-val.good{color:var(--accent3);}.cx-val.ok{color:var(--warn);}.cx-val.info{color:var(--accent);}
+.desc-text{font-size:12px;line-height:1.8;color:#94a3b8;}
+.legend{display:flex;flex-wrap:wrap;gap:12px;}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);}
+.leg-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+
+@media(max-width:768px){.container{padding:16px;}header{padding:16px;}.info-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <a href="index.html" class="logo">
+      <div class="logo-icon">◈</div>
+      <div class="logo-text">DSA<span>Visual</span></div>
+    </a>
+    <nav>
+      <a href="trees.html" class="nav-link">← Trees</a>
+      <a href="segment-tree.html" class="nav-link">Seg Tree →</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="ptabs">
+      <button class="ptab active" onclick="selectAlgo('bfs')">BFS</button>
+      <button class="ptab" onclick="selectAlgo('dfs')">DFS</button>
+      <button class="ptab" onclick="selectAlgo('dijkstra')">Dijkstra</button>
+      <button class="ptab" onclick="selectAlgo('topo')">Topological Sort</button>
+      <button class="ptab" onclick="selectAlgo('cycle')">Cycle Detection</button>
+    </div>
+
+    <div class="viz-card">
+      <div class="viz-top">
+        <div class="viz-title" id="viz-title">Breadth First <span>Search</span></div>
+        <div class="stats">
+          <div class="stat"><div class="stat-val" id="stat-visited">0</div><div class="stat-label">Visited</div></div>
+          <div class="stat"><div class="stat-val" id="stat-result">—</div><div class="stat-label">Result</div></div>
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label" id="src-label">Source:</span>
+        <select id="src-select" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;"></select>
+        <span class="ctrl-label" id="dst-label" style="display:none">Target:</span>
+        <select id="dst-select" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;display:none"></select>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ctrl-label">Speed</span>
+          <input type="range" id="speed-sl" min="1" max="5" value="3">
+        </div>
+        <button class="btn btn-primary" id="run-btn" onclick="runAlgo()">▶ Run</button>
+        <button class="btn btn-sec" onclick="resetGraph()">⟳ Reset</button>
+        <button class="btn btn-sec btn-sm" onclick="loadPreset('default')">Default Graph</button>
+        <button class="btn btn-sec btn-sm" onclick="loadPreset('dag')">DAG</button>
+        <button class="btn btn-sec btn-sm" onclick="loadPreset('weighted')">Weighted</button>
+        <button class="btn btn-stop" id="stop-btn" onclick="stopAlgo()" disabled>■ Stop</button>
+      </div>
+
+      <div class="graph-wrap">
+        <canvas id="graph-canvas" width="920" height="380"></canvas>
+        <div class="canvas-hint">Click canvas to add nodes · Click two nodes to add edge · Nodes are draggable</div>
+      </div>
+
+      <div class="ds-display">
+        <span class="ds-label" id="ds-label">Queue:</span>
+        <div id="ds-nodes"></div>
+      </div>
+
+      <div class="progress-bar"><div class="progress-fill" id="pfill"></div></div>
+      <div class="status-bar">
+        <div class="status-dot" id="sdot"></div>
+        <span id="stext">Ready — select algorithm and source node, then click ▶ Run</span>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-card">
+        <h3>// Complexity</h3>
+        <div class="cx-grid">
+          <div class="cx-item"><div class="cx-label">Time</div><div class="cx-val good" id="cx-t">O(V+E)</div></div>
+          <div class="cx-item"><div class="cx-label">Space</div><div class="cx-val info" id="cx-s">O(V)</div></div>
+          <div class="cx-item"><div class="cx-label">Data Struct</div><div class="cx-val ok" id="cx-ds">Queue (FIFO)</div></div>
+          <div class="cx-item"><div class="cx-label">Explores</div><div class="cx-val" id="cx-ex" style="color:#94a3b8;font-size:11px">Level by level</div></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3>// Node Color Legend</h3>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#1e3a5f;border:2px solid #2d5a8f"></div>Unvisited</div>
+          <div class="leg-item"><div class="leg-dot" style="background:rgba(236,72,153,0.3);border:2px solid #ec4899"></div>In Queue/Stack</div>
+          <div class="leg-item"><div class="leg-dot" style="background:rgba(16,185,129,0.3);border:2px solid #10b981"></div>Visited</div>
+          <div class="leg-item"><div class="leg-dot" style="background:rgba(245,158,11,0.3);border:2px solid #f59e0b"></div>Current (processing)</div>
+          <div class="leg-item"><div class="leg-dot" style="background:rgba(0,212,255,0.3);border:2px solid #00d4ff"></div>Shortest path</div>
+          <div class="leg-item"><div class="leg-dot" style="background:rgba(239,68,68,0.3);border:2px solid #ef4444"></div>Cycle detected</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <h3 style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;">// Algorithm Details</h3>
+      <div class="desc-text" id="algo-desc">BFS explores all neighbors at depth d before depth d+1 using a queue. Guarantees shortest path in unweighted graphs. Time O(V+E), Space O(V) for the queue.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GRAPH DATA STRUCTURES
+// ============================================================
+const CW=920, CH=380, NODE_R=22;
+let nodes=[]; // {id, label, x, y, state, dist}
+let edges=[]; // {from, to, weight, state}
+let currentAlgo='bfs';
+let running=false, stopFlag=false, visitedCount=0;
+let dragging=null, dragOffX=0, dragOffY=0;
+let edgeFrom=null;
+
+const ALGOS_INFO={
+  'bfs':    {title:'Breadth First <span>Search</span>',t:'O(V+E)',s:'O(V)',ds:'Queue (FIFO)',ex:'Level by level',showDst:false,desc:'BFS explores all neighbors at depth d before d+1 using a queue. Guarantees shortest path (unweighted). Visit order: level by level from source.'},
+  'dfs':    {title:'Depth First <span>Search</span>',t:'O(V+E)',s:'O(V)',ds:'Stack (LIFO)',ex:'Deep then backtrack',showDst:false,desc:'DFS explores as deep as possible before backtracking using a stack (or recursion). Used for cycle detection, topological sort, connected components.'},
+  'dijkstra':{title:'Dijkstra\'s <span>Algorithm</span>',t:'O((V+E)log V)',s:'O(V)',ds:'Min-Heap (Priority Q)',ex:'Greedy shortest',showDst:true,desc:'Dijkstra finds shortest path from source to all nodes in a weighted graph (non-negative weights). Greedily picks the nearest unvisited node at each step.'},
+  'topo':   {title:'Topological <span>Sort</span>',t:'O(V+E)',s:'O(V)',ds:'Stack + In-degree[]',ex:'Kahn\'s Algorithm',showDst:false,desc:"Kahn's algorithm: compute in-degrees, enqueue nodes with in-degree=0, process them reducing neighbors' in-degrees. Result: linear ordering where all edges go left→right."},
+  'cycle':  {title:'Cycle <span>Detection</span>',t:'O(V+E)',s:'O(V)',ds:'Visited + Rec. Stack',ex:'DFS coloring',showDst:false,desc:'Cycle detection uses 3-color DFS: WHITE (unvisited), GRAY (in current path), BLACK (fully done). If we reach a GRAY node, a cycle exists.'},
+};
+
+function selectAlgo(algo) {
+  if(running)return;
+  currentAlgo=algo;
+  document.querySelectorAll('.ptab').forEach((b,i)=>{b.classList.toggle('active',Object.keys(ALGOS_INFO)[i]===algo);});
+  const info=ALGOS_INFO[algo];
+  document.getElementById('viz-title').innerHTML=info.title;
+  document.getElementById('cx-t').textContent=info.t;
+  document.getElementById('cx-s').textContent=info.s;
+  document.getElementById('cx-ds').textContent=info.ds;
+  document.getElementById('cx-ex').textContent=info.ex;
+  document.getElementById('algo-desc').textContent=info.desc;
+  document.getElementById('dst-label').style.display=info.showDst?'':'none';
+  document.getElementById('dst-select').style.display=info.showDst?'':'none';
+  document.getElementById('ds-label').textContent=algo==='bfs'?'Queue:':algo==='topo'?'In-degree=0:':'Stack:';
+  resetAlgoState();
+}
+
+// ============================================================
+// PRESETS
+// ============================================================
+function loadPreset(type) {
+  if(running)return;
+  if(type==='default') {
+    nodes=[
+      {id:0,label:'A',x:120,y:180,state:'default',dist:Infinity},
+      {id:1,label:'B',x:280,y:80,state:'default',dist:Infinity},
+      {id:2,label:'C',x:280,y:280,state:'default',dist:Infinity},
+      {id:3,label:'D',x:460,y:140,state:'default',dist:Infinity},
+      {id:4,label:'E',x:460,y:260,state:'default',dist:Infinity},
+      {id:5,label:'F',x:620,y:180,state:'default',dist:Infinity},
+      {id:6,label:'G',x:780,y:100,state:'default',dist:Infinity},
+      {id:7,label:'H',x:780,y:280,state:'default',dist:Infinity},
+    ];
+    edges=[
+      {from:0,to:1,weight:4,state:'default'},{from:0,to:2,weight:2,state:'default'},
+      {from:1,to:3,weight:5,state:'default'},{from:2,to:4,weight:3,state:'default'},
+      {from:3,to:5,weight:1,state:'default'},{from:4,to:5,weight:6,state:'default'},
+      {from:5,to:6,weight:2,state:'default'},{from:5,to:7,weight:4,state:'default'},
+      {from:1,to:2,weight:1,state:'default'},{from:3,to:4,weight:2,state:'default'},
+    ];
+  } else if(type==='dag') {
+    nodes=[
+      {id:0,label:'0',x:100,y:180,state:'default',dist:Infinity},
+      {id:1,label:'1',x:260,y:80,state:'default',dist:Infinity},
+      {id:2,label:'2',x:260,y:280,state:'default',dist:Infinity},
+      {id:3,label:'3',x:420,y:140,state:'default',dist:Infinity},
+      {id:4,label:'4',x:420,y:260,state:'default',dist:Infinity},
+      {id:5,label:'5',x:580,y:180,state:'default',dist:Infinity},
+    ];
+    edges=[
+      {from:5,to:0,weight:1,state:'default'},{from:5,to:2,weight:1,state:'default'},
+      {from:4,to:0,weight:1,state:'default'},{from:4,to:1,weight:1,state:'default'},
+      {from:2,to:3,weight:1,state:'default'},{from:3,to:1,weight:1,state:'default'},
+      {from:0,to:3,weight:1,state:'default'},
+    ];
+  } else {
+    nodes=[
+      {id:0,label:'S',x:100,y:190,state:'default',dist:Infinity},
+      {id:1,label:'A',x:280,y:80,state:'default',dist:Infinity},
+      {id:2,label:'B',x:280,y:300,state:'default',dist:Infinity},
+      {id:3,label:'C',x:480,y:80,state:'default',dist:Infinity},
+      {id:4,label:'D',x:480,y:300,state:'default',dist:Infinity},
+      {id:5,label:'T',x:680,y:190,state:'default',dist:Infinity},
+    ];
+    edges=[
+      {from:0,to:1,weight:4,state:'default'},{from:0,to:2,weight:8,state:'default'},
+      {from:1,to:2,weight:11,state:'default'},{from:1,to:3,weight:8,state:'default'},
+      {from:2,to:4,weight:7,state:'default'},{from:3,to:4,weight:9,state:'default'},
+      {from:3,to:5,weight:2,state:'default'},{from:4,to:5,weight:6,state:'default'},
+    ];
+  }
+  resetAlgoState(); updateSelects();
+}
+
+function updateSelects() {
+  const srcSel=document.getElementById('src-select');
+  const dstSel=document.getElementById('dst-select');
+  srcSel.innerHTML=nodes.map(n=>`<option value="${n.id}">${n.label}</option>`).join('');
+  dstSel.innerHTML=nodes.map(n=>`<option value="${n.id}">${n.label}</option>`).join('');
+  if(dstSel.options.length>0)dstSel.selectedIndex=dstSel.options.length-1;
+}
+
+// ============================================================
+// CANVAS DRAWING
+// ============================================================
+function drawGraph() {
+  const canvas=document.getElementById('graph-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,CW,CH);
+
+  // Draw edges
+  edges.forEach(e=>{
+    const from=nodes[e.from], to=nodes[e.to];
+    if(!from||!to)return;
+    const color = e.state==='path'?'#f59e0b':e.state==='visited'?'#10b981':e.state==='active'?'#ec4899':'#1e2d47';
+    ctx.strokeStyle=color; ctx.lineWidth=e.state==='path'?3:e.state==='active'?2.5:1.5;
+    // Arrow
+    const dx=to.x-from.x, dy=to.y-from.y;
+    const len=Math.sqrt(dx*dx+dy*dy);
+    const ux=dx/len, uy=dy/len;
+    const sx=from.x+ux*NODE_R, sy=from.y+uy*NODE_R;
+    const ex=to.x-ux*(NODE_R+5), ey=to.y-uy*(NODE_R+5);
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke();
+    // Arrowhead
+    const ax=ex-ux*10+uy*5, ay=ey-uy*10-ux*5;
+    const bx=ex-ux*10-uy*5, by=ey-uy*10+ux*5;
+    ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ax,ay); ctx.lineTo(bx,by); ctx.closePath();
+    ctx.fillStyle=color; ctx.fill();
+    // Weight label
+    if(e.weight>1||currentAlgo==='dijkstra') {
+      const mx=(sx+ex)/2, my=(sy+ey)/2;
+      ctx.fillStyle='rgba(12,17,32,0.7)'; ctx.fillRect(mx-12,my-10,24,16); // bg
+      ctx.fillStyle=color==='#1e2d47'?'#475569':color;
+      ctx.font='10px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(e.weight,mx,my);
+    }
+  });
+
+  // Draw nodes
+  nodes.forEach(n=>{
+    const stateColors={
+      default:{fill:'#1e3a5f',stroke:'#2d5a8f',text:'#93c5fd'},
+      queued: {fill:'rgba(236,72,153,0.2)',stroke:'#ec4899',text:'#f9a8d4'},
+      current:{fill:'rgba(245,158,11,0.25)',stroke:'#f59e0b',text:'#fbbf24'},
+      visited:{fill:'rgba(16,185,129,0.2)',stroke:'#10b981',text:'#34d399'},
+      path:   {fill:'rgba(0,212,255,0.2)',stroke:'#00d4ff',text:'#67e8f9'},
+      cycle:  {fill:'rgba(239,68,68,0.25)',stroke:'#ef4444',text:'#fca5a5'},
+    };
+    const c=stateColors[n.state]||stateColors.default;
+    if(n.state==='current'){ctx.shadowBlur=18;ctx.shadowColor='#f59e0b';}
+    else if(n.state==='queued'){ctx.shadowBlur=12;ctx.shadowColor='#ec4899';}
+    else if(n.state==='cycle'){ctx.shadowBlur=16;ctx.shadowColor='#ef4444';}
+    else{ctx.shadowBlur=0;}
+    ctx.beginPath(); ctx.arc(n.x,n.y,NODE_R,0,Math.PI*2);
+    ctx.fillStyle=c.fill; ctx.fill();
+    ctx.strokeStyle=c.stroke; ctx.lineWidth=2; ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.fillStyle=c.text; ctx.font='bold 13px JetBrains Mono';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.label,n.x,n.y-(currentAlgo==='dijkstra'&&n.dist<Infinity?6:0));
+    if(currentAlgo==='dijkstra'&&n.dist<Infinity){
+      ctx.font='9px JetBrains Mono'; ctx.fillStyle='#fbbf24';
+      ctx.fillText(n.dist===0?'0':n.dist,n.x,n.y+8);
+    }
+    // Source marker
+    if(n.id===parseInt(document.getElementById('src-select').value)){
+      ctx.font='8px JetBrains Mono'; ctx.fillStyle='#ec4899';
+      ctx.fillText('SRC',n.x,n.y-NODE_R-8);
+    }
+  });
+}
+
+// ============================================================
+// CANVAS INTERACTION
+// ============================================================
+const canvas=document.getElementById('graph-canvas');
+canvas.addEventListener('mousedown',e=>{
+  if(running)return;
+  const {x,y}=canvasXY(e);
+  const hit=nodes.find(n=>dist(n.x,n.y,x,y)<NODE_R);
+  if(hit){
+    if(e.shiftKey){
+      // Add edge from previously selected
+      if(edgeFrom===null){edgeFrom=hit.id;}
+      else{
+        if(edgeFrom!==hit.id&&!edges.find(ed=>ed.from===edgeFrom&&ed.to===hit.id)){
+          const w=1+Math.floor(Math.random()*9);
+          edges.push({from:edgeFrom,to:hit.id,weight:w,state:'default'});
+        }
+        edgeFrom=null;
+      }
+    } else { dragging=hit.id; dragOffX=x-hit.x; dragOffY=y-hit.y; }
+  } else if(!e.shiftKey){
+    const id=nodes.length;
+    const label=String.fromCharCode(65+id%26)+(id>25?Math.floor(id/26):'');
+    nodes.push({id,label,x,y,state:'default',dist:Infinity});
+    updateSelects(); resetAlgoState();
+  }
+  drawGraph();
+});
+canvas.addEventListener('mousemove',e=>{
+  if(dragging===null||running)return;
+  const {x,y}=canvasXY(e);
+  nodes[dragging].x=Math.max(NODE_R,Math.min(CW-NODE_R,x-dragOffX));
+  nodes[dragging].y=Math.max(NODE_R,Math.min(CH-NODE_R,y-dragOffY));
+  drawGraph();
+});
+canvas.addEventListener('mouseup',()=>{dragging=null;});
+function canvasXY(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+function dist(x1,y1,x2,y2){return Math.sqrt((x1-x2)**2+(y1-y2)**2);}
+
+// ============================================================
+// ALGORITHM HELPERS
+// ============================================================
+function getDelay(){const s=[500,200,80,30,5];return s[+document.getElementById('speed-sl').value-1];}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setStatus(state,msg){
+  const dot=document.getElementById('sdot');
+  dot.className='status-dot'+(state==='running'?' running':state==='done'?' done':'');
+  document.getElementById('stext').textContent=msg;
+}
+function setProgress(v){document.getElementById('pfill').style.width=(v*100)+'%';}
+
+function resetAlgoState() {
+  stopFlag=true; running=false; visitedCount=0;
+  nodes.forEach(n=>{n.state='default';n.dist=Infinity;});
+  edges.forEach(e=>e.state='default');
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+  document.getElementById('pfill').style.width='0%';
+  document.getElementById('stat-visited').textContent='0';
+  document.getElementById('stat-result').textContent='—';
+  document.getElementById('ds-nodes').innerHTML='';
+  drawGraph();
+  setStatus('idle','Ready — click ▶ Run');
+}
+
+function resetGraph(){resetAlgoState();}
+
+function buildAdj(directed=true){
+  const adj=Object.fromEntries(nodes.map(n=>[n.id,[]]));
+  edges.forEach(e=>{
+    adj[e.from].push({to:e.to,weight:e.weight,edge:e});
+    if(!directed)adj[e.to].push({to:e.from,weight:e.weight,edge:e});
+  });
+  return adj;
+}
+
+function updateDsDisplay(items, cls='queue-item'){
+  document.getElementById('ds-nodes').innerHTML=items.map(v=>`<span class="ds-node ${cls}">${nodes[v]?.label||v}</span>`).join('');
+}
+
+// ============================================================
+// BFS
+// ============================================================
+async function runBFS(srcId) {
+  const adj=buildAdj(false);
+  const visited=new Set();
+  const queue=[srcId];
+  visited.add(srcId); nodes[srcId].state='current'; drawGraph();
+  const order=[];
+  while(queue.length&&!stopFlag){
+    const curr=queue.shift();
+    nodes[curr].state='current'; visitedCount++; order.push(nodes[curr].label);
+    document.getElementById('stat-visited').textContent=visitedCount;
+    setStatus('running',`Processing node ${nodes[curr].label} — queue: [${queue.map(x=>nodes[x].label).join(',')}]`);
+    updateDsDisplay(queue);
+    setProgress(visitedCount/nodes.length);
+    drawGraph(); await sleep(getDelay()); if(stopFlag)return;
+    (adj[curr]||[]).forEach(({to,edge})=>{
+      if(!visited.has(to)){
+        visited.add(to); queue.push(to);
+        nodes[to].state='queued'; edge.state='visited';
+      }
+    });
+    nodes[curr].state='visited'; drawGraph();
+    await sleep(getDelay()*0.4); if(stopFlag)return;
+  }
+  updateDsDisplay([]);
+  document.getElementById('stat-result').textContent=order.join('→');
+  setStatus('done',`BFS order: ${order.join(' → ')}`);
+}
+
+// ============================================================
+// DFS
+// ============================================================
+async function runDFS(srcId) {
+  const adj=buildAdj(false);
+  const visited=new Set();
+  const stack=[srcId];
+  const order=[];
+  while(stack.length&&!stopFlag){
+    const curr=stack.pop();
+    if(visited.has(curr))continue;
+    visited.add(curr); order.push(nodes[curr].label);
+    nodes[curr].state='current'; visitedCount++;
+    document.getElementById('stat-visited').textContent=visitedCount;
+    setStatus('running',`DFS visiting ${nodes[curr].label} — stack: [${stack.map(x=>nodes[x].label).join(',')}]`);
+    updateDsDisplay(stack);
+    setProgress(visitedCount/nodes.length);
+    drawGraph(); await sleep(getDelay()); if(stopFlag)return;
+    (adj[curr]||[]).forEach(({to,edge})=>{
+      if(!visited.has(to)){stack.push(to);edge.state='visited';}
+    });
+    nodes[curr].state='visited'; drawGraph();
+    await sleep(getDelay()*0.4);
+  }
+  updateDsDisplay([]);
+  document.getElementById('stat-result').textContent=order.join('→');
+  setStatus('done',`DFS order: ${order.join(' → ')}`);
+}
+
+// ============================================================
+// DIJKSTRA
+// ============================================================
+async function runDijkstra(srcId, dstId) {
+  const adj=buildAdj(true);
+  nodes.forEach(n=>n.dist=Infinity);
+  nodes[srcId].dist=0; nodes[srcId].state='current';
+  // Simple priority queue (sorted array)
+  const pq=[{id:srcId,dist:0}];
+  const prev={};
+  while(pq.length&&!stopFlag){
+    pq.sort((a,b)=>a.dist-b.dist);
+    const {id:curr,dist:cd}=pq.shift();
+    if(cd>nodes[curr].dist)continue;
+    nodes[curr].state='current'; visitedCount++;
+    document.getElementById('stat-visited').textContent=visitedCount;
+    setStatus('running',`Processing ${nodes[curr].label}, dist=${nodes[curr].dist}`);
+    setProgress(visitedCount/nodes.length);
+    drawGraph(); await sleep(getDelay()); if(stopFlag)return;
+    (adj[curr]||[]).forEach(({to,weight,edge})=>{
+      const nd=nodes[curr].dist+weight;
+      if(nd<nodes[to].dist){
+        nodes[to].dist=nd; prev[to]=curr;
+        nodes[to].state='queued'; edge.state='active';
+        pq.push({id:to,dist:nd});
+      }
+    });
+    nodes[curr].state='visited'; drawGraph();
+    await sleep(getDelay()*0.4);
+  }
+  if(!stopFlag){
+    // Trace path
+    const path=[];let cur=dstId;
+    while(cur!==undefined){path.unshift(cur);cur=prev[cur];}
+    if(path[0]===srcId){
+      path.forEach(id=>{nodes[id].state='path';});
+      for(let i=0;i<path.length-1;i++){const e=edges.find(e=>e.from===path[i]&&e.to===path[i+1]);if(e)e.state='path';}
+      document.getElementById('stat-result').textContent=nodes[dstId].dist;
+      setStatus('done',`Shortest path to ${nodes[dstId].label} = ${nodes[dstId].dist}`);
+    } else {
+      setStatus('done',`No path to ${nodes[dstId].label}`);
+    }
+    drawGraph();
+  }
+}
+
+// ============================================================
+// TOPOLOGICAL SORT (Kahn's BFS)
+// ============================================================
+async function runTopoSort() {
+  const indegree=Object.fromEntries(nodes.map(n=>[n.id,0]));
+  edges.forEach(e=>indegree[e.to]++);
+  const queue=nodes.filter(n=>indegree[n.id]===0).map(n=>n.id);
+  queue.forEach(id=>nodes[id].state='queued');
+  const order=[];
+  drawGraph(); await sleep(getDelay()); if(stopFlag)return;
+  while(queue.length&&!stopFlag){
+    const curr=queue.shift();
+    nodes[curr].state='current'; visitedCount++;
+    order.push(nodes[curr].label);
+    document.getElementById('stat-visited').textContent=visitedCount;
+    setStatus('running',`Processing ${nodes[curr].label}, in-degree now=0`);
+    setProgress(visitedCount/nodes.length);
+    updateDsDisplay(queue);
+    drawGraph(); await sleep(getDelay()); if(stopFlag)return;
+    edges.filter(e=>e.from===curr).forEach(e=>{
+      indegree[e.to]--;
+      e.state='visited';
+      if(indegree[e.to]===0){queue.push(e.to);nodes[e.to].state='queued';}
+    });
+    nodes[curr].state='visited'; drawGraph();
+    await sleep(getDelay()*0.5);
+  }
+  if(!stopFlag){
+    updateDsDisplay([]);
+    if(visitedCount<nodes.length){setStatus('done',`Cycle detected! No topological sort exists.`);document.getElementById('stat-result').textContent='Cycle!';}
+    else{document.getElementById('stat-result').textContent=order.join('→');setStatus('done',`Topo order: ${order.join(' → ')}`);}
+  }
+}
+
+// ============================================================
+// CYCLE DETECTION (DFS 3-color)
+// ============================================================
+async function runCycleDetect(srcId) {
+  const adj=buildAdj(true);
+  const color=Object.fromEntries(nodes.map(n=>[n.id,'white']));
+  let cycleFound=false;
+  async function dfs(u){
+    if(stopFlag||cycleFound)return;
+    color[u]='gray'; nodes[u].state='current'; visitedCount++;
+    document.getElementById('stat-visited').textContent=visitedCount;
+    drawGraph(); setStatus('running',`Coloring ${nodes[u].label} GRAY (in current DFS path)`);
+    setProgress(visitedCount/nodes.length);
+    await sleep(getDelay()); if(stopFlag)return;
+    for(const {to,edge} of (adj[u]||[])){
+      if(stopFlag)return;
+      if(color[to]==='gray'){
+        cycleFound=true;
+        nodes[to].state='cycle'; nodes[u].state='cycle'; edge.state='active';
+        drawGraph(); setStatus('done',`Cycle detected! ${nodes[u].label} → ${nodes[to].label}`);
+        document.getElementById('stat-result').textContent='Cycle!';
+        return;
+      }
+      if(color[to]==='white'){edge.state='visited';await dfs(to);}
+    }
+    if(!cycleFound){color[u]='black';nodes[u].state='visited';drawGraph();await sleep(getDelay()*0.3);}
+  }
+  for(const n of nodes){if(!stopFlag&&!cycleFound&&color[n.id]==='white')await dfs(n.id);}
+  if(!stopFlag&&!cycleFound){setStatus('done','No cycle detected — graph is a DAG');document.getElementById('stat-result').textContent='No cycle';}
+}
+
+// ============================================================
+// MAIN RUN
+// ============================================================
+async function runAlgo(){
+  if(running||!nodes.length)return;
+  running=true;stopFlag=false;visitedCount=0;
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('stop-btn').disabled=false;
+  nodes.forEach(n=>{n.state='default';n.dist=Infinity;});
+  edges.forEach(e=>e.state='default');
+  document.getElementById('ds-nodes').innerHTML='';
+  document.getElementById('stat-visited').textContent='0';
+  document.getElementById('stat-result').textContent='—';
+  setProgress(0);
+  const srcId=parseInt(document.getElementById('src-select').value);
+  const dstId=parseInt(document.getElementById('dst-select').value);
+  try{
+    switch(currentAlgo){
+      case 'bfs':      await runBFS(srcId); break;
+      case 'dfs':      await runDFS(srcId); break;
+      case 'dijkstra': await runDijkstra(srcId,dstId); break;
+      case 'topo':     await runTopoSort(); break;
+      case 'cycle':    await runCycleDetect(srcId); break;
+    }
+  }catch(e){console.error(e);}
+  if(!stopFlag){document.getElementById('sdot').className='status-dot done';setProgress(1);}
+  running=false;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+}
+
+function stopAlgo(){stopFlag=true;running=false;document.getElementById('run-btn').disabled=false;document.getElementById('stop-btn').disabled=true;setStatus('idle','Stopped');}
+
+// ============================================================
+// INIT
+// ============================================================
+loadPreset('default');
+selectAlgo('bfs');
+</script>
+</body>
+</html>

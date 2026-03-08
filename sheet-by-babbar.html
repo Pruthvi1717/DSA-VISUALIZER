@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Sheet — Love Babbar | DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050810;
+  --surface: #0c1120;
+  --surface2: #111827;
+  --surface3: #0a0f1e;
+  --border: #1e2d47;
+  --border2: #243348;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --pink: #ec4899;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --muted2: #94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+.wrapper{position:relative;z-index:1;}
+
+/* ── HEADER ── */
+header{
+  padding:20px 40px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(12,17,32,0.85);
+  backdrop-filter:blur(16px);
+  position:sticky;top:0;z-index:200;
+}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.logo-icon{
+  width:34px;height:34px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;
+}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-0.5px;}
+.logo-text span{color:var(--accent);}
+.breadcrumb{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}
+.breadcrumb .sep{color:var(--border2);}
+
+/* ── HERO ── */
+.sheet-hero{
+  padding:50px 40px 30px;
+  max-width:900px;margin:0 auto;text-align:center;
+}
+.sheet-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(0,212,255,0.1));
+  border:1px solid rgba(124,58,237,0.3);
+  border-radius:30px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--accent2);margin-bottom:20px;
+}
+.sheet-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+.sheet-hero h1{
+  font-family:'Syne',sans-serif;font-size:38px;font-weight:800;line-height:1.1;margin-bottom:14px;
+}
+.sheet-hero h1 .lb{
+  background:linear-gradient(90deg,#f59e0b,#ec4899);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.sheet-hero p{color:var(--muted);font-size:12px;line-height:1.9;max-width:600px;margin:0 auto 24px;}
+.sheet-stats{
+  display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-top:10px;
+}
+.stat-pill{
+  padding:8px 18px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;font-size:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.stat-pill .num{font-size:18px;font-weight:700;color:var(--accent);font-family:'Syne',sans-serif;}
+.stat-pill .lbl{color:var(--muted);letter-spacing:0.5px;}
+
+/* ── LAYOUT ── */
+.main-layout{
+  max-width:1320px;margin:0 auto;
+  padding:0 40px 80px;
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:28px;
+  margin-top:36px;
+}
+@media(max-width:900px){
+  .main-layout{grid-template-columns:1fr;padding:0 20px 60px;}
+  header,.sheet-hero{padding-left:20px;padding-right:20px;}
+}
+
+/* ── SIDEBAR ── */
+.sidebar{}
+.sidebar-header{
+  padding:16px 20px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px 14px 0 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sidebar-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);}
+.q-count-badge{
+  font-size:9px;padding:3px 8px;
+  background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);
+  border-radius:4px;color:var(--accent);letter-spacing:1px;
+}
+
+.topic-group{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:none;
+}
+.topic-group:last-child{border-radius:0 0 14px 14px;border-top:none;}
+
+.topic-header{
+  padding:12px 20px;
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+  border-top:1px solid var(--border);
+  transition:background 0.15s;
+  user-select:none;
+}
+.topic-header:hover{background:rgba(255,255,255,0.02);}
+.topic-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.topic-name{font-size:11px;font-weight:600;color:var(--muted2);flex:1;letter-spacing:0.3px;}
+.topic-num{font-size:9px;color:var(--muted);padding:2px 6px;background:var(--surface2);border-radius:3px;}
+.topic-chevron{font-size:10px;color:var(--muted);transition:transform 0.2s;}
+.topic-header.open .topic-chevron{transform:rotate(90deg);}
+
+.question-list{display:none;padding:0 0 8px;}
+.topic-header.open + .question-list{display:block;}
+
+.q-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 20px 9px 36px;
+  cursor:pointer;
+  transition:all 0.15s;
+  border-left:3px solid transparent;
+  position:relative;
+}
+.q-item::before{
+  content:'';position:absolute;left:20px;top:50%;
+  transform:translateY(-50%);
+  width:5px;height:5px;border-radius:50%;
+  background:var(--border);transition:background 0.15s;
+}
+.q-item:hover{background:rgba(0,212,255,0.04);}
+.q-item:hover::before{background:var(--accent);}
+.q-item.active{
+  background:rgba(0,212,255,0.07);
+  border-left-color:var(--accent);
+}
+.q-item.active::before{background:var(--accent);}
+.q-item-text{font-size:10px;color:var(--muted2);flex:1;line-height:1.4;}
+.q-item.active .q-item-text{color:var(--text);}
+.diff-tag{
+  font-size:8px;padding:2px 6px;border-radius:3px;
+  text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0;
+}
+.easy{background:rgba(16,185,129,0.12);color:var(--accent3);border:1px solid rgba(16,185,129,0.2);}
+.medium{background:rgba(245,158,11,0.12);color:var(--warn);border:1px solid rgba(245,158,11,0.2);}
+.hard{background:rgba(239,68,68,0.12);color:var(--danger);border:1px solid rgba(239,68,68,0.2);}
+
+/* ── DETAIL PANEL ── */
+.detail-panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  min-height:600px;
+  display:flex;flex-direction:column;
+}
+
+.empty-state{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--muted);gap:16px;padding:40px;text-align:center;
+}
+.empty-icon{font-size:48px;opacity:0.3;}
+.empty-state p{font-size:12px;line-height:1.8;}
+
+.panel-header{
+  padding:20px 28px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;
+}
+.panel-q-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;}
+.panel-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.panel-meta .diff-tag{font-size:9px;}
+.panel-topic-tag{
+  font-size:9px;padding:3px 8px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:4px;color:var(--muted);letter-spacing:0.5px;
+}
+.panel-actions{display:flex;gap:8px;}
+.btn{
+  padding:8px 16px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  border-radius:7px;cursor:pointer;border:none;font-family:'JetBrains Mono',monospace;
+  transition:all 0.2s;
+}
+.btn-ghost{
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),#0099cc);
+  color:#000;font-weight:700;
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.3);}
+
+/* ── TABS ── */
+.panel-tabs{
+  display:flex;
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  background:var(--surface3);
+}
+.tab-btn{
+  padding:12px 16px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all 0.15s;
+  font-family:'JetBrains Mono',monospace;
+  white-space:nowrap;
+}
+.tab-btn:hover{color:var(--muted2);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+.tab-content{display:none;flex:1;overflow:auto;}
+.tab-content.active{display:flex;flex-direction:column;}
+
+/* ── APPROACH TAB ── */
+.approach-body{padding:28px;display:flex;flex-direction:column;gap:24px;}
+.approach-section{}
+.approach-section h3{
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  color:var(--accent);margin-bottom:12px;letter-spacing:0.5px;
+  display:flex;align-items:center;gap:8px;
+}
+.approach-section h3::after{content:'';flex:1;height:1px;background:rgba(0,212,255,0.15);}
+.approach-text{font-size:11px;line-height:1.9;color:var(--muted2);}
+.approach-steps{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.step-row{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:12px 16px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:8px;
+}
+.step-num{
+  min-width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(124,58,237,0.2));
+  border:1px solid rgba(0,212,255,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0;
+}
+.step-text{font-size:11px;line-height:1.7;color:var(--muted2);}
+.complexity-row{
+  display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;
+}
+.complexity-chip{
+  padding:10px 16px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px;
+}
+.complexity-chip .clabel{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.complexity-chip .cval{font-size:14px;font-weight:700;font-family:'Syne',sans-serif;}
+.tc{color:var(--accent);}
+.sc{color:var(--accent2);}
+
+/* ── VISUALIZER TAB ── */
+.viz-body{padding:24px 28px;display:flex;flex-direction:column;gap:20px;flex:1;}
+.viz-controls{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.input-group{display:flex;align-items:center;gap:8px;}
+.input-group label{font-size:10px;color:var(--muted);letter-spacing:0.5px;white-space:nowrap;}
+.input-group input{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);padding:7px 10px;border-radius:6px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  width:200px;outline:none;transition:border 0.15s;
+}
+.input-group input:focus{border-color:var(--accent);}
+.ctrl-divider{width:1px;height:28px;background:var(--border);}
+
+.btn-sm{
+  padding:7px 14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  border-radius:6px;cursor:pointer;border:none;font-family:'JetBrains Mono',monospace;
+  transition:all 0.15s;
+}
+.btn-run{background:linear-gradient(135deg,var(--accent3),#0d9966);color:#fff;font-weight:700;}
+.btn-run:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(16,185,129,0.3);}
+.btn-step{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);}
+.btn-step:hover{border-color:var(--warn);color:var(--warn);}
+.btn-reset{background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger);}
+
+.speed-group{display:flex;align-items:center;gap:8px;}
+.speed-group label{font-size:10px;color:var(--muted);}
+.speed-group input[type=range]{
+  width:80px;accent-color:var(--accent);cursor:pointer;
+}
+
+/* array visualization */
+.viz-canvas{
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:24px;min-height:140px;display:flex;align-items:flex-end;justify-content:center;
+  gap:4px;position:relative;overflow:hidden;
+}
+.viz-canvas.center{align-items:center;}
+.arr-bar{
+  display:flex;flex-direction:column;align-items:center;gap:6px;transition:all 0.3s;
+}
+.arr-cell{
+  width:48px;height:48px;
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;transition:all 0.3s;position:relative;
+}
+.arr-cell.highlight{border-color:var(--accent);background:rgba(0,212,255,0.12);color:var(--accent);}
+.arr-cell.active{border-color:var(--warn);background:rgba(245,158,11,0.12);color:var(--warn);}
+.arr-cell.matched{border-color:var(--accent3);background:rgba(16,185,129,0.15);color:var(--accent3);}
+.arr-cell.pivot{border-color:var(--pink);background:rgba(236,72,153,0.12);color:var(--pink);}
+.arr-cell.visited{border-color:var(--accent2);background:rgba(124,58,237,0.12);color:var(--accent2);}
+.arr-cell.done{border-color:var(--accent3);background:rgba(16,185,129,0.1);}
+.arr-idx{font-size:9px;color:var(--muted);}
+.arr-ptr{font-size:9px;color:var(--accent);font-weight:700;letter-spacing:0.5px;}
+
+/* pointer labels */
+.ptr-label{
+  position:absolute;top:-28px;left:50%;transform:translateX(-50%);
+  font-size:9px;color:var(--accent);white-space:nowrap;
+  background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);
+  padding:2px 6px;border-radius:4px;
+}
+.ptr-label.r-ptr{color:var(--warn);background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.2);}
+.ptr-label.m-ptr{color:var(--pink);background:rgba(236,72,153,0.1);border-color:rgba(236,72,153,0.2);}
+
+/* log / breakpoint */
+.log-panel{
+  background:var(--surface3);border:1px solid var(--border);border-radius:10px;
+  font-size:10px;line-height:1.8;max-height:180px;overflow-y:auto;
+}
+.log-header{
+  padding:10px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.log-title{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.log-clear{font-size:9px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'JetBrains Mono',monospace;}
+.log-clear:hover{color:var(--danger);}
+.log-entries{padding:10px 16px;display:flex;flex-direction:column;gap:4px;}
+.log-entry{display:flex;gap:10px;align-items:baseline;}
+.log-step{color:var(--muted);font-size:9px;min-width:50px;}
+.log-msg{color:var(--muted2);}
+.log-msg .hl{color:var(--accent);}
+.log-msg .hl-g{color:var(--accent3);}
+.log-msg .hl-y{color:var(--warn);}
+.log-msg .hl-p{color:var(--accent2);}
+
+/* breakpoints */
+.bp-bar{
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+}
+.bp-label{font-size:9px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;min-width:80px;}
+.bp-btn{
+  padding:4px 10px;font-size:9px;border-radius:4px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface2);color:var(--muted);
+  font-family:'JetBrains Mono',monospace;transition:all 0.15s;
+}
+.bp-btn:hover{border-color:var(--warn);color:var(--warn);}
+.bp-btn.bp-active{border-color:var(--warn);background:rgba(245,158,11,0.1);color:var(--warn);}
+
+/* step state */
+.state-row{
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.state-chip{
+  padding:6px 12px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;font-size:10px;display:flex;gap:6px;align-items:center;
+}
+.state-key{color:var(--muted);}
+.state-val{color:var(--accent);font-weight:600;}
+
+/* ── CODE TAB ── */
+.code-body{padding:0;flex:1;display:flex;flex-direction:column;}
+.code-lang-tabs{
+  display:flex;gap:0;border-bottom:1px solid var(--border);
+  padding:0 28px;background:var(--surface3);
+}
+.lang-btn{
+  padding:10px 14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all 0.15s;
+  font-family:'JetBrains Mono',monospace;
+}
+.lang-btn.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+.code-block{
+  flex:1;padding:24px 28px;overflow:auto;
+  font-size:12px;line-height:1.9;position:relative;
+}
+.code-block pre{white-space:pre-wrap;word-break:break-word;}
+.copy-btn{
+  position:absolute;top:20px;right:24px;
+  padding:5px 12px;font-size:9px;letter-spacing:1px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--muted);border-radius:5px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;transition:all 0.15s;
+}
+.copy-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+/* syntax */
+.kw{color:#7c3aed;}
+.fn{color:#00d4ff;}
+.nm{color:#e2e8f0;}
+.cm{color:#4a5568;font-style:italic;}
+.st{color:#10b981;}
+.nu{color:#f59e0b;}
+.cl{color:#ec4899;}
+
+/* ── LINKED LIST VIZ ── */
+.ll-canvas{
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:32px 24px;min-height:140px;display:flex;align-items:center;justify-content:center;
+  gap:0;overflow-x:auto;
+}
+.ll-node{
+  display:flex;align-items:center;gap:0;
+}
+.ll-box{
+  width:52px;height:52px;
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;
+  transition:all 0.3s;position:relative;flex-shrink:0;
+}
+.ll-box.slow-ptr{border-color:var(--accent);background:rgba(0,212,255,0.12);color:var(--accent);}
+.ll-box.fast-ptr{border-color:var(--pink);background:rgba(236,72,153,0.12);color:var(--pink);}
+.ll-box.both{border-color:var(--accent3);background:rgba(16,185,129,0.15);color:var(--accent3);}
+.ll-box.visited{border-color:var(--accent2);opacity:0.6;}
+.ll-arrow{
+  font-size:16px;color:var(--muted);padding:0 4px;flex-shrink:0;
+}
+.ll-ptr-row{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.ll-ptr-label{font-size:8px;letter-spacing:0.5px;text-transform:uppercase;}
+.slow-lbl{color:var(--accent);}
+.fast-lbl{color:var(--pink);}
+.null-box{
+  padding:0 12px;color:var(--muted);font-size:11px;
+  border:2px dashed var(--border);border-radius:8px;height:52px;
+  display:flex;align-items:center;
+}
+
+/* ── SCROLLBARS ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--surface3);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+
+/* ── FADE IN ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.detail-panel{animation:fadeUp 0.25s ease;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .sheet-hero h1{font-size:26px;}
+  .panel-q-title{font-size:15px;}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ── HEADER ── -->
+<header>
+  <a class="logo" href="index.html">
+    <div class="logo-icon">⬡</div>
+    <div class="logo-text">DSA<span>Visual</span></div>
+  </a>
+  <div class="breadcrumb">
+    <a href="index.html">Home</a>
+    <span class="sep">›</span>
+    <span>Question Banks</span>
+    <span class="sep">›</span>
+    <span style="color:var(--warn)">Love Babbar DSA Sheet</span>
+  </div>
+</header>
+
+<!-- ── HERO ── -->
+<div class="sheet-hero">
+  <div class="sheet-badge"><span class="dot"></span>Question Bank</div>
+  <h1>DSA Sheet by<br><span class="lb">Love Babbar</span></h1>
+  <p>Curated 450 DSA problems with interactive step-by-step visualizations, breakpoints, and multi-language code walkthroughs. Pick any question to watch the algorithm execute live.</p>
+  <div class="sheet-stats">
+    <div class="stat-pill"><span class="num">450</span><span class="lbl">Problems</span></div>
+    <div class="stat-pill"><span class="num" style="color:var(--accent3)">3</span><span class="lbl">Visualized</span></div>
+    <div class="stat-pill"><span class="num" style="color:var(--warn)">3</span><span class="lbl">Languages</span></div>
+    <div class="stat-pill"><span class="num" style="color:var(--accent2)">∞</span><span class="lbl">Custom Inputs</span></div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">// Problem List</span>
+      <span class="q-count-badge">3 Visualized</span>
+    </div>
+
+    <!-- ARRAYS -->
+    <div class="topic-group">
+      <div class="topic-header open" onclick="toggleTopic(this)">
+        <span class="topic-dot" style="background:#00d4ff"></span>
+        <span class="topic-name">Arrays</span>
+        <span class="topic-num">3 Q</span>
+        <span class="topic-chevron">›</span>
+      </div>
+      <div class="question-list">
+        <div class="q-item active" onclick="loadQuestion('twosum',this)">
+          <span class="q-item-text">Two Sum</span>
+          <span class="diff-tag easy">Easy</span>
+        </div>
+        <div class="q-item" onclick="loadQuestion('maxsubarray',this)">
+          <span class="q-item-text">Maximum Subarray (Kadane's)</span>
+          <span class="diff-tag medium">Medium</span>
+        </div>
+        <div class="q-item" onclick="loadQuestion('binarysearch',this)">
+          <span class="q-item-text">Binary Search in Sorted Array</span>
+          <span class="diff-tag easy">Easy</span>
+        </div>
+      </div>
+    </div>
+    <!-- BACKTRACKING -->
+<div class="topic-group">
+  <div class="topic-header open" onclick="toggleTopic(this)">
+    <span class="topic-dot" style="background:#ec4899"></span>
+    <span class="topic-name">Backtracking</span>
+    <span class="topic-num">1 Q</span>
+    <span class="topic-chevron">›</span>
+  </div>
+  <div class="question-list">
+    <div class="q-item" onclick="window.location.href='backtracking/n-queens.html'">
+      <span class="q-item-text">N-Queens Problem</span>
+      <span class="diff-tag hard">Hard</span>
+    </div>
+    <div class="q-item" onclick="window.location.href='backtracking/sudoku.html'">
+  <span class="q-item-text">Sudoku Solver</span>
+  <span class="diff-tag hard">Hard</span>
+</div>
+    <div class="q-item" style="opacity:0.4;pointer-events:none">
+      <span class="q-item-text">Word Search</span>
+      <span class="diff-tag medium">Medium</span>
+    </div>
+  </div>
+</div>
+    <!-- LINKED LIST -->
+    <div class="topic-group">
+      <div class="topic-header" onclick="toggleTopic(this)">
+        <span class="topic-dot" style="background:#7c3aed"></span>
+        <span class="topic-name">Linked List</span>
+        <span class="topic-num">Coming</span>
+        <span class="topic-chevron">›</span>
+      </div>
+      <div class="question-list">
+        <div class="q-item" style="opacity:0.4;pointer-events:none">
+          <span class="q-item-text">Detect Cycle (Floyd's)</span>
+          <span class="diff-tag medium">Medium</span>
+        </div>
+        <div class="q-item" style="opacity:0.4;pointer-events:none">
+          <span class="q-item-text">Reverse Linked List</span>
+          <span class="diff-tag easy">Easy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TREES -->
+    <div class="topic-group">
+      <div class="topic-header" onclick="toggleTopic(this)">
+        <span class="topic-dot" style="background:#10b981"></span>
+        <span class="topic-name">Trees</span>
+        <span class="topic-num">Coming</span>
+        <span class="topic-chevron">›</span>
+      </div>
+      <div class="question-list">
+        <div class="q-item" style="opacity:0.4;pointer-events:none">
+          <span class="q-item-text">Inorder Traversal</span>
+          <span class="diff-tag easy">Easy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DP -->
+    <div class="topic-group" style="border-radius:0 0 14px 14px;">
+      <div class="topic-header" onclick="toggleTopic(this)">
+        <span class="topic-dot" style="background:#f59e0b"></span>
+        <span class="topic-name">Dynamic Programming</span>
+        <span class="topic-num">Coming</span>
+        <span class="topic-chevron">›</span>
+      </div>
+      <div class="question-list">
+        <div class="q-item" style="opacity:0.4;pointer-events:none">
+          <span class="q-item-text">0/1 Knapsack</span>
+          <span class="diff-tag hard">Hard</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ── DETAIL PANEL ── -->
+  <div class="detail-panel" id="detailPanel">
+    <!-- Initially empty, filled by JS -->
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="empty-icon">◎</div>
+      <p>Select a question from the list<br>to see its visualization.</p>
+    </div>
+  </div>
+
+</div><!-- /main-layout -->
+</div><!-- /wrapper -->
+
+<script>
+/* =====================================================================
+   DATA — question bank
+   ===================================================================== */
+const QUESTIONS = {
+
+  twosum: {
+    title: "Two Sum",
+    diff: "easy",
+    topic: "Arrays · Hashing",
+    problem: "Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to target.",
+    constraints: ["2 ≤ nums.length ≤ 10⁴", "−10⁹ ≤ nums[i] ≤ 10⁹", "Exactly one solution exists"],
+    approach: {
+      title: "Hash Map — O(n) Pass",
+      steps: [
+        "Create an empty hash map <code>seen</code> mapping value → index.",
+        "For each element <code>nums[i]</code>, compute <code>complement = target − nums[i]</code>.",
+        "Check if <code>complement</code> already exists in <code>seen</code>. If yes, return <code>[seen[complement], i]</code>.",
+        "Otherwise store <code>seen[nums[i]] = i</code> and continue to the next element.",
+        "Linear time because each element is visited exactly once; constant lookups in the hash map."
+      ],
+      tc: "O(n)",
+      sc: "O(n)"
+    },
+    defaultInput: "2 7 11 15",
+    defaultTarget: "9",
+    codes: {
+      cpp: `<span class="cm">// Two Sum — Hash Map O(n)</span>
+<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">twoSum</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; <span class="nm">nums</span>, <span class="kw">int</span> <span class="nm">target</span>) {
+    unordered_map&lt;<span class="kw">int</span>, <span class="kw">int</span>&gt; <span class="nm">seen</span>;
+    <span class="kw">for</span> (<span class="kw">int</span> <span class="nm">i</span> = <span class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">nums</span>.size(); ++<span class="nm">i</span>) {
+        <span class="kw">int</span> <span class="nm">comp</span> = <span class="nm">target</span> - <span class="nm">nums</span>[<span class="nm">i</span>];
+        <span class="kw">if</span> (<span class="nm">seen</span>.count(<span class="nm">comp</span>))
+            <span class="kw">return</span> {<span class="nm">seen</span>[<span class="nm">comp</span>], <span class="nm">i</span>};
+        <span class="nm">seen</span>[<span class="nm">nums</span>[<span class="nm">i</span>]] = <span class="nm">i</span>;
+    }
+    <span class="kw">return</span> {};
+}`,
+      python: `<span class="cm"># Two Sum — Hash Map O(n)</span>
+<span class="kw">def</span> <span class="fn">two_sum</span>(<span class="nm">nums</span>, <span class="nm">target</span>):
+    seen = {}
+    <span class="kw">for</span> i, val <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        comp = target - val
+        <span class="kw">if</span> comp <span class="kw">in</span> seen:
+            <span class="kw">return</span> [seen[comp], i]
+        seen[val] = i
+    <span class="kw">return</span> []`,
+      java: `<span class="cm">// Two Sum — Hash Map O(n)</span>
+<span class="kw">public int</span>[] <span class="fn">twoSum</span>(<span class="kw">int</span>[] <span class="nm">nums</span>, <span class="kw">int</span> <span class="nm">target</span>) {
+    Map&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; seen = <span class="kw">new</span> <span class="cl">HashMap</span>&lt;&gt;();
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; nums.length; i++) {
+        <span class="kw">int</span> comp = target - nums[i];
+        <span class="kw">if</span> (seen.containsKey(comp))
+            <span class="kw">return new int</span>[]{seen.get(comp), i};
+        seen.put(nums[i], i);
+    }
+    <span class="kw">return new int</span>[]{};
+}`
+    },
+    vizFn: "vizTwoSum"
+  },
+
+  maxsubarray: {
+    title: "Maximum Subarray",
+    diff: "medium",
+    topic: "Arrays · Kadane's Algorithm",
+    problem: "Given an integer array <code>nums</code>, find the contiguous subarray with the largest sum and return that sum.",
+    constraints: ["1 ≤ nums.length ≤ 10⁵", "−10⁴ ≤ nums[i] ≤ 10⁴"],
+    approach: {
+      title: "Kadane's Algorithm — O(n)",
+      steps: [
+        "Initialise <code>currentSum = nums[0]</code> and <code>maxSum = nums[0]</code>.",
+        "Iterate from index 1. At each element decide: extend the current subarray or start fresh.",
+        "<code>currentSum = max(nums[i], currentSum + nums[i])</code> — if adding the element hurts, reset.",
+        "Update <code>maxSum = max(maxSum, currentSum)</code> after every element.",
+        "Return <code>maxSum</code> — the algorithm makes a single linear pass without extra space."
+      ],
+      tc: "O(n)",
+      sc: "O(1)"
+    },
+    defaultInput: "-2 1 -3 4 -1 2 1 -5 4",
+    defaultTarget: null,
+    codes: {
+      cpp: `<span class="cm">// Kadane's Algorithm</span>
+<span class="kw">int</span> <span class="fn">maxSubArray</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; <span class="nm">nums</span>) {
+    <span class="kw">int</span> cur = nums[<span class="nu">0</span>], best = nums[<span class="nu">0</span>];
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">1</span>; i &lt; nums.size(); ++i) {
+        cur  = max(nums[i], cur + nums[i]);
+        best = max(best, cur);
+    }
+    <span class="kw">return</span> best;
+}`,
+      python: `<span class="cm"># Kadane's Algorithm</span>
+<span class="kw">def</span> <span class="fn">max_sub_array</span>(<span class="nm">nums</span>):
+    cur = best = nums[<span class="nu">0</span>]
+    <span class="kw">for</span> n <span class="kw">in</span> nums[<span class="nu">1</span>:]:
+        cur  = <span class="fn">max</span>(n, cur + n)
+        best = <span class="fn">max</span>(best, cur)
+    <span class="kw">return</span> best`,
+      java: `<span class="cm">// Kadane's Algorithm</span>
+<span class="kw">public int</span> <span class="fn">maxSubArray</span>(<span class="kw">int</span>[] <span class="nm">nums</span>) {
+    <span class="kw">int</span> cur = nums[<span class="nu">0</span>], best = nums[<span class="nu">0</span>];
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">1</span>; i &lt; nums.length; i++) {
+        cur  = <span class="cl">Math</span>.max(nums[i], cur + nums[i]);
+        best = <span class="cl">Math</span>.max(best, cur);
+    }
+    <span class="kw">return</span> best;
+}`
+    },
+    vizFn: "vizKadane"
+  },
+
+  binarysearch: {
+    title: "Binary Search",
+    diff: "easy",
+    topic: "Arrays · Divide & Conquer",
+    problem: "Given a sorted array of distinct integers <code>nums</code> and a target, return its index or <code>-1</code> if not found.",
+    constraints: ["1 ≤ nums.length ≤ 10⁴", "−10⁴ ≤ nums[i], target ≤ 10⁴", "Array is sorted ascending"],
+    approach: {
+      title: "Classic Binary Search — O(log n)",
+      steps: [
+        "Set <code>lo = 0</code> and <code>hi = n − 1</code> as the search boundaries.",
+        "While <code>lo ≤ hi</code>, compute <code>mid = lo + (hi − lo) / 2</code> (avoids overflow).",
+        "If <code>nums[mid] === target</code>, return <code>mid</code> immediately.",
+        "If <code>nums[mid] < target</code>, discard left half: <code>lo = mid + 1</code>.",
+        "Otherwise discard right half: <code>hi = mid − 1</code>.",
+        "Return <code>-1</code> when the pointers cross — target not in array."
+      ],
+      tc: "O(log n)",
+      sc: "O(1)"
+    },
+    defaultInput: "1 3 5 7 9 11 13 15 17 19",
+    defaultTarget: "7",
+    codes: {
+      cpp: `<span class="cm">// Binary Search O(log n)</span>
+<span class="kw">int</span> <span class="fn">search</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; <span class="nm">nums</span>, <span class="kw">int</span> <span class="nm">target</span>) {
+    <span class="kw">int</span> lo = <span class="nu">0</span>, hi = nums.size() - <span class="nu">1</span>;
+    <span class="kw">while</span> (lo &lt;= hi) {
+        <span class="kw">int</span> mid = lo + (hi - lo) / <span class="nu">2</span>;
+        <span class="kw">if</span>      (nums[mid] == target) <span class="kw">return</span> mid;
+        <span class="kw">else if</span> (nums[mid] &lt;  target) lo = mid + <span class="nu">1</span>;
+        <span class="kw">else</span>                          hi = mid - <span class="nu">1</span>;
+    }
+    <span class="kw">return</span> -<span class="nu">1</span>;
+}`,
+      python: `<span class="cm"># Binary Search O(log n)</span>
+<span class="kw">def</span> <span class="fn">search</span>(<span class="nm">nums</span>, <span class="nm">target</span>):
+    lo, hi = <span class="nu">0</span>, <span class="fn">len</span>(nums) - <span class="nu">1</span>
+    <span class="kw">while</span> lo &lt;= hi:
+        mid = (lo + hi) // <span class="nu">2</span>
+        <span class="kw">if</span>   nums[mid] == target: <span class="kw">return</span> mid
+        <span class="kw">elif</span> nums[mid] &lt;  target: lo = mid + <span class="nu">1</span>
+        <span class="kw">else</span>:                     hi = mid - <span class="nu">1</span>
+    <span class="kw">return</span> -<span class="nu">1</span>`,
+      java: `<span class="cm">// Binary Search O(log n)</span>
+<span class="kw">public int</span> <span class="fn">search</span>(<span class="kw">int</span>[] <span class="nm">nums</span>, <span class="kw">int</span> <span class="nm">target</span>) {
+    <span class="kw">int</span> lo = <span class="nu">0</span>, hi = nums.length - <span class="nu">1</span>;
+    <span class="kw">while</span> (lo &lt;= hi) {
+        <span class="kw">int</span> mid = lo + (hi - lo) / <span class="nu">2</span>;
+        <span class="kw">if</span>      (nums[mid] == target) <span class="kw">return</span> mid;
+        <span class="kw">else if</span> (nums[mid] &lt;  target) lo = mid + <span class="nu">1</span>;
+        <span class="kw">else</span>                          hi = mid - <span class="nu">1</span>;
+    }
+    <span class="kw">return</span> -<span class="nu">1</span>;
+}`
+    },
+    vizFn: "vizBinarySearch"
+  }
+};
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+let currentLang = "cpp";
+let stepTimer = null;
+let currentSteps = [];
+let stepIdx = 0;
+let breakpoints = new Set();
+let speedMs = 600;
+
+function toggleTopic(el) {
+  el.classList.toggle("open");
+}
+
+function loadQuestion(key, el) {
+  document.querySelectorAll(".q-item").forEach(e => e.classList.remove("active"));
+  el.classList.add("active");
+  renderDetail(key);
+}
+
+function renderDetail(key) {
+  const q = QUESTIONS[key];
+  const panel = document.getElementById("detailPanel");
+  panel.innerHTML = `
+    <div class="panel-header">
+      <div>
+        <div class="panel-q-title">${q.title}</div>
+        <div class="panel-meta">
+          <span class="diff-tag ${q.diff}">${q.diff}</span>
+          <span class="panel-topic-tag">${q.topic}</span>
+        </div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn btn-ghost" onclick="copyCode()">⎘ Copy</button>
+      </div>
+    </div>
+    <div class="panel-tabs">
+      <button class="tab-btn active" onclick="switchTab('approach',this)">📐 Approach</button>
+      <button class="tab-btn" onclick="switchTab('visualizer',this)">▶ Visualizer</button>
+      <button class="tab-btn" onclick="switchTab('code',this)">{ } Code</button>
+    </div>
+
+    <!-- APPROACH -->
+    <div class="tab-content active" id="tab-approach">
+      <div class="approach-body">
+        <div class="approach-section">
+          <h3>Problem Statement</h3>
+          <p class="approach-text">${q.problem}</p>
+          <div style="margin-top:12px">
+            ${q.constraints.map(c=>`<div class="step-row" style="padding:8px 14px"><div class="step-text" style="font-size:10px;color:var(--muted2)">◆ ${c}</div></div>`).join("")}
+          </div>
+        </div>
+        <div class="approach-section">
+          <h3>${q.approach.title}</h3>
+          <div class="approach-steps">
+            ${q.approach.steps.map((s,i)=>`
+              <div class="step-row">
+                <div class="step-num">${i+1}</div>
+                <div class="step-text">${s}</div>
+              </div>`).join("")}
+          </div>
+        </div>
+        <div class="approach-section">
+          <h3>Complexity</h3>
+          <div class="complexity-row">
+            <div class="complexity-chip">
+              <span class="clabel">Time</span>
+              <span class="cval tc">${q.approach.tc}</span>
+            </div>
+            <div class="complexity-chip">
+              <span class="clabel">Space</span>
+              <span class="cval sc">${q.approach.sc}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISUALIZER -->
+    <div class="tab-content" id="tab-visualizer">
+      <div class="viz-body">
+        <div class="viz-controls">
+          <div class="input-group">
+            <label>Array:</label>
+            <input id="vizInput" value="${q.defaultInput}" placeholder="space-separated nums">
+          </div>
+          ${q.defaultTarget !== null ? `
+          <div class="input-group">
+            <label>Target:</label>
+            <input id="vizTarget" value="${q.defaultTarget}" style="width:80px">
+          </div>` : ""}
+          <div class="ctrl-divider"></div>
+          <button class="btn-sm btn-run" onclick="runViz('${key}')">▶ Run</button>
+          <button class="btn-sm btn-step" onclick="stepViz()">⤳ Step</button>
+          <button class="btn-sm btn-reset" onclick="resetViz('${key}')">↺ Reset</button>
+          <div class="ctrl-divider"></div>
+          <div class="speed-group">
+            <label>Speed</label>
+            <input type="range" min="100" max="1500" value="600" step="100"
+              oninput="speedMs=1600-this.value" title="Animation speed">
+          </div>
+        </div>
+
+        <!-- Breakpoints -->
+        <div class="bp-bar">
+          <span class="bp-label">Breakpoints →</span>
+          ${getBpButtons(key)}
+        </div>
+
+        <!-- State row -->
+        <div class="state-row" id="stateRow" style="min-height:34px"></div>
+
+        <!-- Main canvas -->
+        <div id="vizCanvas" class="viz-canvas center" style="flex-wrap:wrap;gap:6px;">
+          <!-- filled by JS -->
+        </div>
+
+        <!-- Log -->
+        <div class="log-panel">
+          <div class="log-header">
+            <span class="log-title">// Execution Log</span>
+            <button class="log-clear" onclick="clearLog()">clear</button>
+          </div>
+          <div class="log-entries" id="logEntries">
+            <div class="log-entry">
+              <span class="log-step">ready</span>
+              <span class="log-msg">Press <span class="hl">▶ Run</span> to animate or <span class="hl-y">⤳ Step</span> to go one step at a time.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODE -->
+    <div class="tab-content" id="tab-code">
+      <div class="code-body">
+        <div class="code-lang-tabs">
+          <button class="lang-btn ${currentLang==='cpp'?'active':''}" onclick="switchLang('cpp','${key}',this)">C++</button>
+          <button class="lang-btn ${currentLang==='python'?'active':''}" onclick="switchLang('python','${key}',this)">Python</button>
+          <button class="lang-btn ${currentLang==='java'?'active':''}" onclick="switchLang('java','${key}',this)">Java</button>
+        </div>
+        <div class="code-block" id="codeBlock">
+          <button class="copy-btn" onclick="copyCode()">⎘ Copy</button>
+          <pre id="codeContent">${q.codes[currentLang]}</pre>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // default viz render
+  setTimeout(()=>resetViz(key), 80);
+}
+
+function getBpButtons(key) {
+  const maps = {
+    twosum: ["loop start","complement found","store in map","return result"],
+    maxsubarray: ["compare extend","update currentSum","update maxSum","iteration done"],
+    binarysearch: ["compute mid","target found","go right","go left"]
+  };
+  return (maps[key]||[]).map((b,i)=>`
+    <button class="bp-btn" id="bp-${i}" onclick="toggleBp(${i},this)">${b}</button>
+  `).join("");
+}
+
+function toggleBp(idx, el) {
+  if (breakpoints.has(idx)) { breakpoints.delete(idx); el.classList.remove("bp-active"); }
+  else { breakpoints.add(idx); el.classList.add("bp-active"); }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tab-"+name).classList.add("active");
+}
+
+function switchLang(lang, key, btn) {
+  currentLang = lang;
+  document.querySelectorAll(".lang-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  const q = QUESTIONS[key];
+  document.getElementById("codeContent").innerHTML = q.codes[lang];
+}
+
+function copyCode() {
+  const el = document.getElementById("codeContent");
+  if (!el) return;
+  const txt = el.innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = document.querySelector(".copy-btn");
+    if (btn) { btn.textContent = "✓ Copied"; setTimeout(()=>btn.textContent="⎘ Copy",1500); }
+  });
+}
+
+/* =====================================================================
+   LOG
+   ===================================================================== */
+let logStep = 0;
+function log(msg) {
+  logStep++;
+  const el = document.getElementById("logEntries");
+  if (!el) return;
+  const entry = document.createElement("div");
+  entry.className = "log-entry";
+  entry.innerHTML = `<span class="log-step">step ${logStep}</span><span class="log-msg">${msg}</span>`;
+  el.appendChild(entry);
+  el.scrollTop = el.scrollHeight;
+}
+function clearLog() {
+  logStep = 0;
+  const el = document.getElementById("logEntries");
+  if (el) el.innerHTML = "";
+}
+
+function setStateRow(parts) {
+  const el = document.getElementById("stateRow");
+  if (!el) return;
+  el.innerHTML = parts.map(p=>`
+    <div class="state-chip">
+      <span class="state-key">${p.k}:</span>
+      <span class="state-val">${p.v}</span>
+    </div>`).join("");
+}
+
+/* =====================================================================
+   VIZ RUNNER
+   ===================================================================== */
+function runViz(key) {
+  clearInterval(stepTimer);
+  clearLog();
+  currentSteps = buildSteps(key);
+  stepIdx = 0;
+  stepTimer = setInterval(()=>{
+    if (stepIdx >= currentSteps.length) { clearInterval(stepTimer); return; }
+    const s = currentSteps[stepIdx];
+    // check breakpoints
+    if (s.bp !== undefined && breakpoints.has(s.bp) && stepIdx > 0) {
+      clearInterval(stepTimer);
+      log(`⚠ <span class="hl-y">Breakpoint hit — "${getBpName(key,s.bp)}"</span>. Press Step to continue.`);
+      return;
+    }
+    applyStep(s);
+    stepIdx++;
+  }, speedMs);
+}
+
+function stepViz() {
+  if (!currentSteps.length) return;
+  if (stepIdx >= currentSteps.length) return;
+  clearInterval(stepTimer);
+  applyStep(currentSteps[stepIdx]);
+  stepIdx++;
+}
+
+function resetViz(key) {
+  clearInterval(stepTimer);
+  clearLog();
+  currentSteps = [];
+  stepIdx = 0;
+  logStep = 0;
+  const canvas = document.getElementById("vizCanvas");
+  if (!canvas) return;
+  if (key === "twosum" || key === "maxsubarray" || key === "binarysearch") {
+    const raw = (document.getElementById("vizInput")||{value:QUESTIONS[key].defaultInput}).value;
+    const nums = raw.split(/\s+/).map(Number).filter(x=>!isNaN(x));
+    renderArray(canvas, nums, {});
+  }
+  setStateRow([]);
+}
+
+function getBpName(key, idx) {
+  const m = {
+    twosum:["loop start","complement found","store in map","return result"],
+    maxsubarray:["compare extend","update currentSum","update maxSum","iteration done"],
+    binarysearch:["compute mid","target found","go right","go left"]
+  };
+  return (m[key]||[])[idx]||"";
+}
+
+function applyStep(s) {
+  const canvas = document.getElementById("vizCanvas");
+  if (!canvas) return;
+  if (s.render) s.render(canvas);
+  if (s.state) setStateRow(s.state);
+  if (s.log) log(s.log);
+}
+
+/* =====================================================================
+   ARRAY RENDERER
+   ===================================================================== */
+function renderArray(canvas, nums, styles) {
+  // styles: { idx: 'highlight'|'active'|'matched'|'visited'|'done', ... }
+  // ptrs: { idx: {label, type} }
+  canvas.innerHTML = "";
+  nums.forEach((n, i) => {
+    const cls = styles[i] || "";
+    const barDiv = document.createElement("div");
+    barDiv.className = "arr-bar";
+    barDiv.innerHTML = `
+      <div class="arr-cell ${cls}" id="cell-${i}" style="position:relative">
+        ${styles["ptr_"+i] ? `<div class="ptr-label ${styles["ptr_"+i].type||''}">${styles["ptr_"+i].label}</div>` : ""}
+        ${n}
+      </div>
+      <div class="arr-idx">[${i}]</div>
+    `;
+    canvas.appendChild(barDiv);
+  });
+}
+
+/* =====================================================================
+   STEP BUILDERS
+   ===================================================================== */
+
+/* ── TWO SUM ── */
+function buildSteps(key) {
+  const raw = (document.getElementById("vizInput")||{value:QUESTIONS[key].defaultInput}).value;
+  const nums = raw.split(/\s+/).map(Number).filter(x=>!isNaN(x));
+  const targetEl = document.getElementById("vizTarget");
+  const target = targetEl ? parseInt(targetEl.value) : NaN;
+
+  if (key === "twosum") return buildTwoSumSteps(nums, target);
+  if (key === "maxsubarray") return buildKadaneSteps(nums);
+  if (key === "binarysearch") return buildBSSteps(nums, target);
+  return [];
+}
+
+function buildTwoSumSteps(nums, target) {
+  const steps = [];
+  const seen = {};
+  steps.push({
+    log: `Initialise. Array = [<span class="hl">${nums.join(", ")}</span>], target = <span class="hl-y">${target}</span>`,
+    render: c => renderArray(c, nums, {}),
+    state: [{k:"seen",v:"{}"},{k:"target",v:target}]
+  });
+  for (let i = 0; i < nums.length; i++) {
+    const comp = target - nums[i];
+    const styles = {};
+    styles[i] = "active";
+    steps.push({
+      bp: 0,
+      log: `i=<span class="hl">${i}</span>, nums[i]=<span class="hl-y">${nums[i]}</span>, complement=<span class="hl">${comp}</span>`,
+      render: c => renderArray(c, nums, {...styles}),
+      state: [{k:"i",v:i},{k:"nums[i]",v:nums[i]},{k:"comp",v:comp},{k:"seen",v:JSON.stringify(seen)}]
+    });
+    if (seen.hasOwnProperty(comp)) {
+      const s2 = {};
+      s2[i] = "matched"; s2[seen[comp]] = "matched";
+      steps.push({
+        bp: 1,
+        log: `✅ <span class="hl-g">Complement ${comp} found at index ${seen[comp]}! Answer: [${seen[comp]}, ${i}]</span>`,
+        render: c => renderArray(c, nums, s2),
+        state: [{k:"result",v:`[${seen[comp]}, ${i}]`}]
+      });
+      return steps;
+    }
+    steps.push({
+      bp: 2,
+      log: `Store seen[<span class="hl-y">${nums[i]}</span>] = <span class="hl">${i}</span>`,
+      render: c => renderArray(c, nums, {...styles}),
+      state: [{k:"i",v:i},{k:"seen",v:JSON.stringify({...seen,[nums[i]]:i})}]
+    });
+    seen[nums[i]] = i;
+  }
+  steps.push({
+    bp: 3,
+    log: `No pair found for target <span class="hl-y">${target}</span>`,
+    render: c => renderArray(c, nums, {}),
+    state: [{k:"result",v:"-1"}]
+  });
+  return steps;
+}
+
+function buildKadaneSteps(nums) {
+  const steps = [];
+  let cur = nums[0], best = nums[0];
+  steps.push({
+    log: `Init: currentSum = <span class="hl">${cur}</span>, maxSum = <span class="hl-y">${best}</span>`,
+    render: c => renderArray(c, nums, {0:"highlight"}),
+    state: [{k:"currentSum",v:cur},{k:"maxSum",v:best},{k:"i",v:0}]
+  });
+  for (let i = 1; i < nums.length; i++) {
+    const extend = cur + nums[i];
+    const fresh = nums[i];
+    steps.push({
+      bp: 0,
+      log: `i=<span class="hl">${i}</span>: extend=${extend} vs fresh=${fresh} → choose <span class="hl-y">${Math.max(extend,fresh)}</span>`,
+      render: c => renderArray(c, nums, {[i]:"active"}),
+      state: [{k:"i",v:i},{k:"nums[i]",v:nums[i]},{k:"extend",v:extend},{k:"fresh",v:fresh}]
+    });
+    cur = Math.max(extend, fresh);
+    steps.push({
+      bp: 1,
+      log: `currentSum = <span class="hl">${cur}</span>`,
+      render: c => renderArray(c, nums, {[i]:"highlight"}),
+      state: [{k:"currentSum",v:cur},{k:"maxSum",v:best}]
+    });
+    best = Math.max(best, cur);
+    const isBest = best === cur;
+    steps.push({
+      bp: 2,
+      log: `maxSum = <span class="hl-g">${best}</span>${isBest?" ← new best":""}`,
+      render: c => renderArray(c, nums, {[i]:isBest?"matched":"visited"}),
+      state: [{k:"currentSum",v:cur},{k:"maxSum",v:best}]
+    });
+  }
+  steps.push({
+    log: `✅ Maximum subarray sum = <span class="hl-g">${best}</span>`,
+    render: c => renderArray(c, nums, {}),
+    state: [{k:"maxSum",v:best}]
+  });
+  return steps;
+}
+
+function buildBSSteps(nums, target) {
+  const steps = [];
+  let lo = 0, hi = nums.length - 1;
+  steps.push({
+    log: `Init: lo=<span class="hl">0</span>, hi=<span class="hl-y">${hi}</span>, target=<span class="hl">${target}</span>`,
+    render: c => renderArray(c, nums, {
+      ...Object.fromEntries(nums.map((_,i)=>[i,i>=lo&&i<=hi?"visited":""])),
+      ["ptr_"+lo]:{label:"lo",type:""},
+      ["ptr_"+hi]:{label:"hi",type:"r-ptr"}
+    }),
+    state: [{k:"lo",v:lo},{k:"hi",v:hi},{k:"target",v:target}]
+  });
+  while (lo <= hi) {
+    const mid = lo + Math.floor((hi - lo) / 2);
+    const styles = {};
+    for (let k=0; k<nums.length; k++) styles[k] = (k>=lo&&k<=hi)?"visited":"";
+    styles[mid] = "active";
+    styles["ptr_"+lo] = {label:"lo",type:""};
+    styles["ptr_"+hi] = {label:"hi",type:"r-ptr"};
+    styles["ptr_"+mid] = {label:"mid",type:"m-ptr"};
+    steps.push({
+      bp: 0,
+      log: `lo=<span class="hl">${lo}</span>, hi=<span class="hl-y">${hi}</span>, mid=<span class="hl-p">${mid}</span>, nums[mid]=<span class="hl-y">${nums[mid]}</span>`,
+      render: c => renderArray(c, nums, {...styles}),
+      state: [{k:"lo",v:lo},{k:"hi",v:hi},{k:"mid",v:mid},{k:"nums[mid]",v:nums[mid]}]
+    });
+    if (nums[mid] === target) {
+      const s2 = {...styles}; s2[mid] = "matched";
+      steps.push({
+        bp: 1,
+        log: `✅ <span class="hl-g">Target ${target} found at index ${mid}!</span>`,
+        render: c => renderArray(c, nums, s2),
+        state: [{k:"result",v:mid}]
+      });
+      return steps;
+    } else if (nums[mid] < target) {
+      steps.push({
+        bp: 2,
+        log: `nums[mid]=${nums[mid]} < target → lo = mid+1 = <span class="hl">${mid+1}</span>`,
+        render: c => renderArray(c, nums, {...styles}),
+        state: [{k:"lo",v:mid+1},{k:"hi",v:hi}]
+      });
+      lo = mid + 1;
+    } else {
+      steps.push({
+        bp: 3,
+        log: `nums[mid]=${nums[mid]} > target → hi = mid-1 = <span class="hl-y">${mid-1}</span>`,
+        render: c => renderArray(c, nums, {...styles}),
+        state: [{k:"lo",v:lo},{k:"hi",v:mid-1}]
+      });
+      hi = mid - 1;
+    }
+  }
+  steps.push({
+    log: `❌ <span class="hl-y">Target ${target} not found. Return -1.</span>`,
+    render: c => renderArray(c, nums, {}),
+    state: [{k:"result",v:-1}]
+  });
+  return steps;
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+window.addEventListener("DOMContentLoaded", () => {
+  // load first question by default
+  const firstQ = document.querySelector(".q-item.active");
+  if (firstQ) renderDetail("twosum");
+});
+</script>
+</body>
+</html>

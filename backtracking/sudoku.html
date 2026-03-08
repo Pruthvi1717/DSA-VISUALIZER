@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sudoku Solver — Backtracking | DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050810;--surface:#0c1120;--surface2:#111827;--surface3:#0a0f1e;
+  --border:#1e2d47;--border2:#243348;
+  --accent:#00d4ff;--accent2:#7c3aed;--accent3:#10b981;
+  --warn:#f59e0b;--danger:#ef4444;--pink:#ec4899;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;
+}
+.wrapper{position:relative;z-index:1;}
+
+/* HEADER */
+header{
+  padding:18px 40px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(12,17,32,0.88);backdrop-filter:blur(16px);
+  position:sticky;top:0;z-index:200;
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:-0.5px;}
+.logo-text span{color:var(--accent);}
+.breadcrumb{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.sep{color:var(--border2);}
+
+/* HERO */
+.hero{padding:44px 40px 28px;max-width:860px;margin:0 auto;text-align:center;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:5px 14px;
+  background:linear-gradient(135deg,rgba(0,212,255,0.12),rgba(16,185,129,0.1));
+  border:1px solid rgba(0,212,255,0.25);border-radius:30px;
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:18px;
+}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.hero h1{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1.1;margin-bottom:12px;}
+.hero h1 .hl{background:linear-gradient(90deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--muted);font-size:11px;line-height:1.9;max-width:600px;margin:0 auto 20px;}
+.hero-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.hero-tag{padding:4px 12px;border-radius:20px;font-size:9px;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);color:var(--muted);}
+
+/* LAYOUT */
+.page-body{max-width:1320px;margin:0 auto;padding:32px 40px 80px;display:flex;flex-direction:column;gap:24px;}
+@media(max-width:768px){.page-body,.hero,header{padding-left:20px;padding-right:20px;}}
+
+/* TABS */
+.main-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface3);border-radius:14px 14px 0 0;overflow:hidden;}
+.main-tab{
+  padding:14px 22px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;
+  font-family:'JetBrains Mono',monospace;white-space:nowrap;
+}
+.main-tab:hover{color:var(--muted2);}
+.main-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-panel{display:none;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 14px 14px;}
+.tab-panel.active{display:block;}
+
+/* APPROACH */
+.approach-body{padding:28px;display:flex;flex-direction:column;gap:22px;}
+.sec-title{
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--accent);
+  margin-bottom:12px;letter-spacing:.5px;display:flex;align-items:center;gap:8px;
+}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(0,212,255,0.15);}
+.approach-text{font-size:11px;line-height:1.9;color:var(--muted2);}
+.step-list{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.step-row{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;}
+.step-num{min-width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,rgba(0,212,255,.18),rgba(16,185,129,.12));border:1px solid rgba(0,212,255,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0;}
+.step-text{font-size:11px;line-height:1.7;color:var(--muted2);}
+.cmplx-row{display:flex;gap:10px;flex-wrap:wrap;}
+.cmplx-chip{padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:110px;}
+.cmplx-chip .clabel{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.cmplx-chip .cval{font-size:14px;font-weight:700;font-family:'Syne',sans-serif;}
+.tc{color:var(--accent);}  .sc{color:var(--accent3);}
+
+/* VISUALIZER */
+.viz-body{padding:24px 28px;display:flex;flex-direction:column;gap:16px;}
+.viz-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ctrl-divider{width:1px;height:28px;background:var(--border);}
+.btn-sm{
+  padding:8px 16px;font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  border-radius:6px;cursor:pointer;border:none;font-family:'JetBrains Mono',monospace;transition:all .15s;
+}
+.btn-run{background:linear-gradient(135deg,var(--accent),#0099cc);color:#000;font-weight:700;}
+.btn-run:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,212,255,.35);}
+.btn-step{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);}
+.btn-step:hover{border-color:var(--warn);color:var(--warn);}
+.btn-reset{background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger);}
+.btn-puzzle{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);}
+.btn-puzzle:hover{border-color:var(--accent3);color:var(--accent3);}
+.speed-group{display:flex;align-items:center;gap:8px;}
+.speed-group label{font-size:10px;color:var(--muted);}
+.speed-group input[type=range]{width:80px;accent-color:var(--accent);cursor:pointer;}
+
+/* Breakpoints */
+.bp-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.bp-label{font-size:9px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;min-width:80px;}
+.bp-btn{padding:4px 10px;font-size:9px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'JetBrains Mono',monospace;transition:all .15s;}
+.bp-btn:hover{border-color:var(--warn);color:var(--warn);}
+.bp-btn.bp-active{border-color:var(--warn);background:rgba(245,158,11,.1);color:var(--warn);}
+
+/* State */
+.state-row{display:flex;gap:8px;flex-wrap:wrap;min-height:32px;}
+.state-chip{padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:10px;display:flex;gap:6px;align-items:center;}
+.state-key{color:var(--muted);}
+.state-val{color:var(--accent);font-weight:600;}
+
+/* SUDOKU BOARD */
+.board-outer{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;}
+.board-section{flex-shrink:0;}
+.board-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;}
+
+#sudokuBoard{
+  display:grid;
+  grid-template-columns:repeat(9,52px);
+  gap:2px;
+  background:var(--border2);
+  padding:3px;
+  border-radius:10px;
+  border:2px solid var(--border2);
+}
+/* thick borders between 3x3 boxes */
+.sud-cell{
+  width:52px;height:52px;
+  background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:700;
+  transition:all .2s;
+  position:relative;
+  border:1px solid var(--border);
+  border-radius:4px;
+  cursor:default;
+  user-select:none;
+}
+/* right thick border after cols 2,5 */
+.sud-cell.box-right{border-right:2px solid var(--accent2);}
+/* bottom thick border after rows 2,5 */
+.sud-cell.box-bottom{border-bottom:2px solid var(--accent2);}
+
+.sud-cell.given{color:var(--text);background:rgba(255,255,255,0.04);}
+.sud-cell.filled{color:var(--accent);background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.3);}
+.sud-cell.trying{color:var(--warn);background:rgba(245,158,11,0.12);border-color:var(--warn);animation:tryPulse .3s ease;}
+@keyframes tryPulse{0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);}}
+.sud-cell.conflict{color:var(--danger);background:rgba(239,68,68,0.14);border-color:var(--danger);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
+.sud-cell.backtrack{color:var(--pink);background:rgba(236,72,153,0.12);border-color:var(--pink);}
+.sud-cell.solved{color:var(--accent3);background:rgba(16,185,129,0.12);border-color:var(--accent3);}
+.sud-cell.row-hl{background:rgba(0,212,255,0.04);}
+.sud-cell.col-hl{background:rgba(0,212,255,0.04);}
+.sud-cell.box-hl{background:rgba(124,58,237,0.06);}
+
+/* legend */
+.legend{display:flex;gap:10px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:9px;color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:3px;}
+
+/* puzzle selector */
+.puzzle-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.puzzle-btn{
+  padding:5px 12px;font-size:9px;border-radius:5px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface2);color:var(--muted);
+  font-family:'JetBrains Mono',monospace;transition:all .15s;letter-spacing:.5px;
+}
+.puzzle-btn:hover{border-color:var(--accent);color:var(--accent);}
+.puzzle-btn.active{border-color:var(--accent);background:rgba(0,212,255,.1);color:var(--accent);}
+
+/* LOG */
+.log-panel{background:var(--surface3);border:1px solid var(--border);border-radius:10px;font-size:10px;line-height:1.8;max-height:160px;overflow-y:auto;}
+.log-header{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.log-title{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.log-clear{font-size:9px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'JetBrains Mono',monospace;}
+.log-clear:hover{color:var(--danger);}
+.log-entries{padding:8px 14px;display:flex;flex-direction:column;gap:3px;}
+.log-entry{display:flex;gap:10px;align-items:baseline;}
+.log-step{color:var(--muted);font-size:9px;min-width:48px;}
+.log-msg{color:var(--muted2);}
+.log-msg .hl{color:var(--accent);}
+.log-msg .hl-g{color:var(--accent3);}
+.log-msg .hl-y{color:var(--warn);}
+.log-msg .hl-r{color:var(--danger);}
+.log-msg .hl-p{color:var(--pink);}
+
+/* CODE */
+.code-body{display:flex;flex-direction:column;}
+.code-lang-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 28px;background:var(--surface3);}
+.lang-btn{padding:10px 14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:'JetBrains Mono',monospace;}
+.lang-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.code-block{padding:24px 28px;overflow:auto;font-size:12px;line-height:1.9;position:relative;}
+.code-block pre{white-space:pre-wrap;word-break:break-word;}
+.copy-btn{position:absolute;top:16px;right:20px;padding:5px 12px;font-size:9px;letter-spacing:1px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .15s;}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+.kw{color:#7c3aed;}.fn{color:#00d4ff;}.nm{color:#e2e8f0;}.cm{color:#4a5568;font-style:italic;}
+.st{color:#10b981;}.nu{color:#f59e0b;}.cl{color:#ec4899;}.an{color:#94a3b8;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--surface3);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-icon">⬡</div>
+    <div class="logo-text">DSA<span>Visual</span></div>
+  </a>
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span class="sep">›</span>
+    <a href="../dsa-sheet.html">Love Babbar Sheet</a><span class="sep">›</span>
+    <span style="color:var(--pink)">Backtracking</span><span class="sep">›</span>
+    <span style="color:var(--accent)">Sudoku Solver</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span>Backtracking</div>
+  <h1>Sudoku <span class="hl">Solver</span></h1>
+  <p>Watch backtracking fill a 9×9 Sudoku cell by cell — trying each digit 1–9, detecting row/column/box conflicts instantly, and unwinding when stuck. Every decision is logged live.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">Backtracking</span>
+    <span class="hero-tag">Constraint Propagation</span>
+    <span class="hero-tag">O(9^m) Time</span>
+    <span class="hero-tag">3 Puzzles</span>
+  </div>
+</div>
+
+<div class="page-body">
+  <div>
+    <div class="main-tabs">
+      <button class="main-tab active" onclick="switchTab('approach',this)">📐 Approach</button>
+      <button class="main-tab" onclick="switchTab('visualizer',this)">▶ Visualizer</button>
+      <button class="main-tab" onclick="switchTab('code',this)">{ } Code</button>
+    </div>
+
+    <!-- ── APPROACH ── -->
+    <div class="tab-panel active" id="tab-approach">
+      <div class="approach-body">
+        <div>
+          <div class="sec-title">Problem Statement</div>
+          <p class="approach-text">
+            Given a 9×9 partially filled Sudoku board, fill every empty cell (marked <code>'.'</code>) such that:
+            each row, each column, and each of the nine 3×3 sub-boxes contains all digits <code>1–9</code> exactly once.
+            The puzzle is guaranteed to have exactly one solution.
+          </p>
+        </div>
+        <div>
+          <div class="sec-title">Backtracking Strategy</div>
+          <div class="step-list">
+            <div class="step-row"><div class="step-num">1</div><div class="step-text">Scan left-to-right, top-to-bottom for the first empty cell (<code>'.'</code>).</div></div>
+            <div class="step-row"><div class="step-num">2</div><div class="step-text">Try placing digits <code>1</code>–<code>9</code> one at a time in that cell.</div></div>
+            <div class="step-row"><div class="step-num">3</div><div class="step-text"><strong>isValid check</strong>: the digit must not already appear in the same row, same column, or same 3×3 box.</div></div>
+            <div class="step-row"><div class="step-num">4</div><div class="step-text">If valid, place the digit and <strong>recurse</strong> to the next empty cell.</div></div>
+            <div class="step-row"><div class="step-num">5</div><div class="step-text">If recursion returns <code>false</code>, <strong>backtrack</strong>: reset cell to <code>'.'</code> and try the next digit.</div></div>
+            <div class="step-row"><div class="step-num">6</div><div class="step-text">If all digits 1–9 fail → return <code>false</code> to the caller (propagate backtrack up).</div></div>
+            <div class="step-row"><div class="step-num">7</div><div class="step-text">If no empty cell found → board is fully solved, return <code>true</code>.</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="sec-title">isValid in Detail</div>
+          <div class="step-list">
+            <div class="step-row"><div class="step-num">→</div><div class="step-text"><strong>Row check</strong>: scan all 9 columns in the same row.</div></div>
+            <div class="step-row"><div class="step-num">↓</div><div class="step-text"><strong>Column check</strong>: scan all 9 rows in the same column.</div></div>
+            <div class="step-row"><div class="step-num">⊞</div><div class="step-text"><strong>Box check</strong>: derive box origin as <code>boxRow = 3*(row/3)</code>, <code>boxCol = 3*(col/3)</code>, then scan all 9 cells.</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="sec-title">Complexity</div>
+          <div class="cmplx-row">
+            <div class="cmplx-chip"><span class="clabel">Time (worst)</span><span class="cval tc">O(9^m)</span></div>
+            <div class="cmplx-chip"><span class="clabel">Space</span><span class="cval sc">O(m)</span></div>
+            <div class="cmplx-chip"><span class="clabel">m = empty cells</span><span class="cval" style="color:var(--warn)">≤ 81</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VISUALIZER ── -->
+    <div class="tab-panel" id="tab-visualizer">
+      <div class="viz-body">
+
+        <!-- Controls -->
+        <div class="viz-controls">
+          <div class="puzzle-tabs" id="puzzleTabs">
+            <button class="puzzle-btn active" onclick="selectPuzzle(0,this)">Easy</button>
+            <button class="puzzle-btn" onclick="selectPuzzle(1,this)">Medium</button>
+            <button class="puzzle-btn" onclick="selectPuzzle(2,this)">Hard</button>
+          </div>
+          <div class="ctrl-divider"></div>
+          <button class="btn-sm btn-run" onclick="runViz()">▶ Run</button>
+          <button class="btn-sm btn-step" onclick="stepViz()">⤳ Step</button>
+          <button class="btn-sm btn-reset" onclick="resetViz()">↺ Reset</button>
+          <div class="ctrl-divider"></div>
+          <div class="speed-group">
+            <label>Speed</label>
+            <input type="range" min="50" max="1400" value="200" step="50"
+              oninput="speedMs=1450-this.value">
+          </div>
+        </div>
+
+        <!-- Breakpoints -->
+        <div class="bp-bar">
+          <span class="bp-label">Breakpoints →</span>
+          <button class="bp-btn" id="bp0" onclick="toggleBp(0,this)">try digit</button>
+          <button class="bp-btn" id="bp1" onclick="toggleBp(1,this)">conflict</button>
+          <button class="bp-btn" id="bp2" onclick="toggleBp(2,this)">backtrack</button>
+          <button class="bp-btn" id="bp3" onclick="toggleBp(3,this)">cell solved</button>
+        </div>
+
+        <!-- State -->
+        <div class="state-row" id="stateRow"></div>
+
+        <!-- Board + legend -->
+        <div class="board-outer">
+          <div class="board-section">
+            <div class="board-label">// Live Board</div>
+            <div id="sudokuBoard"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;padding-top:28px;">
+            <div class="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,0.06);border:1px solid var(--border)"></div>Given</div>
+              <div class="leg-item"><div class="leg-dot" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,.3)"></div>Filled</div>
+              <div class="leg-item"><div class="leg-dot" style="background:rgba(245,158,11,0.14);border:1px solid var(--warn)"></div>Trying</div>
+              <div class="leg-item"><div class="leg-dot" style="background:rgba(239,68,68,0.14);border:1px solid var(--danger)"></div>Conflict</div>
+              <div class="leg-item"><div class="leg-dot" style="background:rgba(236,72,153,0.12);border:1px solid var(--pink)"></div>Backtrack</div>
+              <div class="leg-item"><div class="leg-dot" style="background:rgba(16,185,129,0.14);border:1px solid var(--accent3)"></div>Solved</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;max-width:240px;">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">// Progress</div>
+              <div id="progressInfo" style="display:flex;flex-direction:column;gap:8px;">
+                <div style="font-size:11px;color:var(--muted2)">Cells filled: <span id="filledCount" style="color:var(--accent);font-weight:700">0</span> / <span id="emptyCount">0</span></div>
+                <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+                  <div id="progressBar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:3px;width:0%;transition:width .3s;"></div>
+                </div>
+                <div style="font-size:11px;color:var(--muted2)">Backtracks: <span id="btCount" style="color:var(--pink);font-weight:700">0</span></div>
+                <div style="font-size:11px;color:var(--muted2)">Attempts: <span id="attCount" style="color:var(--warn);font-weight:700">0</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log -->
+        <div class="log-panel">
+          <div class="log-header">
+            <span class="log-title">// Execution Log</span>
+            <button class="log-clear" onclick="clearLog()">clear</button>
+          </div>
+          <div class="log-entries" id="logEntries">
+            <div class="log-entry">
+              <span class="log-step">ready</span>
+              <span class="log-msg">Press <span class="hl">▶ Run</span> to animate or <span class="hl-y">⤳ Step</span> to go one step at a time.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── CODE ── -->
+    <div class="tab-panel" id="tab-code">
+      <div class="code-body">
+        <div class="code-lang-tabs">
+          <button class="lang-btn active" onclick="switchLang('java',this)">Java</button>
+          <button class="lang-btn" onclick="switchLang('cpp',this)">C++</button>
+          <button class="lang-btn" onclick="switchLang('python',this)">Python</button>
+        </div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode()">⎘ Copy</button>
+          <pre id="codeContent"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ═══════════════════ PUZZLES ═══════════════════ */
+const PUZZLES = [
+  // Easy
+  [
+    [5,3,0, 0,7,0, 0,0,0],
+    [6,0,0, 1,9,5, 0,0,0],
+    [0,9,8, 0,0,0, 0,6,0],
+    [8,0,0, 0,6,0, 0,0,3],
+    [4,0,0, 8,0,3, 0,0,1],
+    [7,0,0, 0,2,0, 0,0,6],
+    [0,6,0, 0,0,0, 2,8,0],
+    [0,0,0, 4,1,9, 0,0,5],
+    [0,0,0, 0,8,0, 0,7,9]
+  ],
+  // Medium
+  [
+    [0,0,0, 2,6,0, 7,0,1],
+    [6,8,0, 0,7,0, 0,9,0],
+    [1,9,0, 0,0,4, 5,0,0],
+    [8,2,0, 1,0,0, 0,4,0],
+    [0,0,4, 6,0,2, 9,0,0],
+    [0,5,0, 0,0,3, 0,2,8],
+    [0,0,9, 3,0,0, 0,7,4],
+    [0,4,0, 0,5,0, 0,3,6],
+    [7,0,3, 0,1,8, 0,0,0]
+  ],
+  // Hard
+  [
+    [0,0,0, 0,0,0, 0,0,0],
+    [0,0,0, 0,0,3, 0,8,5],
+    [0,0,1, 0,2,0, 0,0,0],
+    [0,0,0, 5,0,7, 0,0,0],
+    [0,0,4, 0,0,0, 1,0,0],
+    [0,9,0, 0,0,0, 0,0,0],
+    [5,0,0, 0,0,0, 0,7,3],
+    [0,0,2, 0,1,0, 0,0,0],
+    [0,0,0, 0,4,0, 0,0,9]
+  ]
+];
+
+/* ═══════════════════ STATE ═══════════════════ */
+let currentPuzzle = 0;
+let board = [];           // working 9x9 array
+let givenMask = [];       // true = original given cell
+let speedMs = 1250;
+let stepTimer = null;
+let allSteps = [];
+let stepIdx = 0;
+let logStep = 0;
+let breakpoints = new Set();
+let currentLang = "java";
+let totalEmpty = 0;
+
+/* ═══════════════════ CODE ═══════════════════ */
+const CODES = {
+java:`<span class="cm">// Sudoku Solver — Backtracking  (Love Babbar DSA Sheet)</span>
+<span class="kw">class</span> <span class="cl">Solution</span> {
+    <span class="kw">public void</span> <span class="fn">solveSudoku</span>(<span class="kw">char</span>[][] board) {
+        <span class="fn">solve</span>(board);
+    }
+
+    <span class="kw">private boolean</span> <span class="fn">solve</span>(<span class="kw">char</span>[][] board) {
+        <span class="kw">for</span> (<span class="kw">int</span> row = <span class="nu">0</span>; row &lt; <span class="nu">9</span>; row++) {
+            <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nu">0</span>; col &lt; <span class="nu">9</span>; col++) {
+                <span class="kw">if</span> (board[row][col] == <span class="st">'.'</span>) {
+                    <span class="kw">for</span> (<span class="kw">char</span> c = <span class="st">'1'</span>; c &lt;= <span class="st">'9'</span>; c++) {
+                        <span class="kw">if</span> (<span class="fn">isValid</span>(board, row, col, c)) {
+                            board[row][col] = c;          <span class="cm">// place</span>
+                            <span class="kw">if</span> (<span class="fn">solve</span>(board)) <span class="kw">return true</span>; <span class="cm">// recurse</span>
+                            board[row][col] = <span class="st">'.'</span>;      <span class="cm">// backtrack</span>
+                        }
+                    }
+                    <span class="kw">return false</span>; <span class="cm">// no digit worked</span>
+                }
+            }
+        }
+        <span class="kw">return true</span>; <span class="cm">// all cells filled</span>
+    }
+
+    <span class="kw">private boolean</span> <span class="fn">isValid</span>(<span class="kw">char</span>[][] board,
+                              <span class="kw">int</span> row, <span class="kw">int</span> col, <span class="kw">char</span> c) {
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">9</span>; i++) {
+            <span class="kw">if</span> (board[row][i] == c) <span class="kw">return false</span>; <span class="cm">// row</span>
+            <span class="kw">if</span> (board[i][col] == c) <span class="kw">return false</span>; <span class="cm">// col</span>
+            <span class="kw">int</span> br = <span class="nu">3</span>*(row/<span class="nu">3</span>) + i/<span class="nu">3</span>;
+            <span class="kw">int</span> bc = <span class="nu">3</span>*(col/<span class="nu">3</span>) + i%<span class="nu">3</span>;
+            <span class="kw">if</span> (board[br][bc] == c) <span class="kw">return false</span>; <span class="cm">// box</span>
+        }
+        <span class="kw">return true</span>;
+    }
+}`,
+
+cpp:`<span class="cm">// Sudoku Solver — Backtracking  (Love Babbar DSA Sheet)</span>
+<span class="kw">class</span> <span class="cl">Solution</span> {
+    <span class="kw">bool</span> <span class="fn">isValid</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">char</span>&gt;&gt;&amp; board,
+                  <span class="kw">int</span> row, <span class="kw">int</span> col, <span class="kw">char</span> c) {
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">9</span>; i++) {
+            <span class="kw">if</span> (board[row][i] == c) <span class="kw">return false</span>;
+            <span class="kw">if</span> (board[i][col] == c) <span class="kw">return false</span>;
+            <span class="kw">if</span> (board[<span class="nu">3</span>*(row/<span class="nu">3</span>)+i/<span class="nu">3</span>][<span class="nu">3</span>*(col/<span class="nu">3</span>)+i%<span class="nu">3</span>] == c)
+                <span class="kw">return false</span>;
+        }
+        <span class="kw">return true</span>;
+    }
+    <span class="kw">bool</span> <span class="fn">solve</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">char</span>&gt;&gt;&amp; board) {
+        <span class="kw">for</span> (<span class="kw">int</span> r = <span class="nu">0</span>; r &lt; <span class="nu">9</span>; r++)
+            <span class="kw">for</span> (<span class="kw">int</span> c = <span class="nu">0</span>; c &lt; <span class="nu">9</span>; c++)
+                <span class="kw">if</span> (board[r][c] == <span class="st">'.'</span>) {
+                    <span class="kw">for</span> (<span class="kw">char</span> d = <span class="st">'1'</span>; d &lt;= <span class="st">'9'</span>; d++)
+                        <span class="kw">if</span> (<span class="fn">isValid</span>(board,r,c,d)) {
+                            board[r][c] = d;
+                            <span class="kw">if</span> (<span class="fn">solve</span>(board)) <span class="kw">return true</span>;
+                            board[r][c] = <span class="st">'.'</span>;
+                        }
+                    <span class="kw">return false</span>;
+                }
+        <span class="kw">return true</span>;
+    }
+<span class="kw">public</span>:
+    <span class="kw">void</span> <span class="fn">solveSudoku</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">char</span>&gt;&gt;&amp; board) {
+        <span class="fn">solve</span>(board);
+    }
+};`,
+
+python:`<span class="cm"># Sudoku Solver — Backtracking  (Love Babbar DSA Sheet)</span>
+<span class="kw">class</span> <span class="cl">Solution</span>:
+    <span class="kw">def</span> <span class="fn">solveSudoku</span>(<span class="nm">self</span>, board):
+        <span class="kw">def</span> <span class="fn">is_valid</span>(r, c, ch):
+            <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+                <span class="kw">if</span> board[r][i] == ch: <span class="kw">return False</span>   <span class="cm"># row</span>
+                <span class="kw">if</span> board[i][c] == ch: <span class="kw">return False</span>   <span class="cm"># col</span>
+                br = <span class="nu">3</span>*(r//<span class="nu">3</span>) + i//<span class="nu">3</span>
+                bc = <span class="nu">3</span>*(c//<span class="nu">3</span>) + i%<span class="nu">3</span>
+                <span class="kw">if</span> board[br][bc] == ch: <span class="kw">return False</span> <span class="cm"># box</span>
+            <span class="kw">return True</span>
+
+        <span class="kw">def</span> <span class="fn">solve</span>():
+            <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+                <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+                    <span class="kw">if</span> board[r][c] == <span class="st">'.'</span>:
+                        <span class="kw">for</span> d <span class="kw">in</span> <span class="st">'123456789'</span>:
+                            <span class="kw">if</span> <span class="fn">is_valid</span>(r, c, d):
+                                board[r][c] = d
+                                <span class="kw">if</span> <span class="fn">solve</span>(): <span class="kw">return True</span>
+                                board[r][c] = <span class="st">'.'</span>  <span class="cm"># backtrack</span>
+                        <span class="kw">return False</span>
+            <span class="kw">return True</span>
+
+        <span class="fn">solve</span>()`
+};
+
+/* ═══════════════════ INIT ═══════════════════ */
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("codeContent").innerHTML = CODES.java;
+  loadPuzzle(0);
+});
+
+function loadPuzzle(idx) {
+  board = PUZZLES[idx].map(r => [...r]);
+  givenMask = board.map(r => r.map(v => v !== 0));
+  totalEmpty = board.flat().filter(v => v === 0).length;
+  document.getElementById("emptyCount").textContent = totalEmpty;
+  renderBoard(board, {});
+  updateProgress(0, 0, 0);
+}
+
+/* ═══════════════════ BOARD RENDER ═══════════════════ */
+function renderBoard(b, highlights) {
+  // highlights: { "r,c": "trying"|"conflict"|"backtrack"|"solved"|"row-hl"|... }
+  const el = document.getElementById("sudokuBoard");
+  el.innerHTML = "";
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const cell = document.createElement("div");
+      const isGiven = givenMask[r][c];
+      const val = b[r][c];
+      const key = `${r},${c}`;
+      const hl = highlights[key] || "";
+
+      let cls = "sud-cell";
+      if (c === 2 || c === 5) cls += " box-right";
+      if (r === 2 || r === 5) cls += " box-bottom";
+
+      if (hl) {
+        cls += " " + hl;
+      } else if (isGiven) {
+        cls += " given";
+      } else if (val !== 0) {
+        cls += " filled";
+      }
+
+      cell.className = cls;
+      cell.textContent = val !== 0 ? val : "";
+      el.appendChild(cell);
+    }
+  }
+}
+
+function updateProgress(filled, bt, att) {
+  document.getElementById("filledCount").textContent = filled;
+  document.getElementById("btCount").textContent = bt;
+  document.getElementById("attCount").textContent = att;
+  const pct = totalEmpty > 0 ? Math.round(filled / totalEmpty * 100) : 0;
+  document.getElementById("progressBar").style.width = pct + "%";
+}
+
+/* ═══════════════════ STEP BUILDER ═══════════════════ */
+function buildSteps() {
+  const steps = [];
+  const b = PUZZLES[currentPuzzle].map(r => [...r]);
+  let backtracks = 0;
+  let attempts = 0;
+  let filled = 0;
+
+  function snap(r, c, digit, type, logMsg) {
+    const snap_b = b.map(row => [...row]);
+    const hl = {};
+
+    if (r !== null) {
+      // highlight the whole row, col, box faintly
+      for (let i = 0; i < 9; i++) {
+        if (!givenMask[r][i] && i !== c) hl[`${r},${i}`] = "row-hl";
+        if (!givenMask[i][c] && i !== r) hl[`${i},${c}`] = "col-hl";
+      }
+      const br = 3 * Math.floor(r / 3), bc = 3 * Math.floor(c / 3);
+      for (let dr = 0; dr < 3; dr++)
+        for (let dc = 0; dc < 3; dc++) {
+          const nr = br+dr, nc = bc+dc;
+          if (!givenMask[nr][nc] && (nr!==r||nc!==c)) hl[`${nr},${nc}`] = "box-hl";
+        }
+      hl[`${r},${c}`] = type;
+    }
+
+    steps.push({
+      board: snap_b, hl,
+      filled, backtracks, attempts,
+      log: logMsg,
+      bp: type === "trying" ? 0 : type === "conflict" ? 1 : type === "backtrack" ? 2 : type === "solved" ? 3 : -1
+    });
+  }
+
+  function isValid(row, col, num) {
+    for (let i = 0; i < 9; i++) {
+      if (b[row][i] === num) return false;
+      if (b[i][col] === num) return false;
+      const br = 3*Math.floor(row/3) + Math.floor(i/3);
+      const bc = 3*Math.floor(col/3) + (i % 3);
+      if (b[br][bc] === num) return false;
+    }
+    return true;
+  }
+
+  function solve() {
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (b[row][col] === 0) {
+          for (let num = 1; num <= 9; num++) {
+            attempts++;
+            if (isValid(row, col, num)) {
+              b[row][col] = num;
+              filled++;
+              snap(row, col, num, "trying",
+                `Row <span class="hl">${row}</span>, Col <span class="hl">${col}</span>: try <span class="hl-y">${num}</span> → valid, place it`);
+              if (solve()) {
+                snap(row, col, num, "solved",
+                  `Row <span class="hl">${row}</span>, Col <span class="hl">${col}</span>: <span class="hl-g">confirmed ${num}</span>`);
+                return true;
+              }
+              b[row][col] = 0;
+              filled--;
+              backtracks++;
+              snap(row, col, num, "backtrack",
+                `Row <span class="hl">${row}</span>, Col <span class="hl">${col}</span>: <span class="hl-p">backtrack</span> — ${num} failed, reset`);
+            } else {
+              snap(row, col, num, "conflict",
+                `Row <span class="hl">${row}</span>, Col <span class="hl">${col}</span>: <span class="hl-r">${num} conflicts</span> — skip`);
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  snap(null, null, null, "", `Start: solving ${["Easy","Medium","Hard"][currentPuzzle]} puzzle.`);
+  solve();
+  snap(null, null, null, "", `✅ <span class="hl-g">Puzzle solved!</span> Attempts: ${attempts}, Backtracks: ${backtracks}`);
+  return steps;
+}
+
+/* ═══════════════════ VIZ RUNNER ═══════════════════ */
+function applyStep(s) {
+  renderBoard(s.board, s.hl);
+  updateProgress(s.filled, s.backtracks, s.attempts);
+  setStateRow([
+    {k:"filled", v:`${s.filled}/${totalEmpty}`},
+    {k:"attempts", v:s.attempts},
+    {k:"backtracks", v:s.backtracks}
+  ]);
+  if (s.log) log(s.log);
+}
+
+function runViz() {
+  clearInterval(stepTimer);
+  clearLog();
+  allSteps = buildSteps();
+  stepIdx = 0;
+  const bpLabels = ["try digit","conflict","backtrack","cell solved"];
+  stepTimer = setInterval(() => {
+    if (stepIdx >= allSteps.length) { clearInterval(stepTimer); return; }
+    const s = allSteps[stepIdx];
+    if (s.bp >= 0 && breakpoints.has(s.bp) && stepIdx > 0) {
+      clearInterval(stepTimer);
+      log(`⚠ <span class="hl-y">Breakpoint: "${bpLabels[s.bp]}"</span> — press Step to continue.`);
+      return;
+    }
+    applyStep(s);
+    stepIdx++;
+  }, speedMs);
+}
+
+function stepViz() {
+  clearInterval(stepTimer);
+  if (!allSteps.length) { allSteps = buildSteps(); stepIdx = 0; clearLog(); }
+  if (stepIdx >= allSteps.length) return;
+  applyStep(allSteps[stepIdx]);
+  stepIdx++;
+}
+
+function resetViz() {
+  clearInterval(stepTimer);
+  allSteps = []; stepIdx = 0; logStep = 0;
+  clearLog();
+  loadPuzzle(currentPuzzle);
+  setStateRow([]);
+}
+
+/* ═══════════════════ HELPERS ═══════════════════ */
+function selectPuzzle(idx, btn) {
+  currentPuzzle = idx;
+  document.querySelectorAll(".puzzle-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  resetViz();
+}
+
+function toggleBp(idx, el) {
+  if (breakpoints.has(idx)) { breakpoints.delete(idx); el.classList.remove("bp-active"); }
+  else { breakpoints.add(idx); el.classList.add("bp-active"); }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll(".main-tab").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tab-"+name).classList.add("active");
+}
+
+function switchLang(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("codeContent").innerHTML = CODES[lang];
+}
+
+function copyCode() {
+  const txt = document.getElementById("codeContent").innerText;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.querySelector(".copy-btn");
+    if (btn) { btn.textContent = "✓ Copied"; setTimeout(() => btn.textContent = "⎘ Copy", 1500); }
+  });
+}
+
+function log(msg) {
+  logStep++;
+  const el = document.getElementById("logEntries");
+  if (!el) return;
+  const e = document.createElement("div");
+  e.className = "log-entry";
+  e.innerHTML = `<span class="log-step">step ${logStep}</span><span class="log-msg">${msg}</span>`;
+  el.appendChild(e);
+  el.scrollTop = el.scrollHeight;
+}
+
+function clearLog() {
+  logStep = 0;
+  const el = document.getElementById("logEntries");
+  if (el) el.innerHTML = "";
+}
+
+function setStateRow(parts) {
+  const el = document.getElementById("stateRow");
+  if (!el) return;
+  el.innerHTML = parts.map(p => `
+    <div class="state-chip">
+      <span class="state-key">${p.k}:</span>
+      <span class="state-val">${p.v}</span>
+    </div>`).join("");
+}
+</script>
+</body>
+</html>

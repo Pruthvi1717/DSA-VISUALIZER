@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N-Queens — Backtracking | DSA Visual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050810;--surface:#0c1120;--surface2:#111827;--surface3:#0a0f1e;
+  --border:#1e2d47;--border2:#243348;
+  --accent:#00d4ff;--accent2:#7c3aed;--accent3:#10b981;
+  --warn:#f59e0b;--danger:#ef4444;--pink:#ec4899;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;
+}
+.wrapper{position:relative;z-index:1;}
+
+/* HEADER */
+header{
+  padding:18px 40px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(12,17,32,0.88);backdrop-filter:blur(16px);
+  position:sticky;top:0;z-index:200;
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:-0.5px;}
+.logo-text span{color:var(--accent);}
+.breadcrumb{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.sep{color:var(--border2);}
+
+/* HERO */
+.hero{padding:44px 40px 28px;max-width:860px;margin:0 auto;text-align:center;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:5px 14px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1));
+  border:1px solid rgba(124,58,237,0.3);border-radius:30px;
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:18px;
+}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.hero h1{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1.1;margin-bottom:12px;}
+.hero h1 .hl{background:linear-gradient(90deg,var(--accent2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--muted);font-size:11px;line-height:1.9;max-width:580px;margin:0 auto 20px;}
+.hero-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.hero-tag{padding:4px 12px;border-radius:20px;font-size:9px;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);color:var(--muted);}
+
+/* LAYOUT */
+.page-body{max-width:1320px;margin:0 auto;padding:32px 40px 80px;display:flex;flex-direction:column;gap:24px;}
+@media(max-width:768px){.page-body,.hero,header{padding-left:20px;padding-right:20px;}}
+
+/* TABS */
+.main-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface3);border-radius:14px 14px 0 0;overflow:hidden;}
+.main-tab{
+  padding:14px 22px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;
+  font-family:'JetBrains Mono',monospace;white-space:nowrap;
+}
+.main-tab:hover{color:var(--muted2);}
+.main-tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+
+.tab-panel{display:none;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 14px 14px;}
+.tab-panel.active{display:block;}
+
+/* ── APPROACH ── */
+.approach-body{padding:28px;display:flex;flex-direction:column;gap:22px;}
+.sec-title{
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--accent2);
+  margin-bottom:12px;letter-spacing:.5px;display:flex;align-items:center;gap:8px;
+}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(124,58,237,.2);}
+.approach-text{font-size:11px;line-height:1.9;color:var(--muted2);}
+.step-list{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.step-row{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;}
+.step-num{min-width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(236,72,153,.15));border:1px solid rgba(124,58,237,.35);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent2);flex-shrink:0;}
+.step-text{font-size:11px;line-height:1.7;color:var(--muted2);}
+.cmplx-row{display:flex;gap:10px;flex-wrap:wrap;}
+.cmplx-chip{padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:110px;}
+.cmplx-chip .clabel{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.cmplx-chip .cval{font-size:14px;font-weight:700;font-family:'Syne',sans-serif;}
+.tc{color:var(--accent2);}
+.sc{color:var(--pink);}
+
+/* ── VISUALIZER ── */
+.viz-body{padding:24px 28px;display:flex;flex-direction:column;gap:18px;}
+
+.viz-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ctrl-group{display:flex;align-items:center;gap:8px;}
+.ctrl-group label{font-size:10px;color:var(--muted);}
+.n-selector{
+  display:flex;gap:4px;
+}
+.n-btn{
+  width:34px;height:34px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface2);color:var(--muted2);
+  font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
+  transition:all .15s;
+}
+.n-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.n-btn.active{border-color:var(--accent2);background:rgba(124,58,237,.15);color:var(--accent2);}
+
+.ctrl-divider{width:1px;height:28px;background:var(--border);}
+.btn-sm{
+  padding:8px 16px;font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  border-radius:6px;cursor:pointer;border:none;font-family:'JetBrains Mono',monospace;transition:all .15s;
+}
+.btn-run{background:linear-gradient(135deg,var(--accent2),#5b21b6);color:#fff;font-weight:700;}
+.btn-run:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(124,58,237,.4);}
+.btn-step{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);}
+.btn-step:hover{border-color:var(--warn);color:var(--warn);}
+.btn-reset{background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger);}
+.speed-group{display:flex;align-items:center;gap:8px;}
+.speed-group label{font-size:10px;color:var(--muted);}
+.speed-group input[type=range]{width:80px;accent-color:var(--accent2);cursor:pointer;}
+
+/* Breakpoints */
+.bp-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.bp-label{font-size:9px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;min-width:80px;}
+.bp-btn{
+  padding:4px 10px;font-size:9px;border-radius:4px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface2);color:var(--muted);
+  font-family:'JetBrains Mono',monospace;transition:all .15s;
+}
+.bp-btn:hover{border-color:var(--warn);color:var(--warn);}
+.bp-btn.bp-active{border-color:var(--warn);background:rgba(245,158,11,.1);color:var(--warn);}
+
+/* State row */
+.state-row{display:flex;gap:8px;flex-wrap:wrap;min-height:32px;}
+.state-chip{padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:10px;display:flex;gap:6px;align-items:center;}
+.state-key{color:var(--muted);}
+.state-val{color:var(--accent2);font-weight:600;}
+
+/* BOARD */
+.board-wrap{
+  display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;
+}
+.board-section{flex:1;min-width:260px;}
+.board-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;}
+#chessBoard{
+  display:inline-grid;
+  gap:2px;
+  background:var(--surface2);border:1px solid var(--border);
+  padding:10px;border-radius:10px;
+}
+.cell{
+  width:52px;height:52px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;transition:all .25s;position:relative;
+  border:2px solid transparent;
+}
+.cell.light{background:#1a2540;}
+.cell.dark{background:#0f1729;}
+.cell.queen{background:rgba(124,58,237,.25);border-color:var(--accent2);}
+.cell.queen::after{content:'♛';font-size:26px;color:var(--accent2);filter:drop-shadow(0 0 8px rgba(124,58,237,.8));}
+.cell.conflict{background:rgba(239,68,68,.15);border-color:var(--danger);animation:flash .4s ease;}
+.cell.checking{background:rgba(245,158,11,.12);border-color:var(--warn);}
+.cell.safe{background:rgba(16,185,129,.12);border-color:var(--accent3);}
+.cell.placed{background:rgba(124,58,237,.2);border-color:var(--accent2);}
+.cell.placed::after{content:'♛';font-size:26px;color:var(--accent2);filter:drop-shadow(0 0 6px rgba(124,58,237,.6));}
+@keyframes flash{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* Solutions carousel */
+.solutions-section{flex:0 0 220px;}
+.solutions-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.sol-count{color:var(--accent2);}
+.solutions-list{
+  display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;
+}
+.sol-card{
+  padding:8px 12px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:7px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:10px;
+}
+.sol-card:hover{border-color:var(--accent2);}
+.sol-card.active{border-color:var(--accent2);background:rgba(124,58,237,.1);}
+.sol-mini{display:grid;gap:1px;flex-shrink:0;}
+.sol-mini-cell{width:8px;height:8px;border-radius:1px;background:var(--surface);}
+.sol-mini-cell.q{background:var(--accent2);}
+.sol-idx{font-size:9px;color:var(--muted);}
+
+/* Attack lines overlay */
+.board-container{position:relative;display:inline-block;}
+.attack-svg{position:absolute;top:10px;left:10px;pointer-events:none;}
+
+/* LOG */
+.log-panel{background:var(--surface3);border:1px solid var(--border);border-radius:10px;font-size:10px;line-height:1.8;max-height:170px;overflow-y:auto;}
+.log-header{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.log-title{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.log-clear{font-size:9px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'JetBrains Mono',monospace;}
+.log-clear:hover{color:var(--danger);}
+.log-entries{padding:8px 14px;display:flex;flex-direction:column;gap:3px;}
+.log-entry{display:flex;gap:10px;align-items:baseline;}
+.log-step{color:var(--muted);font-size:9px;min-width:48px;}
+.log-msg{color:var(--muted2);}
+.log-msg .hl{color:var(--accent2);}
+.log-msg .hl-g{color:var(--accent3);}
+.log-msg .hl-y{color:var(--warn);}
+.log-msg .hl-r{color:var(--danger);}
+
+/* ── CODE TAB ── */
+.code-body{display:flex;flex-direction:column;}
+.code-lang-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 28px;background:var(--surface3);}
+.lang-btn{
+  padding:10px 14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;font-family:'JetBrains Mono',monospace;
+}
+.lang-btn.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+.code-block{padding:24px 28px;overflow:auto;font-size:12px;line-height:1.9;position:relative;}
+.code-block pre{white-space:pre-wrap;word-break:break-word;}
+.copy-btn{
+  position:absolute;top:16px;right:20px;padding:5px 12px;font-size:9px;letter-spacing:1px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+  border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .15s;
+}
+.copy-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.kw{color:#7c3aed;}.fn{color:#00d4ff;}.nm{color:#e2e8f0;}.cm{color:#4a5568;font-style:italic;}
+.st{color:#10b981;}.nu{color:#f59e0b;}.cl{color:#ec4899;}.an{color:#94a3b8;}
+
+/* scrollbars */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--surface3);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-icon">⬡</div>
+    <div class="logo-text">DSA<span>Visual</span></div>
+  </a>
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span class="sep">›</span>
+    <a href="../dsa-sheet.html">Love Babbar Sheet</a><span class="sep">›</span>
+    <span style="color:var(--accent2)">Backtracking</span><span class="sep">›</span>
+    <span style="color:var(--pink)">N-Queens</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span>Backtracking</div>
+  <h1>N-<span class="hl">Queens</span> Problem</h1>
+  <p>Place N queens on an N×N chessboard so no two queens attack each other. Watch the backtracking recursion try every placement, detect conflicts, and backtrack in real time.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">Backtracking</span>
+    <span class="hero-tag">Recursion Tree</span>
+    <span class="hero-tag">Constraint Check</span>
+    <span class="hero-tag">O(N!)</span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- TABS -->
+  <div>
+    <div class="main-tabs">
+      <button class="main-tab active" onclick="switchTab('approach',this)">📐 Approach</button>
+      <button class="main-tab" onclick="switchTab('visualizer',this)">▶ Visualizer</button>
+      <button class="main-tab" onclick="switchTab('code',this)">{ } Code</button>
+    </div>
+
+    <!-- ── APPROACH ── -->
+    <div class="tab-panel active" id="tab-approach">
+      <div class="approach-body">
+        <div>
+          <div class="sec-title">Problem Statement</div>
+          <p class="approach-text">
+            Given an integer <code>n</code>, return all distinct solutions to the <strong>N-Queens</strong> puzzle.
+            Each solution contains a distinct board configuration where <code>'Q'</code> marks a queen and <code>'.'</code> marks an empty cell.
+            No two queens can share the same row, column, or diagonal.
+          </p>
+        </div>
+        <div>
+          <div class="sec-title">Backtracking Strategy</div>
+          <div class="step-list">
+            <div class="step-row"><div class="step-num">1</div><div class="step-text">Place queens <strong>row by row</strong> — one queen per row is guaranteed, so iterate columns only.</div></div>
+            <div class="step-row"><div class="step-num">2</div><div class="step-text"><strong>isSafe check</strong>: scan vertically upward, upper-left diagonal, and upper-right diagonal. No need to check below (not yet placed).</div></div>
+            <div class="step-row"><div class="step-num">3</div><div class="step-text">If safe, place <code>'Q'</code> and <strong>recurse</strong> to the next row.</div></div>
+            <div class="step-row"><div class="step-num">4</div><div class="step-text"><strong>Backtrack</strong>: after recursion returns, reset <code>board[row][col] = '.'</code> and try next column.</div></div>
+            <div class="step-row"><div class="step-num">5</div><div class="step-text">Base case: when <code>row == n</code>, all queens placed — snapshot the board and add to result.</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="sec-title">isSafe in Detail</div>
+          <div class="step-list">
+            <div class="step-row"><div class="step-num">↑</div><div class="step-text"><strong>Vertical</strong>: check <code>board[i][col]</code> for all <code>i &lt; row</code>.</div></div>
+            <div class="step-row"><div class="step-num">↖</div><div class="step-text"><strong>Upper-left diagonal</strong>: walk <code>(row−1,col−1), (row−2,col−2)…</code></div></div>
+            <div class="step-row"><div class="step-num">↗</div><div class="step-text"><strong>Upper-right diagonal</strong>: walk <code>(row−1,col+1), (row−2,col+2)…</code></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="sec-title">Complexity</div>
+          <div class="cmplx-row">
+            <div class="cmplx-chip"><span class="clabel">Time</span><span class="cval tc">O(N!)</span></div>
+            <div class="cmplx-chip"><span class="clabel">Space</span><span class="cval sc">O(N²)</span></div>
+            <div class="cmplx-chip"><span class="clabel">Solutions (N=8)</span><span class="cval" style="color:var(--warn)">92</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VISUALIZER ── -->
+    <div class="tab-panel" id="tab-visualizer">
+      <div class="viz-body">
+
+        <!-- Controls -->
+        <div class="viz-controls">
+          <div class="ctrl-group">
+            <label>Board Size N =</label>
+            <div class="n-selector" id="nSelector">
+              <button class="n-btn" onclick="setN(4,this)">4</button>
+              <button class="n-btn active" onclick="setN(5,this)">5</button>
+              <button class="n-btn" onclick="setN(6,this)">6</button>
+              <button class="n-btn" onclick="setN(8,this)">8</button>
+            </div>
+          </div>
+          <div class="ctrl-divider"></div>
+          <button class="btn-sm btn-run" onclick="runViz()">▶ Run</button>
+          <button class="btn-sm btn-step" onclick="stepViz()">⤳ Step</button>
+          <button class="btn-sm btn-reset" onclick="resetViz()">↺ Reset</button>
+          <div class="ctrl-divider"></div>
+          <div class="speed-group">
+            <label>Speed</label>
+            <input type="range" min="100" max="1400" value="700" step="100"
+              oninput="speedMs=1500-this.value">
+          </div>
+        </div>
+
+        <!-- Breakpoints -->
+        <div class="bp-bar">
+          <span class="bp-label">Breakpoints →</span>
+          <button class="bp-btn" id="bp0" onclick="toggleBp(0,this)">place queen</button>
+          <button class="bp-btn" id="bp1" onclick="toggleBp(1,this)">conflict found</button>
+          <button class="bp-btn" id="bp2" onclick="toggleBp(2,this)">backtrack</button>
+          <button class="bp-btn" id="bp3" onclick="toggleBp(3,this)">solution found</button>
+        </div>
+
+        <!-- State -->
+        <div class="state-row" id="stateRow"></div>
+
+        <!-- Board + Solutions -->
+        <div class="board-wrap">
+          <div class="board-section">
+            <div class="board-label">// Live Board</div>
+            <div class="board-container">
+              <div id="chessBoard"></div>
+            </div>
+          </div>
+          <div class="solutions-section">
+            <div class="solutions-label">
+              <span>// Solutions Found</span>
+              <span class="sol-count" id="solCount">0</span>
+            </div>
+            <div class="solutions-list" id="solutionsList"></div>
+          </div>
+        </div>
+
+        <!-- Log -->
+        <div class="log-panel">
+          <div class="log-header">
+            <span class="log-title">// Execution Log</span>
+            <button class="log-clear" onclick="clearLog()">clear</button>
+          </div>
+          <div class="log-entries" id="logEntries">
+            <div class="log-entry">
+              <span class="log-step">ready</span>
+              <span class="log-msg">Press <span class="hl">▶ Run</span> to animate or <span class="hl-y">⤳ Step</span> to go one step at a time.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── CODE ── -->
+    <div class="tab-panel" id="tab-code">
+      <div class="code-body">
+        <div class="code-lang-tabs">
+          <button class="lang-btn active" onclick="switchLang('java',this)">Java</button>
+          <button class="lang-btn" onclick="switchLang('cpp',this)">C++</button>
+          <button class="lang-btn" onclick="switchLang('python',this)">Python</button>
+        </div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode()">⎘ Copy</button>
+          <pre id="codeContent"></pre>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tabs wrapper -->
+</div><!-- /page-body -->
+</div><!-- /wrapper -->
+
+<script>
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let N = 5;
+let speedMs = 800;
+let stepTimer = null;
+let allSteps = [];
+let stepIdx = 0;
+let logStep = 0;
+let breakpoints = new Set();
+let solutions = [];
+let currentLang = "java";
+
+/* ═══════════════════════════════════════════════
+   CODE SNIPPETS
+═══════════════════════════════════════════════ */
+const CODES = {
+java: `<span class="cm">// N-Queens — Backtracking  (Love Babbar DSA Sheet)</span>
+<span class="kw">class</span> <span class="cl">Solution</span> {
+    <span class="kw">public</span> List&lt;List&lt;<span class="cl">String</span>&gt;&gt; <span class="fn">solveNQueens</span>(<span class="kw">int</span> <span class="nm">n</span>) {
+        List&lt;List&lt;<span class="cl">String</span>&gt;&gt; result = <span class="kw">new</span> <span class="cl">ArrayList</span>&lt;&gt;();
+        <span class="kw">char</span>[][] board = <span class="kw">new char</span>[n][n];
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; n; i++)
+            <span class="cl">Arrays</span>.fill(board[i], <span class="st">'.'</span>);
+        <span class="fn">backtrack</span>(result, board, <span class="nu">0</span>, n);
+        <span class="kw">return</span> result;
+    }
+
+    <span class="kw">private void</span> <span class="fn">backtrack</span>(List&lt;List&lt;<span class="cl">String</span>&gt;&gt; result,
+                            <span class="kw">char</span>[][] board, <span class="kw">int</span> row, <span class="kw">int</span> n) {
+        <span class="kw">if</span> (row == n) {                         <span class="cm">// base case</span>
+            List&lt;<span class="cl">String</span>&gt; sol = <span class="kw">new</span> <span class="cl">ArrayList</span>&lt;&gt;();
+            <span class="kw">for</span> (<span class="kw">char</span>[] r : board) sol.add(<span class="kw">new</span> <span class="cl">String</span>(r));
+            result.add(sol);
+            <span class="kw">return</span>;
+        }
+        <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nu">0</span>; col &lt; n; col++) {
+            <span class="kw">if</span> (<span class="fn">isSafe</span>(board, row, col, n)) {
+                board[row][col] = <span class="st">'Q'</span>;              <span class="cm">// place</span>
+                <span class="fn">backtrack</span>(result, board, row+<span class="nu">1</span>, n); <span class="cm">// recurse</span>
+                board[row][col] = <span class="st">'.'</span>;              <span class="cm">// backtrack</span>
+            }
+        }
+    }
+
+    <span class="kw">private boolean</span> <span class="fn">isSafe</span>(<span class="kw">char</span>[][] board,
+                             <span class="kw">int</span> row, <span class="kw">int</span> col, <span class="kw">int</span> n) {
+        <span class="cm">// vertical up</span>
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; row; i++)
+            <span class="kw">if</span> (board[i][col] == <span class="st">'Q'</span>) <span class="kw">return false</span>;
+        <span class="cm">// upper-left diagonal</span>
+        <span class="kw">for</span> (<span class="kw">int</span> i=row-<span class="nu">1</span>, j=col-<span class="nu">1</span>; i&gt;=<span class="nu">0</span>&amp;&amp;j&gt;=<span class="nu">0</span>; i--,j--)
+            <span class="kw">if</span> (board[i][j] == <span class="st">'Q'</span>) <span class="kw">return false</span>;
+        <span class="cm">// upper-right diagonal</span>
+        <span class="kw">for</span> (<span class="kw">int</span> i=row-<span class="nu">1</span>, j=col+<span class="nu">1</span>; i&gt;=<span class="nu">0</span>&amp;&amp;j&lt;n; i--,j++)
+            <span class="kw">if</span> (board[i][j] == <span class="st">'Q'</span>) <span class="kw">return false</span>;
+        <span class="kw">return true</span>;
+    }
+}`,
+
+cpp: `<span class="cm">// N-Queens — Backtracking  (Love Babbar DSA Sheet)</span>
+<span class="kw">class</span> <span class="cl">Solution</span> {
+    <span class="kw">bool</span> <span class="fn">isSafe</span>(<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&amp; board, <span class="kw">int</span> row, <span class="kw">int</span> col, <span class="kw">int</span> n) {
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; row; i++)
+            <span class="kw">if</span> (board[i][col] == <span class="st">'Q'</span>) <span class="kw">return false</span>;
+        <span class="kw">for</span> (<span class="kw">int</span> i=row-<span class="nu">1</span>,j=col-<span class="nu">1</span>; i&gt;=<span class="nu">0</span>&amp;&amp;j&gt;=<span class="nu">0</span>; i--,j--)
+            <span class="kw">if</span> (board[i][j] == <span class="st">'Q'</span>) <span class="kw">return false</span>;
+        <span class="kw">for</span> (<span class="kw">int</span> i=row-<span class="nu">1</span>,j=col+<span class="nu">1</span>; i&gt;=<span class="nu">0</span>&amp;&amp;j&lt;n; i--,j++)
+            <span class="kw">if</span> (board[i][j] == <span class="st">'Q'</span>) <span class="kw">return false</span>;
+        <span class="kw">return true</span>;
+    }
+    <span class="kw">void</span> <span class="fn">backtrack</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt;&amp; res,
+                    <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&amp; board, <span class="kw">int</span> row, <span class="kw">int</span> n) {
+        <span class="kw">if</span> (row == n) { res.push_back(board); <span class="kw">return</span>; }
+        <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nu">0</span>; col &lt; n; col++) {
+            <span class="kw">if</span> (<span class="fn">isSafe</span>(board, row, col, n)) {
+                board[row][col] = <span class="st">'Q'</span>;
+                <span class="fn">backtrack</span>(res, board, row+<span class="nu">1</span>, n);
+                board[row][col] = <span class="st">'.'</span>;
+            }
+        }
+    }
+<span class="kw">public</span>:
+    <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt; <span class="fn">solveNQueens</span>(<span class="kw">int</span> n) {
+        <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt; res;
+        <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt; board(n, <span class="kw">string</span>(n, <span class="st">'.'</span>));
+        <span class="fn">backtrack</span>(res, board, <span class="nu">0</span>, n);
+        <span class="kw">return</span> res;
+    }
+};`,
+
+python: `<span class="cm"># N-Queens — Backtracking  (Love Babbar DSA Sheet)</span>
+<span class="kw">class</span> <span class="cl">Solution</span>:
+    <span class="kw">def</span> <span class="fn">solveNQueens</span>(<span class="nm">self</span>, n):
+        result = []
+        board = [[<span class="st">'.'</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+
+        <span class="kw">def</span> <span class="fn">is_safe</span>(row, col):
+            <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(row):          <span class="cm"># vertical</span>
+                <span class="kw">if</span> board[i][col] == <span class="st">'Q'</span>: <span class="kw">return False</span>
+            i, j = row-<span class="nu">1</span>, col-<span class="nu">1</span>
+            <span class="kw">while</span> i >= <span class="nu">0</span> <span class="kw">and</span> j >= <span class="nu">0</span>:  <span class="cm"># upper-left</span>
+                <span class="kw">if</span> board[i][j] == <span class="st">'Q'</span>: <span class="kw">return False</span>
+                i -= <span class="nu">1</span>; j -= <span class="nu">1</span>
+            i, j = row-<span class="nu">1</span>, col+<span class="nu">1</span>
+            <span class="kw">while</span> i >= <span class="nu">0</span> <span class="kw">and</span> j &lt; n:   <span class="cm"># upper-right</span>
+                <span class="kw">if</span> board[i][j] == <span class="st">'Q'</span>: <span class="kw">return False</span>
+                i -= <span class="nu">1</span>; j += <span class="nu">1</span>
+            <span class="kw">return True</span>
+
+        <span class="kw">def</span> <span class="fn">backtrack</span>(row):
+            <span class="kw">if</span> row == n:
+                result.append([<span class="st">''</span>.join(r) <span class="kw">for</span> r <span class="kw">in</span> board])
+                <span class="kw">return</span>
+            <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+                <span class="kw">if</span> <span class="fn">is_safe</span>(row, col):
+                    board[row][col] = <span class="st">'Q'</span>
+                    <span class="fn">backtrack</span>(row + <span class="nu">1</span>)
+                    board[row][col] = <span class="st">'.'</span>  <span class="cm"># backtrack</span>
+
+        <span class="fn">backtrack</span>(<span class="nu">0</span>)
+        <span class="kw">return</span> result`
+};
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("codeContent").innerHTML = CODES.java;
+  initBoard();
+});
+
+/* ═══════════════════════════════════════════════
+   BOARD RENDERING
+═══════════════════════════════════════════════ */
+function initBoard(boardState, highlights) {
+  const el = document.getElementById("chessBoard");
+  const hs = highlights || {};
+  el.style.gridTemplateColumns = `repeat(${N}, 52px)`;
+  el.innerHTML = "";
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      const cell = document.createElement("div");
+      const base = (r + c) % 2 === 0 ? "light" : "dark";
+      let extra = hs[`${r},${c}`] || "";
+      const hasQueen = boardState && boardState[r] && boardState[r][c] === "Q";
+      if (hasQueen && !extra) extra = "placed";
+      cell.className = `cell ${base} ${extra}`;
+      cell.id = `cell-${r}-${c}`;
+      el.appendChild(cell);
+    }
+  }
+}
+
+function setCell(r, c, cls) {
+  const cell = document.getElementById(`cell-${r}-${c}`);
+  if (!cell) return;
+  const base = (r + c) % 2 === 0 ? "light" : "dark";
+  cell.className = `cell ${base} ${cls}`;
+}
+
+/* ═══════════════════════════════════════════════
+   STEP BUILDER
+═══════════════════════════════════════════════ */
+function buildSteps() {
+  const steps = [];
+  solutions = [];
+  const board = Array.from({length:N}, () => Array(N).fill("."));
+
+  function snap(note, bpIdx, logMsg, extraHL) {
+    const b = board.map(r => [...r]);
+    const hl = extraHL || {};
+    steps.push({
+      board: b, hl, bp: bpIdx,
+      log: logMsg,
+      sols: solutions.map(s => s.map(r=>[...r]))
+    });
+  }
+
+  function isSafe(row, col) {
+    for (let i = 0; i < row; i++) if (board[i][col]==="Q") return false;
+    for (let i=row-1,j=col-1; i>=0&&j>=0; i--,j--) if (board[i][j]==="Q") return false;
+    for (let i=row-1,j=col+1; i>=0&&j<N;  i--,j++) if (board[i][j]==="Q") return false;
+    return true;
+  }
+
+  function backtrack(row) {
+    if (row === N) {
+      solutions.push(board.map(r=>[...r]));
+      snap(null, 3, `✅ <span class="hl-g">Solution #${solutions.length} found!</span>`);
+      return;
+    }
+    for (let col = 0; col < N; col++) {
+      const hl = {};
+      // mark checking cells
+      for (let i = 0; i < row; i++) hl[`${i},${col}`] = "checking";
+      for (let i=row-1,j=col-1; i>=0&&j>=0; i--,j--) hl[`${i},${j}`] = "checking";
+      for (let i=row-1,j=col+1; i>=0&&j<N; i--,j++) hl[`${i},${j}`] = "checking";
+
+      if (isSafe(row, col)) {
+        board[row][col] = "Q";
+        snap(null, 0,
+          `Row <span class="hl">${row}</span>, Col <span class="hl">${col}</span>: safe → place queen ♛`,
+          {...hl, [`${row},${col}`]: "queen"});
+        backtrack(row + 1);
+        board[row][col] = ".";
+        snap(null, 2,
+          `Row <span class="hl">${row}</span>, Col <span class="hl">${col}</span>: <span class="hl-y">backtrack</span> ← remove queen`);
+      } else {
+        snap(null, 1,
+          `Row <span class="hl">${row}</span>, Col <span class="hl">${col}</span>: <span class="hl-r">conflict</span> — skip`,
+          {...hl, [`${row},${col}`]: "conflict"});
+      }
+    }
+  }
+
+  snap(null, -1, `Start: N=<span class="hl">${N}</span>. Trying to place queens row by row.`);
+  backtrack(0);
+  snap(null, -1, `Done. Found <span class="hl-g">${solutions.length}</span> solution(s) for N=${N}.`);
+  return steps;
+}
+
+/* ═══════════════════════════════════════════════
+   VIZ RUNNER
+═══════════════════════════════════════════════ */
+function applyStep(s) {
+  initBoard(s.board.map(r=>r.join("")), s.hl);
+  // update solutions panel
+  document.getElementById("solCount").textContent = s.sols.length;
+  renderSolutions(s.sols);
+  // state row
+  const queens = s.board.flat().filter(x=>x==="Q").length;
+  const row = s.board.findIndex(r=>r.every(c=>c==="."));
+  setStateRow([
+    {k:"queens placed", v:queens},
+    {k:"current row", v:row===-1?N:row},
+    {k:"solutions", v:s.sols.length}
+  ]);
+  if (s.log) log(s.log);
+}
+
+function runViz() {
+  clearInterval(stepTimer);
+  clearLog();
+  allSteps = buildSteps();
+  stepIdx = 0;
+  stepTimer = setInterval(() => {
+    if (stepIdx >= allSteps.length) { clearInterval(stepTimer); return; }
+    const s = allSteps[stepIdx];
+    if (s.bp !== undefined && breakpoints.has(s.bp) && stepIdx > 0) {
+      clearInterval(stepTimer);
+      const labels = ["place queen","conflict found","backtrack","solution found"];
+      log(`⚠ <span class="hl-y">Breakpoint: "${labels[s.bp]}"</span> — press Step to continue.`);
+      return;
+    }
+    applyStep(s);
+    stepIdx++;
+  }, speedMs);
+}
+
+function stepViz() {
+  clearInterval(stepTimer);
+  if (!allSteps.length) { allSteps = buildSteps(); stepIdx = 0; clearLog(); }
+  if (stepIdx >= allSteps.length) return;
+  const s = allSteps[stepIdx];
+  applyStep(s);
+  stepIdx++;
+}
+
+function resetViz() {
+  clearInterval(stepTimer);
+  allSteps = []; stepIdx = 0; logStep = 0; solutions = [];
+  clearLog();
+  initBoard();
+  document.getElementById("solCount").textContent = "0";
+  document.getElementById("solutionsList").innerHTML = "";
+  setStateRow([]);
+}
+
+/* ═══════════════════════════════════════════════
+   SOLUTIONS PANEL
+═══════════════════════════════════════════════ */
+function renderSolutions(sols) {
+  const list = document.getElementById("solutionsList");
+  list.innerHTML = "";
+  sols.forEach((sol, idx) => {
+    const card = document.createElement("div");
+    card.className = "sol-card";
+    card.onclick = () => showSolution(sol, card);
+    // mini grid
+    const mini = document.createElement("div");
+    mini.className = "sol-mini";
+    mini.style.gridTemplateColumns = `repeat(${N}, 8px)`;
+    mini.style.display = "grid"; mini.style.gap = "1px";
+    sol.forEach(row => {
+      row.forEach(cell => {
+        const mc = document.createElement("div");
+        mc.className = "sol-mini-cell" + (cell==="Q"?" q":"");
+        mini.appendChild(mc);
+      });
+    });
+    const lbl = document.createElement("span");
+    lbl.className = "sol-idx";
+    lbl.textContent = `Solution #${idx+1}`;
+    card.appendChild(mini);
+    card.appendChild(lbl);
+    list.appendChild(card);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+
+function showSolution(sol, card) {
+  document.querySelectorAll(".sol-card").forEach(c=>c.classList.remove("active"));
+  card.classList.add("active");
+  const boardStr = sol.map(r=>r.join(""));
+  initBoard(boardStr);
+}
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════ */
+function setN(n, btn) {
+  N = n;
+  document.querySelectorAll(".n-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  resetViz();
+}
+
+function toggleBp(idx, el) {
+  if (breakpoints.has(idx)) { breakpoints.delete(idx); el.classList.remove("bp-active"); }
+  else { breakpoints.add(idx); el.classList.add("bp-active"); }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll(".main-tab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tab-"+name).classList.add("active");
+}
+
+function switchLang(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll(".lang-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("codeContent").innerHTML = CODES[lang];
+}
+
+function copyCode() {
+  const txt = document.getElementById("codeContent").innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = document.querySelector(".copy-btn");
+    if (btn){ btn.textContent="✓ Copied"; setTimeout(()=>btn.textContent="⎘ Copy",1500); }
+  });
+}
+
+function log(msg) {
+  logStep++;
+  const el = document.getElementById("logEntries");
+  if (!el) return;
+  const e = document.createElement("div");
+  e.className = "log-entry";
+  e.innerHTML = `<span class="log-step">step ${logStep}</span><span class="log-msg">${msg}</span>`;
+  el.appendChild(e);
+  el.scrollTop = el.scrollHeight;
+}
+
+function clearLog() {
+  logStep = 0;
+  const el = document.getElementById("logEntries");
+  if (el) el.innerHTML = "";
+}
+
+function setStateRow(parts) {
+  const el = document.getElementById("stateRow");
+  if (!el) return;
+  el.innerHTML = parts.map(p=>`
+    <div class="state-chip">
+      <span class="state-key">${p.k}:</span>
+      <span class="state-val">${p.v}</span>
+    </div>`).join("");
+}
+</script>
+</body>
+</html>
